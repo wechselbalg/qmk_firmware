@@ -70,13 +70,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RGB_DI_PIN D3
 #define RGBLIGHT_SPLIT
 
-// Underglow LEDs
-#define RGBLED_SPLIT { 6, 6 }
-#define RGBLED_NUM 12
-
-// Full backlight + underglow
-//#define RGBLED_SPLIT { 35, 35 }
-//#define RGBLED_NUM 70
+// Backlight
+// #define RGBLED_SPLIT { 29, 29 }
+// #define RGBLED_NUM 58
 
 // Disable depreciated
 #define NO_ACTION_MACRO
@@ -99,10 +95,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* disable debug print */
+#ifndef NO_DEBUG
 #define NO_DEBUG
+#endif
 
 /* disable print */
+#ifndef NO_PRINT
 #define NO_PRINT
+#endif
 
 /* disable action features */
 #define NO_ACTION_ONESHOT
