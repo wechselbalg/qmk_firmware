@@ -20,6 +20,7 @@ enum layers {
     _NEO,
     _KOY,
     _VOU,
+    _VOUX,
     _COLEMAK,
     _SYMBOL,
     _NUMB,
@@ -32,6 +33,7 @@ enum custom_keycodes {
     KC_NEO,
     KC_KOY,
     KC_VOU,
+    KC_VOUX,
     KC_COLEMAK,
     KC_SYMBOL,
     KC_NUMB,
@@ -70,11 +72,14 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define CK_ZSYM LT(_SYMBOL, KC_Z)
 #define CK_FSYM LT(_SYMBOL, KC_F)
 #define CK_SSYM LT(_SYMBOL, KC_MINS)
+#define CK_dotSYM LT(_SYMBOL, KC_DOT)
+#define CK_atSYM LT(_SYMBOL, ALGR(KC_Q))
 #define CK_AESYM LT(_SYMBOL, KC_AE)
 #define CK_UENUM LT(_NUMB, KC_UE)
 #define CK_ZNUM LT(_NUMB, KC_Z)
 #define CK_YNUM LT(_NUMB, KC_Y)
 #define CK_XNUM LT(_NUMB, KC_X)
+#define CK_escNUM LT(_NUMB, KC_ESC)
 #define CK_DELINS TD(DEL_INS)
 #define CK_RENT MT(MOD_RSFT, KC_ENT)
 #define CK_RALT MT(MOD_RALT, KC_APP)
@@ -113,63 +118,71 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    _______, KC_Q,   KC_W,   KC_F,     KC_P,    KC_B,                         KC_J, KC_L,    KC_U,    KC_Y,   KC_COMM, _______,
    _______, KC_A,   KC_R,   KC_S,     KC_T,    KC_G,               _______,  KC_M, KC_N,    KC_E,    KC_I,   KC_O,    _______,
    _______, CK_ZNUM,KC_X,   KC_C,     KC_D,    KC_V, _______,      _______,  KC_K, KC_H,    KC_COMM, KC_DOT, KC_SLSH, _______,
-                         _______,_______, _______, _______,        _______, _______, _______, _______
+                         _______,_______, _______, _______,         _______, _______, _______, _______
 ),
 
 [_NEO] = LAYOUT(
     _______, KC_1,    KC_2,    KC_3,     KC_4, KC_5,                        KC_6, KC_7,  KC_8,    KC_9,   KC_0, _______,
     _______, KC_X,    KC_V,    KC_L,     KC_C, KC_W,                        KC_K, KC_H,  KC_G,    KC_F,   KC_Q, KC_MINS,
     _______, KC_U,    KC_I,    KC_A,     KC_E, KC_O,              _______,  KC_S, KC_N,  KC_R,    KC_T,   KC_D, CK_ZSYM,
-    _______, CK_UENUM,KC_OE,   KC_AE,    KC_P, KC_Z, _______,     _______,  KC_B, KC_M,  KC_COMM, KC_DOT, KC_J, CK_RSFT,
-                            _______,_______, _______, _______,    _______, _______, _______, _______
+    _______, CK_UENUM,KC_OE,   KC_AE,    KC_P, KC_Z, _______,     _______,  KC_B, KC_M,  KC_COMM, KC_DOT, KC_J, _______,
+                          _______,_______, _______, _______,       _______, _______, _______, _______
 ),
 
 [_KOY] = LAYOUT(
-    _______, KC_1,    KC_2,   KC_3,  KC_4,    KC_5,                         KC_6, KC_7,    KC_8,    KC_9,  KC_0,    KC_MINS,
+    _______, KC_1,    KC_2,   KC_3,  KC_4,    KC_5,                         KC_6, KC_7,    KC_8,    KC_9,  KC_0,    _______,
     _______, KC_K,    KC_DOT, KC_O,  KC_COMM, KC_Y,                         KC_V, KC_G,    KC_C,    KC_L,  KC_MINS, KC_Z,
     _______, KC_H,    KC_A,   KC_E,  KC_I,    KC_U,                _______, KC_D, KC_T,    KC_R,    KC_N,  KC_S,    CK_FSYM,
-    _______, CK_XNUM, KC_Q,   KC_AE, KC_UE,   KC_OE, _______,      _______, KC_B, KC_P,    KC_W,    KC_M,  KC_J,    CK_RSFT,
-                           _______,_______, _______, _______,      _______, _______, _______, _______
+    _______, CK_XNUM, KC_Q,   KC_AE, KC_UE,   KC_OE, _______,      _______, KC_B, KC_P,    KC_W,    KC_M,  KC_J,    _______,
+                          _______,_______, _______, _______,        _______, _______, _______, _______
 ),
 
 [_VOU] = LAYOUT(
     _______, KC_1,    KC_2,   KC_3,    KC_4,   KC_5,                         KC_6,    KC_7,    KC_8,    KC_9,  KC_0,   KC_SLSH,
     _______, KC_V,    KC_DOT, KC_O,    KC_U,   KC_AE,                        KC_Q,    KC_G,    KC_L,    KC_H,  KC_F,   KC_J,
-    _______, KC_C,    KC_A,   KC_E,    KC_I,   KC_Z,                _______, KC_D,    KC_T,    KC_R,    KC_N,  KC_S,   CK_SSYM ,
-    _______, CK_YNUM, KC_X,   KC_COMM, KC_UE,  KC_OE,   _______,    _______, KC_P,    KC_D,    KC_W,    KC_M,  KC_K,   CK_RSFT,
-                              _______,_______, _______, _______,    _______, _______, _______, _______
+    _______, KC_C,    KC_A,   KC_E,    KC_I,   KC_Z,                _______, KC_B,    KC_T,    KC_R,    KC_N,  KC_S,   CK_SSYM,
+    _______, CK_YNUM, KC_X,   KC_COMM, KC_UE,  KC_OE,   _______,    _______, KC_P,    KC_D,    KC_W,    KC_M,  KC_K,   _______,
+                             _______,_______, _______, _______,      _______, _______, _______, _______
+),
+
+[_VOUX] = LAYOUT(
+    _______, KC_1,    KC_2,   KC_3,    KC_4,   KC_5,                         KC_6,    KC_7,    KC_8,    KC_9,  KC_0,   KC_SLSH,
+    _______, KC_V,    KC_DOT, KC_O,    KC_U,   KC_AE,                        KC_P,    KC_G,    KC_L,    KC_H,  KC_F,   KC_J,
+    _______, KC_C,    KC_A,   KC_E,    KC_I,   KC_Z,                _______, KC_B,    KC_T,    KC_R,    KC_N,  KC_S,   CK_SSYM,
+    _______, CK_YNUM, KC_X,   KC_COMM, KC_UE,  KC_OE,   _______,    _______, KC_Q,    KC_D,    KC_W,    KC_M,  KC_K,   _______,
+                             _______,_______, _______, _______,      _______, _______, _______, _______
 ),
 
 [_SYMBOL] = LAYOUT(
   _______,   KC_F1,      KC_F2,   KC_F3,   KC_F4,   KC_F5,                                    KC_F6,         KC_F7,   KC_F8,   KC_F9,  KC_F10, KC_F11,
   _______, LSFT(KC_3),   LSFT(KC_SLSH),ALGR(KC_8),ALGR(KC_9),KC_GRV,                          LSFT(KC_1),    KC_NUBS, LSFT(KC_NUBS), LSFT(KC_0), LSFT(KC_6), KC_F12,
-  _______, ALGR(KC_MINS),LSFT(KC_7),ALGR(KC_7),ALGR(KC_0), LSFT(KC_RBRC),             _______,LSFT(KC_MINS), LSFT(KC_8), LSFT(KC_9), KC_SLSH, LSFT(KC_DOT), ALGR(KC_Q),
+  _______, ALGR(KC_MINS),LSFT(KC_7),ALGR(KC_7),ALGR(KC_0), LSFT(KC_RBRC),             _______,LSFT(KC_MINS), LSFT(KC_8), LSFT(KC_9), KC_SLSH, LSFT(KC_DOT), CK_atSYM,
   _______, KC_NUHS,LSFT(KC_4),ALGR(KC_NUBS), ALGR(KC_RBRC), ALGR(KC_E),_______,       _______,KC_RBRC,       LSFT(KC_5),LSFT(KC_2), LSFT(KC_NUHS), LSFT(KC_COMM), _______,
-                                           _______, _______, _______, _______,        _______, _______, _______, _______
+                                           _______, _______, _______, _______,         _______, _______, _______, _______
 ),
 
 [_NUMB] = LAYOUT(
-  CK_ALF4, KC_F1,   KC_F2,   KC_F3,   KC_F4,    KC_F5,                              KC_CIRC,      KC_TAB,  KC_PSLS, KC_PAST, KC_PMNS, KC_PSLS,
+  TG(_NUMB), KC_F1,   KC_F2,   KC_F3,   KC_F4,    KC_F5,                              KC_CIRC,      KC_TAB,  KC_PSLS, KC_PAST, KC_PMNS, KC_PSLS,
   _______, KC_PGUP, KC_BSPC, KC_UP,   KC_DEL,   KC_PGDN,                            KC_HASH,      KC_P7,   KC_P8,   KC_P9, KC_PPLS, KC_PAST,
-  _______, KC_HOME, KC_LEFT, KC_DOWN, KC_RIGHT, KC_END,                    _______, KC_AMPR,      KC_P4,   KC_P5,   KC_P6, KC_COMM, KC_DOT,
-  KC_LALT, KC_ESC,  KC_TAB,  KC_INS,  KC_ENT,   LCTL(KC_Z), _______,       _______, LSFT(KC_DOT), KC_P1,  KC_P2,   KC_P3, LSFT(KC_COMM), _______,
+  _______, KC_HOME, KC_LEFT, KC_DOWN, KC_RIGHT, KC_END,                    _______, KC_AMPR,      KC_P4,   KC_P5,   KC_P6, KC_COMM, CK_dotSYM,
+  _______, CK_escNUM,  KC_TAB,  KC_INS,  KC_ENT,   LCTL(KC_Z), _______,       _______, LSFT(KC_DOT), KC_P1,  KC_P2,   KC_P3, LSFT(KC_COMM), _______,
                                _______, _______, _______,  _______,         _______, KC_P0,  KC_PDOT,  KC_BSPC
 ),
 
 [_GAMING] = LAYOUT(
-    _______, KC_1,  KC_2,   KC_3,     KC_4,    KC_5,                           KC_6, KC_7,    KC_8,    KC_9,   KC_0,    KC_MINS,
-    _______, KC_T,  KC_Q,   KC_W,     KC_E,    KC_R,                           KC_Y, KC_U,    KC_I,    KC_O,   KC_P,    KC_LBRC,
-    KC_G, KC_LSFT,  KC_A,   KC_S,     KC_D,    KC_F,                 _______,  KC_H, KC_J,    KC_K,    KC_L,   KC_SCLN, KC_QUOT,
-    KC_LSFT, KC_Z,  KC_X,   KC_B,     KC_V,    KC_C,  _______,       _______,  KC_N, KC_M,    KC_COMM, KC_DOT, KC_SLSH, CK_RSFT,
-                            _______,  KC_LCTL, KC_SPC, KC_SPC,       _______,  _______, TT(_SYMBOL), _______
+ CK_ESC, KC_1,  KC_2,   KC_3,     KC_4,    KC_5,                           KC_6, KC_7,    KC_8,    KC_9,   KC_0,    KC_MINS,
+ _______, KC_T,  KC_Q,   KC_W,     KC_E,    KC_R,                           KC_Y, KC_U,    KC_I,    KC_O,   KC_P,    KC_LBRC,
+ KC_G, KC_LSFT,  KC_A,   KC_S,     KC_D,    KC_F,                 _______,  KC_H, KC_J,    KC_K,    KC_L,   KC_SCLN, CK_atSYM,
+ KC_LSFT, KC_Z,  KC_X,   KC_B,     KC_V,    KC_C,  _______,       _______,  KC_N, KC_M,    KC_COMM, KC_DOT, KC_SLSH, CK_RSFT,
+                         _______,  KC_LCTL, KC_SPC, KC_SPC,       _______,  TT(_NUMB), TT(_SYMBOL), KC_RALT
 ),
 
 [_ADJUST] = LAYOUT(
-  CK_ALF4 , KC_QWERT, XXXXXXX ,XXXXXXX ,CK_ALF4, DF(_KOY),                         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-  QK_BOOT ,  DF(_QWERT),DF(_COLEMAK),DF(_NEO),DF(_VOU),DF(_GAMING),                  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-  XXXXXXX , XXXXXXX,XXXXXXX,LCTL(KC_A),LCTL(KC_C),XXXXXXX,              XXXXXXX, XXXXXXX, LCTL(KC_V), XXXXXXX, RGUI(KC_L), XXXXXXX, XXXXXXX,
-  XXXXXXX , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                              _______, _______, _______, _______,       _______, _______, _______, _______ \
+  CK_ALF4 , KC_QWERT, XXXXXXX ,XXXXXXX ,CK_ALF4, KC_VOU,                          XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, NK_TOGG,
+  QK_BOOT , DF(_QWERT),KC_COLEMAK,KC_NEO,KC_KOY,DF(_GAMING),                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+  TT(_SYMBOL), XXXXXXX, XXXXXXX,XXXXXXX,XXXXXXX, KC_VOUX,                XXXXXXX, XXXXXXX, LCTL(KC_V), XXXXXXX, RGUI(KC_L), XXXXXXX, CK_AESYM,
+  XXXXXXX, TT(_NUMB), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+                       CK_LALT, CK_DELINS, TT(_SYMBOL),   CK_LSPC,        CK_RENT, TT(_NUMB), TT(_SYMBOL), KC_RALT \
   )
 };
 
@@ -180,51 +193,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     return OLED_ROTATION_270;
 }
 
-void render_logo(void) {
-    static const char PROGMEM qmk_logo[] = {
-        // 'logo', 128x32px
-        0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x90,0x91,0x92,0x93,0x94,
-        0xa0,0xa1,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf,0xb0,0xb1,0xb2,0xb3,0xb4,
-        0xc0,0xc1,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf,0xd0,0xd1,0xd2,0xd3,0xd4,0
-    };
-//     static const char PROGMEM lily58_logo[] = {
-//     // 'logo', 128x32px
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0xc0, 0x40, 0x40, 0xc0, 0x80, 0x80, 0x80, 0x00, 0x00,
-//     0x80, 0xe0, 0x70, 0x3c, 0x0e, 0x06, 0x0e, 0x3c, 0x70, 0xe0, 0x80, 0x00, 0x00, 0xc0, 0xc0, 0x00,
-//     0xc0, 0xc0, 0x00, 0xc0, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0xc0, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xc0, 0x80, 0x00, 0x00, 0x00, 0x80,
-//     0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x80, 0xc0, 0xc0, 0xc0, 0xc0, 0xc0, 0xc0, 0xc0, 0xc0, 0xc0, 0x80, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x80, 0x80, 0xc0, 0xc0, 0xc0, 0xc0, 0xc0, 0x80, 0x80, 0x00, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0xc0, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xfc, 0xc0, 0x80, 0x80, 0x80, 0x81, 0x83, 0x83,
-//     0x07, 0x07, 0x0c, 0x18, 0x70, 0xe0, 0x80, 0x00, 0x00, 0x01, 0xff, 0xfc, 0x80, 0xb6, 0xb6, 0x80,
-//     0xb0, 0xb0, 0x00, 0x36, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xf1, 0x00, 0x00, 0x00, 0x00, 0xff,
-//     0xff, 0x00, 0x00, 0x00, 0x30, 0xf0, 0xf0, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xf0, 0xf0,
-//     0x30, 0x00, 0x00, 0x7f, 0xff, 0xff, 0xe1, 0x71, 0x71, 0xf1, 0xf1, 0xe1, 0xc1, 0x81, 0x00, 0x00,
-//     0x00, 0x00, 0x0c, 0x3f, 0xff, 0xf3, 0xe1, 0xc1, 0xc1, 0x81, 0x81, 0xc3, 0xff, 0x7f, 0x1c, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//     0x20, 0x70, 0x78, 0xdc, 0xcc, 0x86, 0x06, 0x03, 0x03, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-//     0x01, 0x03, 0x02, 0x06, 0x84, 0xe1, 0xfb, 0x38, 0x1c, 0x0c, 0x02, 0x01, 0x01, 0x01, 0x01, 0x01,
-//     0x01, 0x01, 0x03, 0x03, 0x06, 0x86, 0xcc, 0xdc, 0x78, 0x70, 0x20, 0x00, 0xff, 0xff, 0x80, 0x80,
-//     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0xff,
-//     0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1f, 0x7e, 0xf8, 0xe0, 0xf0, 0x7e, 0x1f, 0x03, 0x00,
-//     0x00, 0x00, 0x00, 0xe0, 0xe0, 0xc0, 0xc0, 0x80, 0x80, 0x80, 0xc0, 0xe1, 0xff, 0x7f, 0x3f, 0x00,
-//     0x00, 0x00, 0x3e, 0xff, 0xff, 0xc1, 0xc0, 0x80, 0x81, 0x81, 0xc3, 0xc3, 0xff, 0xfe, 0x3c, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x03, 0x03, 0x06, 0x06, 0x06, 0x04, 0x04, 0x04, 0x04, 0x06,
-//     0x06, 0x02, 0x03, 0x01, 0x01, 0x00, 0x01, 0x01, 0x03, 0x02, 0x06, 0x06, 0x04, 0x04, 0x04, 0x04,
-//     0x06, 0x06, 0x06, 0x03, 0x03, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01,
-//     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-//     0x01, 0x01, 0x01, 0x00, 0x00, 0x60, 0x60, 0x70, 0x38, 0x1f, 0x0f, 0x03, 0x00, 0x00, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00
-// };
-    oled_write_raw_P(qmk_logo, sizeof(qmk_logo));
-}
-
+bool should_process_keypress(void) { return true; }
 
 #    define KEYLOG_LEN 6
 char     keylog_str[KEYLOG_LEN] = {};
@@ -281,6 +250,9 @@ void render_layer_state(void) {
             break;
         case _VOU:
             oled_write_P(PSTR("VOU "), false);
+            break;
+        case _VOUX:
+            oled_write_P(PSTR("VOUX"), false);
             break;
         case _COLEMAK:
             oled_write_P(PSTR("COLE"), false);
@@ -353,6 +325,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_QWERT:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_QWERT);
+            }
+            return false;
+        case KC_COLEMAK:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_COLEMAK);
+            }
+            return false;
+        case KC_NEO:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_NEO);
+            }
+            return false;
+        case KC_KOY:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_KOY);
+            }
+            return false;
+        case KC_VOU:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_VOU);
+            }
+            return false;
+        case KC_VOUX:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_VOUX);
             }
             return false;
     }

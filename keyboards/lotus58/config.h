@@ -55,11 +55,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SERIAL_USE_MULTI_TRANSACTION
 #define SPLIT_MODS_ENABLE
 #define SPLIT_TRANSPORT_MIRROR
+// #define SPLIT_LAYER_STATE_ENABLE
+// #define SPLIT_LED_STATE_ENABLE
+// #define SPLIT_WPM_ENABLE
+// #define SPLIT_OLED_ENABLE
 
 // Detects USB and assigns master (Not recommended on Elite C/Pro Micro mix)
-#define SPLIT_USB_DETECT
-#define SPLIT_USB_TIMEOUT 2000
-#define SPLIT_USB_TIMEOUT_POLL 10
+// #define SPLIT_USB_DETECT
+// #define SPLIT_USB_TIMEOUT 2500
+// #define SPLIT_USB_TIMEOUT_POLL 10
 
 // Used for tapping in keymap
 #define TAPPING_TERM 175
