@@ -1,9 +1,17 @@
+# MCU name
+MCU = atmega32u4
+
+# Build Options
+#   change yes to no to disable
+#
 SPLIT_KEYBOARD = yes
 OLED_ENABLE = no
 OLED_DRIVER = SSD1306
 ENCODER_ENABLE = no
 CONSOLE_ENABLE = no
 EXTRAKEY_ENABLE = yes
+TAP_DANCE_ENABLE = yes
+NKRO_ENABLE = yes            # USB Nkey Rollover
 
 RGBLIGHT_ENABLE = yes
 RGB_MATRIX_DRIVER = WS2812

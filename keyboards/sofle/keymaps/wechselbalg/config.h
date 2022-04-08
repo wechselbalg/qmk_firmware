@@ -15,7 +15,6 @@
 */
   #pragma once
 
-
 //#define USE_MATRIX_I2C
 
 /* Select hand configuration */
@@ -35,14 +34,16 @@
 
 #define CUSTOM_LAYER_READ //if you remove this it causes issues - needs better guarding
 
-
+// Used for tapping in keymap
 #define TAPPING_FORCE_HOLD
 #ifdef TAPPING_TERM
     #undef TAPPING_TERM
-    #define TAPPING_TERM 200
 #endif
-#define ENCODER_DIRECTION_FLIP
+#define TAPPING_TERM 200
+#define TAPPING_TOGGLE 3
+#define TAP_CODE_DELAY 10
 
+#define ENCODER_DIRECTION_FLIP
 
 #define RGBLIGHT_SLEEP
 //
