@@ -66,6 +66,7 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define CK_LSFT MT(MOD_LSFT, KC_NUBS)
 #define CK_LALT MT(MOD_LALT, KC_LGUI)
 #define CK_LSPC MT(MOD_LSFT, KC_SPC)
+#define CK_L0 MT(MOD_LSFT, KC_P0)
 #define CK_LCTNU MT(MOD_LCTL, KC_NUHS)
 #define CK_RCTNU MT(MOD_RCTL, KC_QUOT)
 #define CK_YSYM LT(_SYMBOL, KC_Y)
@@ -79,6 +80,7 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define CK_ZNUM LT(_NUMB, KC_Z)
 #define CK_YNUM LT(_NUMB, KC_Y)
 #define CK_XNUM LT(_NUMB, KC_X)
+#define CK_dotNum LT(_NUMB, KC_PDOT)
 #define CK_escNUM LT(_NUMB, KC_ESC)
 #define CK_DELINS TD(DEL_INS)
 #define CK_RENT MT(MOD_RSFT, KC_ENT)
@@ -110,7 +112,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB,     KC_Q,    KC_W,   KC_E,     KC_R,     KC_T,                                KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,    KC_LBRC,
     TT(_SYMBOL),KC_A,    KC_S,   KC_D,     KC_F,     KC_G,                   TD(MED_SCR), KC_H,    KC_J,    KC_K,    KC_L,   KC_OE,  CK_AESYM,
     CK_LSFT,    CK_ZNUM, KC_X,   KC_C,     KC_V,     KC_B,  TD(GUI_HOM),     TD(APP_END), KC_N,    KC_M,    KC_COMM, KC_DOT, KC_SLSH, CK_RSFT,
-                                CK_LALT, CK_DELINS, KC_LCTL,   CK_LSPC,        CK_RENT,   TT(_NUMB), KC_BSPC, KC_RALT
+                                CK_LALT,  KC_LCTL, CK_DELINS,   CK_LSPC,        CK_RENT,  KC_BSPC, TT(_NUMB), KC_RALT
 ),
 
 [_COLEMAK] = LAYOUT(
@@ -162,15 +164,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 
 [_NUMB] = LAYOUT(
-  TG(_NUMB), KC_F1,   KC_F2,   KC_F3,   KC_F4,    KC_F5,                              KC_CIRC,      KC_TAB,  KC_PSLS, KC_PAST, KC_PMNS, KC_PSLS,
+  TG(_NUMB), KC_F1,   KC_F2,   KC_F3,   KC_F4,    KC_F5,                            KC_CIRC,      KC_TAB,  KC_PSLS, KC_PAST, KC_PMNS, KC_PSLS,
   _______, KC_PGUP, KC_BSPC, KC_UP,   KC_DEL,   KC_PGDN,                            KC_HASH,      KC_P7,   KC_P8,   KC_P9, KC_PPLS, KC_PAST,
   _______, KC_HOME, KC_LEFT, KC_DOWN, KC_RIGHT, KC_END,                    _______, KC_AMPR,      KC_P4,   KC_P5,   KC_P6, KC_COMM, CK_dotSYM,
-  _______, CK_escNUM,  KC_TAB,  KC_INS,  KC_ENT,   LCTL(KC_Z), _______,       _______, LSFT(KC_DOT), KC_P1,  KC_P2,   KC_P3, LSFT(KC_COMM), _______,
-                               _______, _______, _______,  _______,         _______, KC_P0,  KC_PDOT,  KC_BSPC
+  _______, CK_escNUM,KC_TAB, KC_INS,  KC_ENT,   LCTL(KC_Z), _______,       _______, LSFT(KC_DOT), KC_P1,   KC_P2,   KC_P3, LSFT(KC_COMM), _______,
+                               _______, _______, _______,  CK_L0,         _______, KC_P0,  CK_dotNum,  KC_BSPC
 ),
 
 [_GAMING] = LAYOUT(
- CK_ESC, KC_1,  KC_2,   KC_3,     KC_4,    KC_5,                           KC_6, KC_7,    KC_8,    KC_9,   KC_0,    KC_MINS,
+ CK_ESC,  KC_1,  KC_2,   KC_3,     KC_4,    KC_5,                           KC_6, KC_7,    KC_8,    KC_9,   KC_0,    KC_MINS,
  _______, KC_T,  KC_Q,   KC_W,     KC_E,    KC_R,                           KC_Y, KC_U,    KC_I,    KC_O,   KC_P,    KC_LBRC,
  KC_G, KC_LSFT,  KC_A,   KC_S,     KC_D,    KC_F,                 _______,  KC_H, KC_J,    KC_K,    KC_L,   KC_SCLN, CK_atSYM,
  KC_LSFT, KC_Z,  KC_X,   KC_B,     KC_V,    KC_C,  _______,       _______,  KC_N, KC_M,    KC_COMM, KC_DOT, KC_SLSH, CK_RSFT,
@@ -182,7 +184,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   QK_BOOT , DF(_QWERT),KC_COLEMAK,KC_NEO,KC_KOY,DF(_GAMING),                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
   TT(_SYMBOL), XXXXXXX, XXXXXXX,XXXXXXX,XXXXXXX, KC_VOUX,                XXXXXXX, XXXXXXX, LCTL(KC_V), XXXXXXX, RGUI(KC_L), XXXXXXX, CK_AESYM,
   XXXXXXX, TT(_NUMB), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                       CK_LALT, CK_DELINS, TT(_SYMBOL),   CK_LSPC,        CK_RENT, TT(_NUMB), TT(_SYMBOL), KC_RALT \
+                       CK_LALT, KC_LCTL, TT(_SYMBOL),   CK_LSPC,        CK_RENT, TT(_SYMBOL), TT(_NUMB), KC_RALT \
   )
 };
 

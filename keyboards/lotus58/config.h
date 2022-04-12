@@ -66,8 +66,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define SPLIT_USB_TIMEOUT_POLL 10
 
 // Used for tapping in keymap
-#define TAPPING_TERM 175
-#define TAPPING_TOGGLE 2
+// #define TAPPING_TERM 175
+#define RETRO_TAPPING
+#define TAPPING_TOGGLE 3
 #define TAP_CODE_DELAY 10
 
 // Basic RGB configuration
