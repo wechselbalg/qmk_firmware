@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 #include "wechselbalg.h"
-
+#include "keymap_german.h"
 
 #ifdef TD_LSFT_CAPSLOCK_ENABLE
   // Tap once for shift, twice for Caps Lock but only if Win Key in not disabled
