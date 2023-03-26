@@ -22,6 +22,8 @@
 #define GRAVE_ESC_ALT_OVERRIDE     // Always send Escape if Alt is pressed
 #define GRAVE_ESC_CTRL_OVERRIDE    // Always send Escape if Control is pressed
 
+#define UNICODE_SELECTED_MODES UNICODE_MODE_WINDOWS, UNICODE_MODE_MACOS, UNICODE_MODE_LINUX, UNICODE_MODE_WINCOMPOSE
+
 #define TAPPING_TERM 180
 #define TAPPING_TERM_PER_KEY
 
