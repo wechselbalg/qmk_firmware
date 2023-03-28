@@ -15,14 +15,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include QMK_KEYBOARD_H
-#include "keymap_german.h"   // quantum/keymap_extras/keymap_german.h
+#include "wechselbalg.h"   // quantum/keymap_extras/keymap_german.h
 #include "print.h"
 // clang-format off
-
-enum custom_keycodes {
-    STEAM = SAFE_RANGE, // SAFE_RANGE prevents it from using a clashing keycode
-};
-
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -33,6 +28,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //      Sh_L     /        Z        X        C        V        B        N        M        ,        .        ?                 Sh_R     Up       End
 //      Ct_L     Win_L    Alt_L                               SPACE                               Alt_R    FN       Ct_R     Left     Down     Right
 
+    // [_BASE] = LAYOUT(
+    //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
+    //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
+    //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
+    //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
+    //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______,
+    //     _______, _______, _______,                            _______,                            _______, _______, _______, _______, _______, _______
+    // ),
 
     // The FN key by default maps to a momentary toggle to layer 1 to provide access to the QK_BOOT key (to put the board into bootloader mode). Without
     // this mapping, you have to open the case to hit the button on the bottom of the PCB (near the USB cable attachment) while plugging in the USB
@@ -45,42 +48,63 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // This keyboard defaults to 6KRO instead of NKRO for compatibility reasons (some KVMs and BIOSes are incompatible with NKRO).
     // Since this is, among other things, a "gaming" keyboard, a key combination to enable NKRO on the fly is provided for convenience.
     // Press Fn+N to toggle between 6KRO and NKRO. This setting is persisted to the EEPROM and thus persists between restarts.
-    [0] = LAYOUT(
-        KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  STEAM,            KC_MPLY,
-        KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC,          KC_DEL,
-        KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC,                   KC_PGUP,
-        MO(2),   KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_NUHS, KC_ENT,           KC_PGDN,
-        KC_LSFT, KC_NUBS, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,          KC_RSFT, KC_UP,   KC_END,
-        KC_LCTL, KC_LGUI, KC_LALT,                            KC_SPC,                             KC_RALT, MO(1),   KC_RCTL, KC_LEFT, KC_DOWN, KC_RGHT
+    [_NEO_QWERTZ] = LAYOUT(
+        KC_ESC,       KC_F1,      KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,     KC_F11,  KC_F12,     RN_CODE,          KC_MUTE,
+        KC_GRV,       KC_1,       KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,       KC_MINS, KC_EQL,     KC_BSPC,          KC_DEL,
+        KC_TAB,       KC_Q,       KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,       DE_UE,   KC_RBRC,                      KC_PGUP,
+        MO(_NEO_3),   KC_A,       KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    DE_OE,      DE_AE,   MO(_NEO_3),  KC_ENT,          KC_PGDN,
+        KC_LSFT,      MO(_NEO_4), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,     KC_SLSH, KC_RSFT,             KC_UP,   KC_END,
+        KC_LCTL,      KC_LGUI,    KC_LALT,                            KC_SPC,                             MO(_NEO_4), MO(_FN), KC_RCTL,    KC_LEFT, KC_DOWN, KC_RGHT
     ),
 
-    [1] = LAYOUT(
-        QK_BOOT, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, RGB_VAD, RGB_VAI, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______, KC_CALC,          _______,
-        _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,          _______,
-        _______, _______, RGB_VAI, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
-        _______, _______, RGB_VAD, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
-        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG, _______, _______, _______, _______,          DB_TOGG, RGB_MOD, _______,
+    [_NEO_3] = LAYOUT(
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
+        _______, N3_SUP1, N3_SUP2, N3_SUP3, N3_RSAQ, N3_LSAQ, N3_CENT, N3__YEN, N3_SBSQ, N3_L_SQ, N3_R_SQ, ___NO__, ___NO__, _______,          _______,
+        _______, N3_ELPS, N3_UNDS, N3_LBRC, N3_RBRC, N3_CIRC, N3_EXLM, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR, N3_SL_S, N3_SLSH,                   _______,
+        _______, N3_BSLS, N3_SLSH, N3_CLBR, N3_CRBR, N3_ASTR, N3_QUES, N3_LPRN, N3_RPRN, N3_MINS, N3_COLN, N3___AT, _______, _______,          _______,
+        _______, _______, N3_HASH, N3__DLR, N3_PIPE, N3_TILD, N3__GRV, N3_PLUS, N3_PERC, N3_DQUO, N3_QUOT, N3_SCLN, _______,          _______, _______,
+        _______, _______, _______,                            _______,                            _______, _______, _______, _______, _______, _______
+    ),
+
+    [_NEO_4] = LAYOUT(
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
+        _______, N3_F_OR, N3_M_OR, N3_NUMS, ___NO__, N3_MDOT, N3_BPND, N3_CURS,  KC_TAB, N3_SLSH, N3_ASTR, N3_MDSH, ___NO__, _______,          _______,
+        _______, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN, N3_IEXL, N3_NUM7, N3_NUM8, N3_NUM9, N3_NPLS, N3_NMNS, ___NO__,                   _______,
+        _______, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END, N3_IQES, N3_NUM4, N3_NUM5, N3_NUM6, N3_COMM, N3__DOT, _______, _______,          _______,
+        _______, _______, N3__ESC, N3__TAB, N3__INS, N3__ENT, N3_UNDO, N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, _______,          KC_MS_U, _______,
+        _______, _______, _______,                            N3_NUM0,                            _______, _______, _______, KC_MS_L, KC_MS_D, KC_MS_R
+    ),
+
+    [_FN] = LAYOUT(
+        QK_BOOT, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______, _______,          _______,
+        _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,          UC_NEXT,
+        _______, RGB_VAI,  UC_WIN, UC_WINC, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   UC_PREV,
+        _______, DE_BSLS, DE_SLSH, _______, _______, _______, _______, _______, _______, UC_LINX, _______, _______, _______, _______,          _______,
+        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG,  UC_MAC, _______, _______, _______, _______,          RGB_MOD, _______,
         _______, _______, _______,                            _______,                            _______, _______, _______, RGB_SPD, RGB_RMOD, RGB_SPI
     ),
 
-    [2] = LAYOUT(
+    [_CONFIG] = LAYOUT(
         QK_BOOT, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______, _______,          _______,
         _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,          _______,
         _______, _______, RGB_VAI, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
         _______, DE_BSLS, DE_SLSH, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
-        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG, _______, _______, _______, _______,          _______, RGB_MOD, _______,
+        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG, _______, _______, _______, _______, _______,          RGB_MOD, _______,
         _______, _______, _______,                            _______,                            _______, _______, _______, RGB_SPD, RGB_RMOD, RGB_SPI
     ),
 
 
 };
+
 // clang-format on
 
 #if defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
-    [0] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [1] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
-    [2] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) }
+    [_NEO_QWERTZ] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
+    [_NEO_3] =      { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
+    [_NEO_4] =      { ENCODER_CCW_CW(KC_MPRV, KC_MNXT) },
+    [_FN] =         { ENCODER_CCW_CW(KC_WH_D, KC_WH_U) },
+    [_CONFIG] =     { ENCODER_CCW_CW(KC_MSEL, KC_MPRV) }
 };
 #endif
 
@@ -92,10 +116,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     #ifdef CONSOLE_ENABLE
     switch (keycode) {
-        case STEAM:
+        case RN_STEM:
             if (record->event.pressed) {
-                SEND_STRING(SS_TAP(X_LGUI) SS_DELAY(500) "steam" SS_DELAY(500) SS_TAP(X_ENT));
+                SEND_STRING(SS_TAP(X_LGUI) SS_DELAY(100) "steam" SS_DELAY(500) SS_TAP(X_ENT));
                 print("steam\n");
+            } else {
+                // when keycode is released
+            }
+            break;
+        case RN_CODE:
+            if (record->event.pressed) {
+                SEND_STRING(SS_TAP(X_LGUI) SS_DELAY(100) "Visual Studio Code" SS_DELAY(500) SS_TAP(X_ENT));
+                print("code\n");
             } else {
                 // when keycode is released
             }
@@ -110,6 +142,6 @@ void keyboard_post_init_user(void) {
   // Customise these values to desired behaviour
   debug_enable=true;
   debug_matrix=true;
-  //debug_keyboard=true;
+  debug_keyboard=true;
   //debug_mouse=true;
 }

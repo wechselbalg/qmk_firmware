@@ -38,6 +38,8 @@ $(info QMK Firmware $(QMK_VERSION))
 endif
 endif
 
+CONSOLE_ENABLE=yes
+
 # Determine which qmk cli to use
 QMK_BIN := qmk
 
