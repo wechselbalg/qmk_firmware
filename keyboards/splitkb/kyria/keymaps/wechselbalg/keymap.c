@@ -164,7 +164,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
     [_MINE] = LAYOUT(
      _______ , DE_J,    DE_L,   DE_U,    DE_A,    DE_Q,                                           DE_W,   DE_B,    DE_D,    DE_G,   DE_Y, DE_SS,
-        SYM  , DE_U,    DE_I,   DE_A,    DE_E,    DE_O,                                           DE_M,   DE_N,    DE_T,    DE_S,   DE_H, SYM_Z,
+        SYM  , DE_C,    DE_I,   DE_A,    DE_E,    DE_O,                                           DE_M,   DE_N,    DE_T,    DE_S,   DE_H, SYM_Z,
         NUM  , DE_V,    DE_X,  DE_UE,   DE_AE,   DE_OE,    _______,_______,     _______, _______, DE_P,   DE_F,    DE_COMM, DE_DOT, DE_K, _______,
                                 _______, _______, _______, _______,_______,     _______, _______, _______,_______, _______
     ),
@@ -247,9 +247,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NAV] = LAYOUT(
-      _______, _______, _______, _______, _______, _______,                                     KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_VOLU, KC_DEL,
-      _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, _______,                                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_VOLD, KC_INS,
-      _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
+      _______, N3_PGUP, N3_BSPC, N3_UP,   N3__DEL, N3_PGDN,                                     KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_VOLU, KC_DEL,
+      _______, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3_END ,                                     KC_PGDN, KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, KC_INS,
+      _______, N3_ESC , N3_TAB , N3__INS, N3_ENT , N3_UNDO, _______, _______, _______, _______, KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 
@@ -268,8 +268,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NUM] = LAYOUT(
-      KC_F1,    KC_F2,   KC_F3,   KC_F4,   KC_F5 , KC_F6,                                       KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
-      DE_GRV,   DE_GRD,  DE_PAR,  KC_F7 ,  KC_F8 , DE_DOL,                                      DE_EUR,  DE_DQU,  DE_DQU,  DE_DQU, KC_RGUI, KC_F12,
+      _______,  KC_F7,   KC_F8,   KC_F9,   KC_F5 , KC_F6,                                       KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
+      DE_GRV,   KC_F4,   KC_F5,   KC_F6 ,  KC_F8 , DE_DOL,                                      DE_EUR,  DE_DQU,  DE_DQU,  DE_DQU, KC_RGUI, KC_F12,
       _______,  KC_F1 ,  KC_F2 ,  KC_F3 ,  KC_F4 , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
