@@ -15,7 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include QMK_KEYBOARD_H
-#include "wechselbalg.h"   // quantum/keymap_extras/keymap_german.h
+#include "wechselbalg.h"
 #include "print.h"
 // clang-format off
 
@@ -76,11 +76,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_FN] = LAYOUT(
-        QK_BOOT, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______, _______,          _______,
-        _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,          UC_NEXT,
-        _______, RGB_VAI,  UC_WIN, UC_WINC, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   UC_PREV,
-        _______, DE_BSLS, DE_SLSH, _______, _______, _______, _______, _______, _______, UC_LINX, _______, _______, _______, _______,          _______,
-        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG,  UC_MAC, _______, _______, _______, _______,          RGB_MOD, _______,
+        QK_BOOT, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______,  KC_F13,          _______,
+        _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,          _______,
+        _______, RGB_VAI,  UC_WIN, UC_WINC, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   UC_NEXT,
+        _______, DE_BSLS, DE_SLSH, _______, _______, _______, _______, _______, _______, UC_LINX, _______, _______, _______, _______,          UC_PREV,
+        _______, _______, _______, RGB_HUI, _______, _______, _______, NK_TOGG,  UC_MAC, _______, _______, _______, _______,          RGB_MOD,  KC_F14,
         _______, _______, _______,                            _______,                            _______, _______, _______, RGB_SPD, RGB_RMOD, RGB_SPI
     ),
 
