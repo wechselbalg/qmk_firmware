@@ -268,10 +268,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NUM] = LAYOUT(
-      _______,  KC_F7,   KC_F8,   KC_F9,   KC_F5 , KC_F6,                                       KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
-      DE_GRV,   KC_F4,   KC_F5,   KC_F6 ,  KC_F8 , DE_DOL,                                      DE_EUR,  DE_DQU,  DE_DQU,  DE_DQU, KC_RGUI, KC_F12,
-      _______,  KC_F1 ,  KC_F2 ,  KC_F3 ,  KC_F4 , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+      _______,  KC_F7,   KC_F8,   KC_F9,   KC_F5 , KC_F6,                                       _______, N3_NUM7, N3_NUM8, N3_NUM9, N3_SLSH, N3_ASTR,
+      DE_GRV,   KC_F4,   KC_F5,   KC_F6 ,  KC_F8 , DE_DOL,                                       DE_EUR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS,
+      _______,  KC_F1 ,  KC_F2 ,  KC_F3 ,  KC_F4 , _______, _______, _______, _______, _______, _______, N3_NUM1, N3_NUM2, N3_NUM3, _______, _______,
+                                 _______, _______, _______, _______, _______, _______, _______, N3_NUM0, N3_COMM, N3__DOT
     ),
 
 /*
