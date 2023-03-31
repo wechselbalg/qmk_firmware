@@ -101,7 +101,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
     [_QWERTY] = LAYOUT(
      KC_TAB  ,    DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,  DE_T ,                                        DE_Y,   DE_U ,  DE_I ,   DE_O ,  DE_P , DE_LBRC,
-     TT(_SYM),    DE_A ,  DE_S   ,  DE_D  ,   DE_F ,  DE_G ,                                        DE_H,   DE_J ,  DE_K ,   DE_L ,DE_SCLN, SYM_AE,
+     TT(SYM),    DE_A ,  DE_S   ,  DE_D  ,   DE_F ,  DE_G ,                                        DE_H,   DE_J ,  DE_K ,   DE_L ,DE_SCLN, SYM_AE,
         NUM  ,    NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,  DE_B , KC_LGUI, KC_ESC,     KC_APP , KC_RGUI, DE_N,   DE_M ,DE_COMM, DE_DOT ,DE_SLSH, SFT_SS,
                                     KC_LALT, KC_LCTL, KC_DEL, SFT_SPC, NAV  ,     SYM    , SFT_ENT, KC_BSPC, TT(_NAV), KC_RALT
     ),
@@ -233,44 +233,44 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
 /*
- * Navigation Layer: Navigation & Numpad (Neo layer 2)
+ * Navigation Layer: Navigation 
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        |      |      |      |      |      |                              | PgUp | Home |   ↑  | End  | VolUp| Delete |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        |  GUI |  Alt | Ctrl | Shift|      |                              | PgDn |  ←   |   ↓  |   →  | VolDn| Insert |
+ * |        | PgUp | Home |   ↑  | End  | PgDn |                              | PgUp | Home |   ↑  | End  | VolUp| Delete |
+ * |--------+------+------+------+----- +------|                              |------+------+------+------+------+--------|
+ * |        | Home |  ←   |   ↓  |   →  |  END |                              | PgDn |  ←   |   ↓  |   →  | VolDn| Insert |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * |        |      |      |      |      |      |      |ScLck |  |      |      | Pause|M Prev|M Play|M Next|VolMut| PrtSc  |
+ * |        |      | UNDO | Tab  | REDO |      |      |ScLck |  |      |      | Pause|M Prev|M Play|M Next|VolMut| PrtSc  |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NAV] = LAYOUT(
-      _______, N3_PGUP, N3_BSPC, N3_UP,   N3__DEL, N3_PGDN,                                     _______, _______, _______, _______, _______, _______,
-      _______, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3_END ,                                     KC_PGDN, KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, _______,
-      _______, N3_ESC , N3_TAB , N3__INS, N3_ENT , N3_UNDO, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+      NX_PAST, N3_PGUP, N3_BSPC, N3_UP,   N3__DEL, N3_PGDN,                                     _______, _______, _______, _______, _______, _______,
+      NX_COPY, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END,                                     KC_PGDN, KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, _______,
+      NX__CUT, N3__ESC, N3_UNDO, N3__ENT, N3_REDO, N3__ENT, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 
 /*
- * Numberrow Layer: Numberrow keys (without numbers)
+ * NUM Layer: K-Keys and Numpad
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        |  F9  | F10  | F11  | F12  |      |                              |      |      |      |      |      |        |
+ * |        |  F9  | F10  | F11  | F12  |      |                              |   €  |   7  |   8  |   9  |   *  |   /    |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        |  F5  |  F6  |  F7  |  F8  |      |                              |      | Shift| Ctrl |  Alt |  GUI |        |
+ * |  ALTGR |  F5  |  F6  |  F7  |  F8  |      |                              |   $  |   4  |   5  |   6  |   +  |   -    |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * |        |  F1  |  F2  |  F3  |  F4  |      |      |      |  |      |      |      |      |      |      |      |        |
+ * |        |  F1  |  F2  |  F3  |  F4  |      |      |      |  |      |      |   :  |   1  |   2  |   3  |   ;  |   .    |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      |      |  |      |      |      |      |      |
+ *                        |      |      |      |      |      |  |      |      |   0  |   ,  |  .   |
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NUM] = LAYOUT(
-      _______,  KC_F7,   KC_F8,   KC_F9,   KC_F5 , KC_F6,                                       _______, N3_NUM7, N3_NUM8, N3_NUM9, N3_SLSH, N3_ASTR,
-      DE_GRV,   KC_F4,   KC_F5,   KC_F6 ,  KC_F8 , DE_DOL,                                       DE_EUR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS,
-      _______,  KC_F1 ,  KC_F2 ,  KC_F3 ,  KC_F4 , _______, _______, _______, _______, _______, _______, N3_NUM1, N3_NUM2, N3_NUM3, _______, _______,
+      _______,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , DE_SUP3,                                     N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH,
+      KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , DE_SUP2,                                     N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS,
+      _______,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , _______, _______, _______, _______, _______, N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3__DOT,
                                  _______, _______, _______, _______, _______, _______, _______, N3_NUM0, N3_COMM, N3__DOT
     ),
 
