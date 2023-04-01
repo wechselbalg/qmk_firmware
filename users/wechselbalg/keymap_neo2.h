@@ -48,7 +48,7 @@
 
 
 // NEO2 Layer 2 - Line 1
-#define N2__EUR        DE_EUR          // €
+#define N2__EUR        ALGR(DE_E)          // €
 
 // NEO2 Layer 3 - Line 1
 #define N3_SUP1        UC(L'¹')        // ¹   RALT(DE_1)
@@ -174,6 +174,6 @@
 #define N3_L_DQ        UC(L'„')        // “   RALT(DE_B)
 #define N3_R_DQ        UC(L'„')        // ”   RALT(DE_N)
 #define N3_REDO        RCS(DE_Z)       // Shift + CTL + Z
-#define NX_COPY        LCTL(DE_C)       // CTL + C
-#define NX_PAST        LCTL(DE_V)       // CTL + V
-#define NX__CUT        LCTL(DE_X)       // CTL + X
+#define NX_COPY        LCTL(DE_C)      // CTL + C
+#define NX_PAST        LCTL(DE_V)      // CTL + V
+#define NX__CUT        LCTL(DE_X)      // CTL + X

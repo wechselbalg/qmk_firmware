@@ -35,8 +35,7 @@ enum layers {
 #define QWERTY   DF(_QWERTY)
 #define COLEMAK  DF(_COLEMAK_DH)
 #define DVORAK   DF(_DVORAK)
-#define NEO      DF(_NEO)
-#define KOY      DF(_KOY)
+#define MINE     DF(_MINE)
 #define VOUX     DF(_VOUX)
 #define GAMING   DF(_GAMING)
 
@@ -68,16 +67,10 @@ enum layers {
 #define NUM_UE   LT(NUM, DE_UE)
 #define NUM_X    LT(NUM, DE_X)
 
-#define DE_AE DE_QUOT
-#define DE_OE DE_SCLN
-#define DE_UE DE_LBRC
-#define DE_SS DE_MINS
-
-#define DE_GRD LSFT(DE_GRV)
-#define DE_PAR LSFT(DE_3)
-#define DE_DOL LSFT(DE_4)
-#define DE_EUR RALT(DE_E)
-#define DE_DQU LSFT(DE_2)
+#define SC_BSPC  C_S_T(KC_BSPC)
+#define CTL_ENT  LCTL_T(KC_ENT)
+#define CTL_SFT  LCTL(KC_LSFT)
+#define RALT_AP  RALT_T(KC_APP)
 
 // Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
 // The notation `mod/tap` denotes a key that activates the modifier `mod` when held down, and
@@ -100,10 +93,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_QWERTY] = LAYOUT(
-     KC_TAB  ,    DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,  DE_T ,                                        DE_Y,   DE_U ,  DE_I ,   DE_O ,  DE_P , DE_LBRC,
-     TT(SYM),    DE_A ,  DE_S   ,  DE_D  ,   DE_F ,  DE_G ,                                        DE_H,   DE_J ,  DE_K ,   DE_L ,DE_SCLN, SYM_AE,
-        NUM  ,    NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,  DE_B , KC_LGUI, KC_ESC,     KC_APP , KC_RGUI, DE_N,   DE_M ,DE_COMM, DE_DOT ,DE_SLSH, SFT_SS,
-                                    KC_LALT, KC_LCTL, KC_DEL, SFT_SPC, NAV  ,     SYM    , SFT_ENT, KC_BSPC, TT(_NAV), KC_RALT
+     KC_TAB  ,    DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,  DE_T ,                                          DE_Y   ,   DE_U ,  DE_I  ,   DE_O ,   DE_P , DE_LBRC,
+     TT(SYM) ,    DE_A ,  DE_S   ,  DE_D  ,   DE_F ,  DE_G ,                                          DE_H   ,   DE_J ,  DE_K  ,   DE_L , DE_SCLN, SYM_AE ,
+        NUM  ,    NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,  DE_B , KC_ESC , KC_LGUI,     KC_RGUI , RALT_AP, DE_N   ,   DE_M , DE_COMM, DE_DOT , DE_SLSH, SFT_SS ,
+                                   KC_LALT,TT(_NUM), KC_DEL, SFT_SPC, CTL_ENT,     CTL_ENT , SFT_SPC, KC_BSPC,TT(_NAV), NUM
     ),
 
 /*
@@ -121,9 +114,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_DVORAK] = LAYOUT(
-     _______ ,KC_QUOTE,DE_COMM,  DE_DOT,   DE_P ,   DE_Y ,                                        DE_F,   DE_G ,  DE_C ,   DE_R ,  DE_L , _______,
-     _______ , DE_A ,  DE_O   ,  DE_E  ,   DE_U ,   DE_I ,                                        DE_D,   DE_H ,  DE_T ,   DE_N ,  DE_S ,SYM_MINS,
-     _______ ,NUM_SCLN,DE_Q   ,  DE_J  ,   DE_K ,   DE_X , _______,_______,     _______, _______, DE_B,   DE_M ,  DE_W ,   DE_V ,  DE_Z , _______,
+     _______ ,KC_QUOTE, DE_COMM,  DE_DOT,   DE_P ,   DE_Y ,                                        DE_F,   DE_G ,  DE_C ,   DE_R ,  DE_L , _______,
+     _______ ,   DE_A , DE_O   ,  DE_E  ,   DE_U ,   DE_I ,                                        DE_D,   DE_H ,  DE_T ,   DE_N ,  DE_S ,SYM_MINS,
+     _______ ,NUM_SCLN, DE_Q   ,  DE_J  ,   DE_K ,   DE_X , _______,_______,     _______, _______, DE_B,   DE_M ,  DE_W ,   DE_V ,  DE_Z , _______,
                                 _______, _______, _______, _______,_______,     _______, _______, _______,_______, _______
     ),
 
@@ -184,9 +177,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_VOUX] = LAYOUT(
-     _______ , DE_V,  DE_DOT, DE_O,    DE_U,    DE_AE,                                           DE_P,   DE_G,    DE_L,   DE_H,  DE_F, _______,
-     _______ , DE_C,  DE_A,   DE_E,    DE_I,    DE_Z,                                            DE_B,   DE_T,    DE_R,   DE_N,  DE_S, SYM_SS,
-     _______ , NUM_Z, DE_X,   DE_COMM, DE_UE,   DE_OE,   _______, _______,     _______, _______, DE_Q,   DE_D,    DE_W,   DE_M,  DE_K, _______,
+     _______ , DE_V , DE_DOT, DE_O   ,   DE_U ,  DE_AE ,                                           DE_P ,  DE_G ,   DE_L ,  DE_H ,  DE_F , _______,
+     _______ , DE_C , DE_A  , DE_E   ,   DE_I ,   DE_Z ,                                           DE_B ,  DE_T ,   DE_R ,  DE_N ,  DE_S , SYM_SS ,
+     _______ , NUM_Z, DE_X  , DE_COMM,  DE_UE ,  DE_OE , _______, _______,     _______, _______,   DE_Q ,  DE_D ,   DE_W ,  DE_M ,  DE_K , _______,
                               _______, _______, _______, _______, _______,     _______, _______, _______,_______, _______
     ),
 
@@ -226,14 +219,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_SYM] = LAYOUT(
-     DE_GRV ,  DE_DEG , N3_UNDS, N3_LBRC, N3_RBRC, N3_CIRC,                                     N3_EXLM, N3_LABK, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR,
+     DE_GRV  , DE_DEG , N3_UNDS, N3_LBRC, N3_RBRC, N3_CIRC,                                     N3_EXLM, N3_LABK, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR,
      DE_TILD , N3_BSLS, N3_SLSH, N3_CLBR, N3_CRBR, N3_ASTR,                                     N3_QUES, N3_LPRN, N3_RPRN, N3_MINS, N3_COLN, N3___AT,
      _______ , N3_HASH, N3__DLR, N3_PIPE, N3_TILD, N3__GRV, _______, _______, _______, _______, N3_PLUS, N3_PERC, N3_DQUO, N3_QUOT, N3_SCLN, _______,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 
 /*
- * Navigation Layer: Navigation 
+ * Navigation Layer: Navigation
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
  * |        | PgUp | Home |   ↑  | End  | PgDn |                              | PgUp | Home |   ↑  | End  | VolUp| Delete |
@@ -247,9 +240,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NAV] = LAYOUT(
-      NX_PAST, N3_PGUP, N3_BSPC, N3_UP,   N3__DEL, N3_PGDN,                                     _______, _______, _______, _______, _______, _______,
-      NX_COPY, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END,                                     KC_PGDN, KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, _______,
-      NX__CUT, N3__ESC, N3_UNDO, N3__ENT, N3_REDO, N3__ENT, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+      NX_PAST, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN,                                     KC_BTN3, KC_BTN1, KC_MS_U, KC_BTN2, KC_WH_U, KC_APP ,
+      NX_COPY, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END,                                     KC_PGDN, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D, KC_LGUI,
+      NX__CUT, N3__ESC, N3_UNDO, N3__ENT, N3_REDO, N3__ENT, _______, _______, _______, _______, CTL_SFT, KC_LCTL, KC_LSFT, KC_LALT, KC_RALT, KC_RSFT,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 
@@ -270,7 +263,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NUM] = LAYOUT(
       _______,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , DE_SUP3,                                     N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH,
       KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , DE_SUP2,                                     N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS,
-      _______,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , _______, _______, _______, _______, _______, N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3__DOT,
+      _______,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , _______, _______, _______, _______, _______, N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL,
                                  _______, _______, _______, _______, _______, _______, _______, N3_NUM0, N3_COMM, N3__DOT
     ),
 
@@ -289,9 +282,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_ADJUST] = LAYOUT(
-      _______, _______, _______, QWERTY , _______, _______,                                    _______, _______, _______, _______,  _______, _______,
-      _______, _______, _______, DVORAK , _______, _______,                                    RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI,  RGB_MOD, _______,
-      _______, _______, _______, COLEMAK, _______, _______,_______, _______, _______, _______, _______, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, _______,
+      QWERTY , DVORAK , COLEMAK, VOUX   , MINE   , GAMING ,                                    _______, _______, _______, _______,  _______, _______,
+      _______, _______, _______, _______, _______, _______,                                    RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI,  RGB_MOD, _______,
+      _______, _______, _______, _______, _______, _______,_______, _______, _______, _______, _______, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, _______,
                                  _______, _______, _______,_______, _______, _______, _______, _______, _______, _______
     ),
 
