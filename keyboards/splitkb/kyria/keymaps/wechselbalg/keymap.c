@@ -24,12 +24,10 @@ enum layers {
     _VOUX,
     _NAV,
     _SYM,
-    _NAV,
     _NUM,
     _GAMING,
     _ADJUST,
 };
-
 
 // Aliases for readability
 #define QWERTY   DF(_QWERTY)

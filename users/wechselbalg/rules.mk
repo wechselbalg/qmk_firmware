@@ -1,8 +1,8 @@
 SRC += wechselbalg.c
 # SRC += custom_shift_keys.c
 
-ENCODER_ENABLE = yes
-ENCODER_MAP_ENABLE = yes
+ENCODER_ENABLE = no
+ENCODER_MAP_ENABLE = no
 EXTRAKEY_ENABLE = yes
 MOUSEKEY_ENABLE = yes
 NKRO_ENABLE = yes
