@@ -1,4 +1,5 @@
 SRC += wechselbalg.c
+# SRC += custom_shift_keys.c
 
 ENCODER_ENABLE = yes
 ENCODER_MAP_ENABLE = yes
@@ -8,3 +9,4 @@ NKRO_ENABLE = yes
 CONSOLE_ENABLE = yes
 KEYBOARD_SHARED_EP = no
 UNICODE_ENABLE = yes
+# KEY_OVERRIDE_ENABLE = yes

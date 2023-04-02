@@ -22,7 +22,7 @@
 
 #include "custom_shift_keys.h"
 
-bool process_custom_shift_keys(uint16_t keycode, keyrecord_t *record) {
+bool process_custom_shift_keys(uint16_t keycode, keyrecord_t *record){
   static uint16_t registered_keycode = KC_NO;
 
   // If a custom shift key is registered, then this event is either releasing
@@ -71,3 +71,4 @@ bool process_custom_shift_keys(uint16_t keycode, keyrecord_t *record) {
 
   return true;  // Continue with default handling.
 }
+

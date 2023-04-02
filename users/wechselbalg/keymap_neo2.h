@@ -48,7 +48,26 @@
 
 
 // NEO2 Layer 2 - Line 1
-#define N2__EUR        ALGR(DE_E)          // €
+#define N2_HCEK        UC(L'ˇ')        // ˇ
+#define N2__DEG        DE_DEG          // °
+#define N2_SECT        DE_SECT         // §
+#define N2_SS_L        UC(L'ℓ')        // ℓ
+#define N2_RAQO        UC(L'»')        // »   RALT(DE_Y)
+#define N2_LAQO        UC(L'«')        // «   RALT(DE_X)
+#define N2__DLR        DE_DLR          // $
+#define N2__EUR        ALGR(DE_E)      // €
+#define N2_LODQ        UC(L'„')        // „   RALT(DE_V)
+#define N2_L_DQ        UC(L'“')        // “   RALT(DE_B)
+#define N2_R_DQ        UC(L'”')        // ”   RALT(DE_N)
+#define N2_C_SS        UC(L'ẞ')        // ẞ    RSA(DE_S)
+
+// NEO2 Layer 2 - Line 2
+#define N2_TILD        DE_TILD           // ~
+
+// NEO2 Layer 2 - Line 4
+#define N2_NDSH        UC(L'–')        // –   RALT(DE_MINS)
+#define N2_BULT        UC(L'•')        // •
+#define N2_MDSH        UC(L'—')        // —   RSA(DE_MINS)
 
 // NEO2 Layer 3 - Line 1
 #define N3_SUP1        UC(L'¹')        // ¹   RALT(DE_1)
@@ -114,6 +133,7 @@
 //      N3_SLSH                         // /
 #define N3_ASTR        DE_ASTR          // *
 #define N3_MDSH        UC(L'—')         // —   RSA(DE_MINS)
+#define N3_NMNS        KC_PMNS          // Keypad -
 //      ___NO__
 
 // NEO2 Layer 4 - Line 2
@@ -127,7 +147,7 @@
 #define N3_NUM8        KC_P8           // Keypad 8
 #define N3_NUM9        KC_P9           // Keypad 9
 #define N3_NPLS        KC_PPLS         // Keypad +
-#define N3_NMNS        KC_PMNS         // Keypad -
+#define N3_DMNS        DE_MINS         // - (not the original Neo − on this position)
 //      ___NO__
 
 // NEO2 Layer 4 - Line 3
@@ -159,20 +179,16 @@
 // NEO2 Layer 4 - Line 5
 #define N3_NUM0        KC_P0           // Keypad 0
 
-#define N3_NDSH              UC(L'–')        // –   RALT(DE_MINS)
+
 
 
 // NEO_2 special characters
-#define NEO2_L2_CAPITAL_SS           UC(L'ℓ')        // ℓ
-#define NEO2_L2_RAQUO                UC(L'»')        // »   RALT(DE_Y)
-#define NEO2_L2_LAQUO                UC(L'«')        // «   RALT(DE_X)
-#define N3_C_SS        UC(L'ẞ')        // ẞ    RSA(DE_S)
+
+
+
 #define N3_C_UE        S(DE_UE)        // Ü
 #define N3_C_OE        S(DE_OE)        // Ö
 #define N3_C_AE        S(DE_AE)        // Ä
-#define N3_LODQ        UC(L'„')        // „   RALT(DE_V)
-#define N3_L_DQ        UC(L'„')        // “   RALT(DE_B)
-#define N3_R_DQ        UC(L'„')        // ”   RALT(DE_N)
 #define N3_REDO        RCS(DE_Z)       // Shift + CTL + Z
 #define NX_COPY        LCTL(DE_C)      // CTL + C
 #define NX_PAST        LCTL(DE_V)      // CTL + V

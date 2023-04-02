@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 #include "wechselbalg.h"
 #include "print.h"
+#include "features/custom_shift_keys.h"
 // clang-format off
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -68,8 +69,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_NEO_4] = LAYOUT(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
-        _______, N3_F_OR, N3_M_OR, N3_NUMS, ___NO__, N3_MDOT, N3_BPND, N3_CURS,  KC_TAB, N3_SLSH, N3_ASTR, N3_MDSH, ___NO__, _______,          _______,
-        _______, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN, N3_IEXL, N3_NUM7, N3_NUM8, N3_NUM9, N3_NPLS, N3_NMNS, ___NO__,                   _______,
+        _______, N3_F_OR, N3_M_OR, N3_NUMS, ___NO__, N3_MDOT, N3_BPND, N3_CURS,  KC_TAB, N3_SLSH, N3_ASTR, N3_NMNS, ___NO__, _______,          _______,
+        _______, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN, N3_IEXL, N3_NUM7, N3_NUM8, N3_NUM9, N3_NPLS, N3_DMNS, ___NO__,                   _______,
         _______, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END, N3_IQES, N3_NUM4, N3_NUM5, N3_NUM6, N3_COMM, N3__DOT, _______, _______,          _______,
         _______, _______, N3__ESC, N3__TAB, N3__INS, N3__ENT, N3_UNDO, N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, _______,          KC_MS_U, _______,
         _______, _______, _______,                            N3_NUM0,                            _______, _______, _______, KC_MS_L, KC_MS_D, KC_MS_R
@@ -108,6 +109,33 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
 };
 #endif
 
+const custom_shift_key_t custom_shift_keys[] = {
+  {DE_CIRC, N2_HCEK},  // Shift 2 is §
+  {DE_1 , N2__DEG},    // Shift 1 is °
+  {DE_2 , DE_SECT},    // Shift 2 is §
+//   {DE_3 , N2_SS_L},    // Shift 3 is ℓ
+//   {DE_4 , N2_RAQO},    // Shift 4 is »
+//   {DE_5 , N2_LAQO},    // Shift 5 is «
+  {DE_6 , N3__DLR},    // Shift 6 is $
+  {DE_7 , N2__EUR},    // Shift 7 is €
+//   {DE_8 , N2_LODQ},    // Shift 8 is „
+//   {DE_9 , N2_L_DQ},    // Shift 9 is “
+//   {DE_0 , N2_R_DQ},    // Shift 0 is ”
+//   {DE_SS, N2_C_SS},    // Shift ß is ẞ
+
+  {DE_ACUT , DE_TILD}, // Shift ´ is ~
+
+  {DE_COMM, N2_NDSH},  // Shift , is –
+  {DE_DOT , N2_BULT},  // Shift . is •
+  {KC_SLSH, N3_MDSH},  // Shift - is —
+
+  {KC_BSPC, KC_DEL},  // Shift Backspace is Delete
+};
+
+uint8_t NUM_CUSTOM_SHIFT_KEYS =
+    sizeof(custom_shift_keys) / sizeof(custom_shift_key_t);
+
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     #ifdef CONSOLE_ENABLE
@@ -135,8 +163,57 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     #endif
 
+    if (!process_custom_shift_keys(keycode, record)) { return false; }
+
     return true;
 }
+
+// const key_override_t hcek_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_CIRC, N2_HCEK);
+// const key_override_t deg_key_override  = ko_make_basic(MOD_MASK_SHIFT, DE_1, N2__DEG);
+// const key_override_t sect_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_2, DE_SECT);
+// const key_override_t ss_l_override     = ko_make_basic(MOD_MASK_SHIFT, DE_3, N2_SS_L);
+// const key_override_t raqo_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_4, N2_RAQO);
+// const key_override_t laqo_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_5, N2_LAQO);
+// const key_override_t dlr_key_override  = ko_make_basic(MOD_MASK_SHIFT, DE_6, N3__DLR);
+// const key_override_t eur_key_override  = ko_make_basic(MOD_MASK_SHIFT, DE_7, N2__EUR);
+// const key_override_t lodq_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_8, N2_LODQ);
+// const key_override_t l_dq_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_9, N2_L_DQ);
+// const key_override_t r_dq_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_0, N2_R_DQ);
+// const key_override_t ss_key_override   = ko_make_basic(MOD_MASK_SHIFT, DE_SS,N2_C_SS);
+
+// const key_override_t tild_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_ACUT, DE_TILD);
+
+// const key_override_t ndsh_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_COMM, N2_NDSH);
+// const key_override_t bult_key_override = ko_make_basic(MOD_MASK_SHIFT, DE_DOT,  N2_BULT);
+// const key_override_t mdsh_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_SLSH, N3_MDSH);
+
+// const key_override_t delete_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
+
+
+
+// // This globally defines all key overrides to be used
+// const key_override_t **key_overrides = (const key_override_t *[]){
+//     &hcek_key_override,
+//     &deg_key_override,
+//     &hcek_key_override,
+//     &deg_key_override,
+//     &sect_key_override,
+//     &ss_l_override,
+//     &raqo_key_override,
+//     &laqo_key_override,
+//     &dlr_key_override,
+//     &eur_key_override,
+//     &lodq_key_override,
+//     &l_dq_key_override,
+//     &r_dq_key_override,
+//     &ss_key_override,
+//     &tild_key_override,
+//     &ndsh_key_override,
+//     &bult_key_override,
+//     &mdsh_key_override,
+//     &delete_key_override,
+//     NULL // Null terminate the array of overrides!
+// };
 
 void keyboard_post_init_user(void) {
   // Customise these values to desired behaviour
