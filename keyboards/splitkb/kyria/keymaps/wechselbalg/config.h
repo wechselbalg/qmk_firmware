@@ -26,3 +26,7 @@
 
 // Lets you roll mod-tap keys
 #define IGNORE_MOD_TAP_INTERRUPT
+
+#define TRI_LAYER_LOWER_LAYER = _SYM
+#define TRI_LAYER_UPPER_LAYER = _NUM
+#define TRI_LAYER_ADJUST_LAYER = _ADJUST

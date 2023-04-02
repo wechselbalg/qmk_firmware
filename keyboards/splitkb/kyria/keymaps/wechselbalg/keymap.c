@@ -117,7 +117,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      _______ ,KC_QUOTE, DE_COMM,  DE_DOT,   DE_P ,   DE_Y ,                                        DE_F,   DE_G ,  DE_C ,   DE_R ,  DE_L , _______,
      _______ ,   DE_A , DE_O   ,  DE_E  ,   DE_U ,   DE_I ,                                        DE_D,   DE_H ,  DE_T ,   DE_N ,  DE_S ,SYM_MINS,
      _______ ,NUM_SCLN, DE_Q   ,  DE_J  ,   DE_K ,   DE_X , _______,_______,     _______, _______, DE_B,   DE_M ,  DE_W ,   DE_V ,  DE_Z , _______,
-                                _______, _______, _______, _______,_______,     _______, _______, _______,_______, _______
+                                 _______, _______, _______, _______,_______,     _______, _______, _______,_______, _______
     ),
 
 /*
@@ -201,7 +201,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______, DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,   DE_T ,                                     _______, _______, _______, _______,  _______, _______,
       KC_LSFT, DE_A ,  DE_S   ,  DE_D  ,   DE_F ,   DE_G ,                                     _______, _______, _______, _______,  _______, _______,
       _______, NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,   DE_B , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                _______, _______,  KC_SPC, _______, _______, _______, _______, _______, _______, _______
+                                _______, KC_LSFT,  KC_SPC, KC_SPC , _______, _______, _______, _______, _______, _______
     ),
 
 /*
@@ -263,7 +263,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NUM] = LAYOUT(
       _______,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , DE_SUP3,                                     N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH,
       KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , DE_SUP2,                                     N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS,
-      _______,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , _______, _______, _______, _______, _______, N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL,
+      _______,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , _______, _______, _______, _______, KC_NUM , N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL,
                                  _______, _______, _______, _______, _______, _______, _______, N3_NUM0, N3_COMM, N3__DOT
     ),
 
@@ -284,7 +284,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ADJUST] = LAYOUT(
       QWERTY , DVORAK , COLEMAK, VOUX   , MINE   , GAMING ,                                    _______, _______, _______, _______,  _______, _______,
       _______, _______, _______, _______, _______, _______,                                    RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI,  RGB_MOD, _______,
-      _______, _______, _______, _______, _______, _______,_______, _______, _______, _______, _______, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, _______,
+      QK_BOOT, _______, _______, _______, _______, _______,_______, _______, _______, _______, _______, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, _______,
                                  _______, _______, _______,_______, _______, _______, _______, _______, _______, _______
     ),
 
