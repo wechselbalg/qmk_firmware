@@ -1,29 +1,16 @@
 SRC += wechselbalg.c
-ifdef ENCODER_ENABLE
-	# include encoder related code when enabled
-	ifeq ($(strip $(ENCODER_DEFAULTACTIONS_ENABLE)), yes)
-		OPT_DEFS += -DENCODER_DEFAULTACTIONS_ENABLE
-	endif
-	ifeq ($(strip $(ALTTAB_SCROLL_ENABLE)), yes)
-		OPT_DEFS += -DALTTAB_SCROLL_ENABLE
-	endif
-	SRC += wechselbalg_encoder.c
-endif
-ifeq ($(strip $(TD_LSFT_CAPSLOCK_ENABLE)), yes)
-    OPT_DEFS += -DTD_LSFT_CAPSLOCK_ENABLE
-endif
-ifeq ($(strip $(IDLE_TIMEOUT_ENABLE)), yes)
-    OPT_DEFS += -DIDLE_TIMEOUT_ENABLE
-endif
-ifeq ($(strip $(STARTUP_NUMLOCK_ON)), yes)
-    OPT_DEFS += -DSTARTUP_NUMLOCK_ON
-endif
-ifeq ($(strip $(COLEMAK_LAYER_ENABLE)), yes)
-    OPT_DEFS += -DCOLEMAK_LAYER_ENABLE
-endif
-ifeq ($(strip $(EMOTICON_ENABLE)), yes)
-    OPT_DEFS += -DEMOTICON_ENABLE
-endif
-ifeq ($(strip $(INVERT_NUMLOCK_INDICATOR)), yes)
-    OPT_DEFS += -DINVERT_NUMLOCK_INDICATOR
-endif
+SRC += layer_lock.c
+# SRC += custom_shift_keys.c
+
+ENCODER_ENABLE = no
+ENCODER_MAP_ENABLE = no
+EXTRAKEY_ENABLE = yes
+MOUSEKEY_ENABLE = yes
+NKRO_ENABLE = yes
+CONSOLE_ENABLE = no
+KEYBOARD_SHARED_EP = no
+CAPS_WORD_ENABLE = yes
+
+
+# KEY_OVERRIDE_ENABLE = yes
+# LTO_ENABLE = yes
