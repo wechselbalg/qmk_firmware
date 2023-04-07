@@ -28,5 +28,6 @@
     "[json]": {
 	    "editor.formatOnSave": false
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cmake.sourceDirectory": "${workspaceFolder}/lib/googletest"
 }
