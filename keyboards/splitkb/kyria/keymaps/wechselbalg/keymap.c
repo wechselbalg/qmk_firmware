@@ -16,19 +16,6 @@
 #include QMK_KEYBOARD_H
 #include "wechselbalg.h"
 
-enum layers {
-    _QWERTY = 0,
-    _DVORAK,
-    _COLEMAK_DH,
-    _MINE,
-    _VOUX,
-    _NAV,
-    _SYM,
-    _NUM,
-    _GAMING,
-    _ADJUST,
-};
-
 // Aliases for readability
 #define QWERTY   DF(_QWERTY)
 #define COLEMAK  DF(_COLEMAK_DH)

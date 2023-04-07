@@ -10,6 +10,19 @@ enum layers {
   _CONFIG
 };
 
+enum splitlayers {
+    _QWERTY = 0,
+    _DVORAK,
+    _COLEMAK_DH,
+    _MINE,
+    _VOUX,
+    _NAV,
+    _SYM,
+    _NUM,
+    _GAMING,
+    _ADJUST,
+};
+
 enum CustomKeys {
   RN_STEM = SAFE_RANGE,
   RN_CODE
