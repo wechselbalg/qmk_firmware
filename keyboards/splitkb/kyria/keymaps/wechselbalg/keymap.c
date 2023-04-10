@@ -78,9 +78,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_QWERTY] = LAYOUT(
-     KC_TAB  ,    DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,  DE_T ,                                          DE_Y   ,   DE_U ,  DE_I  ,   DE_O ,   DE_P , DE_LBRC,
-     TT(SYM) ,    DE_A ,  DE_S   ,  DE_D  ,   DE_F ,  DE_G ,                                          DE_H   ,   DE_J ,  DE_K  ,   DE_L , DE_SCLN, SYM_AE ,
-        NUM  ,    NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,  DE_B , KC_ESC , KC_LGUI,     KC_RGUI , RALT_AP, DE_N   ,   DE_M , DE_COMM, DE_DOT , DE_SLSH, SFT_SS ,
+     KC_TAB  ,    DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,  DE_T ,                                          DE_Y   ,   DE_U ,  DE_I  ,   DE_O ,   DE_P ,  DE_LBRC,
+     TT(SYM) ,    DE_A ,  DE_S   ,  DE_D  ,   DE_F ,  DE_G ,                                          DE_H   ,   DE_J ,  DE_K  ,   DE_L , DE_SCLN,  SYM_AE ,
+        NUM  ,    NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,  DE_B , KC_ESC , KC_LGUI,     KC_RGUI , RALT_AP, DE_N   ,   DE_M , DE_COMM, DE_DOT , DE_,MINS, SFT_SS ,
                                    KC_LALT,TT(_NUM), KC_DEL, SFT_SPC, CTL_ENT,     CTL_ENT , SFT_SPC, KC_BSPC,TT(_NAV), NUM
     ),
 

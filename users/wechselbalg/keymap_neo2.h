@@ -52,39 +52,39 @@
 #define N2__DEG        DE_DEG          // °
 #define N2_SECT        DE_SECT         // §
 #define N2_SS_L        UC(L'ℓ')        // ℓ
-#define N2_RAQO        UC(L'»')        // »   RALT(DE_Y)
-#define N2_LAQO        UC(L'«')        // «   RALT(DE_X)
+#define N2_RAQO        RALT(DE_Y)      // »
+#define N2_LAQO        RALT(DE_X)      // «
 #define N2__DLR        DE_DLR          // $
 #define N2__EUR        ALGR(DE_E)      // €
-#define N2_LODQ        UC(L'„')        // „   RALT(DE_V)
-#define N2_L_DQ        UC(L'“')        // “   RALT(DE_B)
-#define N2_R_DQ        UC(L'”')        // ”   RALT(DE_N)
-#define N2_C_SS        UC(L'ẞ')        // ẞ    RSA(DE_S)
+#define N2_LODQ        RALT(DE_V)      // „
+#define N2_L_DQ        RALT(DE_B)      // “
+#define N2_R_DQ        RALT(DE_N)      // ”
+#define N2_C_SS        RSA(DE_S)       // ẞ
 
 // NEO2 Layer 2 - Line 2
 #define N2_TILD        DE_TILD           // ~
 
 // NEO2 Layer 2 - Line 4
-#define N2_NDSH        UC(L'–')        // –   RALT(DE_MINS)
+#define N2_NDSH        RALT(DE_MINS)   // –   RALT(DE_MINS)
 #define N2_BULT        UC(L'•')        // •
-#define N2_MDSH        UC(L'—')        // —   RSA(DE_MINS)
+#define N2_MDSH        RSA(DE_MINS)    // —   RSA(DE_MINS)
 
 // NEO2 Layer 3 - Line 1
-#define N3_SUP1        UC(L'¹')        // ¹   RALT(DE_1)
+#define N3_SUP1        RALT(DE_1)      // ¹   RALT(DE_1)
 #define N3_SUP2        DE_SUP2         // ²
 #define N3_SUP3        DE_SUP3         // ³
-#define N3_RSAQ        UC(L'›')        // ›   RSA(DE_Y)
-#define N3_LSAQ        UC(L'‹')        // ‹   RSA(DE_X)
-#define N3_CENT        UC(L'¢')        // ¢   RALT(DE_C)
-#define N3__YEN        UC(L'¥')        // ¥   RSA(DE_Z)
-#define N3_SBSQ        UC(L'‚')        // ‚   RSA(DE_V)
-#define N3_L_SQ        UC(L'‘')        // ‘   RSA(DE_B)
-#define N3_R_SQ        UC(L'’')        // ’   RSA(DE_N)
+#define N3_RSAQ        RSA(DE_Y)       // ›   RSA(DE_Y)
+#define N3_LSAQ        RSA(DE_X)       // ‹   RSA(DE_X)
+#define N3_CENT        RALT(DE_C)      // ¢   RALT(DE_C)
+#define N3__YEN        RSA(DE_Z)       // ¥   RSA(DE_Z)
+#define N3_SBSQ        RSA(DE_V)       // ‚   RSA(DE_V)
+#define N3_L_SQ        RSA(DE_B)       // ‘   RSA(DE_B)
+#define N3_R_SQ        RSA(DE_N)       // ’   RSA(DE_N)
 //      ___NO__
 //      ___NO__
 
 // NEO2 Layer 3 - Line 2
-#define N3_ELPS        UC(L'…')        // …    RALT(DE_DOT)
+#define N3_ELPS        RALT(DE_DOT)    // …    RALT(DE_DOT)
 #define N3_UNDS        DE_UNDS         // _
 #define N3_LBRC        DE_LBRC         // [
 #define N3_RBRC        DE_RBRC         // ]
@@ -94,7 +94,7 @@
 #define N3_RABK        DE_RABK         // >
 #define N3_EQUL        DE_EQL          // =
 #define N3_AMPR        DE_AMPR         // &
-#define N3_SL_S        UC(L'ſ')        // ſ   RALT(DE_S)
+#define N3_SL_S        RALT(DE_S)      // ſ   RALT(DE_S)
 
 // NEO2 Layer 3 - Line 3
 #define N3_BSLS         DE_BSLS         // (backslash)
@@ -132,7 +132,7 @@
 #define N3_CURS        RSA(DE_4)        // ¤
 //      N3_SLSH                         // /
 #define N3_ASTR        DE_ASTR          // *
-#define N3_MDSH        UC(L'—')         // —   RSA(DE_MINS)
+#define N3_MDSH        RSA(DE_MINS)     // —   RSA(DE_MINS)
 #define N3_NMNS        KC_PMNS          // Keypad -
 //      ___NO__
 
@@ -142,7 +142,7 @@
 #define N3___UP        KC_UP
 #define N3__DEL        KC_DEL
 #define N3_PGDN        KC_PGDN
-#define N3_IEXL        UC(L'¡')        // ¡   RSA(DE_1)
+#define N3_IEXL        RSA(DE_1)       // ¡   RSA(DE_1)
 #define N3_NUM7        KC_P7           // Keypad 7
 #define N3_NUM8        KC_P8           // Keypad 8
 #define N3_NUM9        KC_P9           // Keypad 9
@@ -156,7 +156,7 @@
 #define N3_DOWN        KC_DOWN
 #define N3_RGHT        KC_RGHT
 #define N3__END        KC_END
-#define N3_IQES        UC(L'¿')        // ¿   RSA(DE_SS)
+#define N3_IQES        RSA(DE_SS)      // ¿   RSA(DE_SS)
 #define N3_NUM4        KC_P4           // Keypad 4
 #define N3_NUM5        KC_P5           // Keypad 5
 #define N3_NUM6        KC_P6           // Keypad 6
