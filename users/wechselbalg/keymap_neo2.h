@@ -130,6 +130,7 @@
 #define N3_MDOT        RALT(DE_COMM)    // ·
 #define N3_BPND        RSA(DE_3)        // £
 #define N3_CURS        RSA(DE_4)        // ¤
+#define N4__TAB        KC_TAB           // TAB
 //      N3_SLSH                         // /
 #define N3_ASTR        DE_ASTR          // *
 #define N3_MDSH        RSA(DE_MINS)     // —   RSA(DE_MINS)

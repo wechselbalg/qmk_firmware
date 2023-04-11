@@ -1,6 +1,9 @@
+#pragma once
+
 #include "keymap_german_ia.h"
 #include "keymap_neo2.h"
 #include "quantum.h"
+#include "wrappers.h"
 
 enum layers {
   _NEO_QWERTZ = 0,
@@ -14,7 +17,7 @@ enum splitlayers {
     _DEFAULTS = 0,
     _QWERT = 0,
     _DVORAK,
-    _COLEMAK_DH,
+    _COLEMAKDH,
     _MINE,
     _VOUX,
     _SYM,
@@ -26,101 +29,95 @@ enum splitlayers {
 
 enum CustomKeys {
   RN_STEM = SAFE_RANGE,
-  RN_CODE
+  RN_CODE,
+  A_MSJIG,
+  QWERT,
+  DVORAK,
+  COLEMAK,
+  VOUX,
+  MINE,
+  KC_D_MUTE,
+  F_LLOCK,
 };
 
-// QWERT
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-// |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U  |  I  |  O  |  P  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  A  |  S  |  D  |  F  |  G  |   |  H  |  J  |  K  |  L  |  ;  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _________________QWERTY_L1_________________  KC_TAB  , DE_Q   , DE_W   , DE_E   , DE_R   , DE_T
-#define _________________QWERTY_L2_________________  KC_SYM  , DE_A   , DE_S   , DE_D   , DE_F   , DE_G
-#define _________________QWERTY_L3_________________  KC_LSFT , DE_Y   , DE_X   , DE_C   , DE_V   , DE_B
+// Tap Dance declarations
+enum {
+    ESC_CIRC,
+    F6___F12,
+    SS___F11,
+    PSCR_APP,
+};
 
-#define _________________QWERTY_R1_________________  DE_Z    , DE_U   , DE_I   , DE_O   , DE_P     , DE___UE
-#define _________________QWERTY_R2_________________  DE_H    , DE_J   , DE_K   , DE_L   , DE___OE  , KAE_SYM
-#define _________________QWERTY_R3_________________  DE_N    , DE_M   , DE_COMM, DE_DOT , DE_MINS  , KC_RSFT
+// Tap Dance definitions
+tap_dance_action_t tap_dance_actions[] = {
+    [ESC_CIRC] = ACTION_TAP_DANCE_DOUBLE(KC_ESC, DE_CIRC),
+    [F6___F12] = ACTION_TAP_DANCE_DOUBLE(KC_6, KC_F12),
+    [SS___F11] = ACTION_TAP_DANCE_DOUBLE(DE_SS, KC_F11),
+    [PSCR_APP] = ACTION_TAP_DANCE_DOUBLE(KC_PSCR, KC_APP),
+};
 
-// VOUX
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-// |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U  |  I  |  O  |  P  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  A  |  S  |  D  |  F  |  G  |   |  H  |  J  |  K  |  L  |  ;  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define __________________VOUX__L1_________________  KC_TAB  , DE_V   , DE__DOT, DE_O   , DE_U   , DE_AE
-#define __________________VOUX__L2_________________  KC_SYM  , DE_C   , DE_A   , DE_E   , DE_I   , DE_Z
-#define __________________VOUX__L3_________________  KC_LSFT , DE_Y   , DE_COMM, DE_UE  , DE_UE  , DE_OE
+// Aliases for readability
+#define TD_ESCC TD(ESC_CIRC)
+#define TD_F612 TD(F6___F12)
+#define TD_SF11 TD(SS___F11)
+#define TD_PSAP TD(PSCR_APP)
 
-#define __________________VOUX__R1_________________  DE_P    , DE_G   , DE_L   , DE_H   , DE_F   , DE_J
-#define __________________VOUX__R2_________________  DE_B    , DE_T   , DE_R   , DE_N   , DE_S   , KSS_SYM
-#define __________________VOUX__R3_________________  DE_Q    , DE_D   , DE_W   , DE_M   , DE_K   , KC_RSFT
+#define D_QWERT  DF(_QWERT)
+#define D_COLMK  DF(_COLEMAKDH)
+#define D_DVORK  DF(_DVORAK)
+#define D__MINE  DF(_MINE)
+#define D__VOUX  DF(_VOUX)
+#define D__GAME  DF(_GAMING)
 
-// MINE
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-// |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U  |  I  |  O  |  P  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  A  |  S  |  D  |  F  |  G  |   |  H  |  J  |  K  |  L  |  ;  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define __________________MINE__L1_________________  KC_TAB  , DE_J   , DE_L   , DE_U   , DE_A   , DE_Q
-#define __________________MINE__L2_________________  KC_SYM  , DE_C   , DE_I   , DE_A   , DE_E   , DE_O
-#define __________________MINE__L3_________________  KC_LSFT , DE_V   , DE_X   , DE___UE, DE___AE, DE___OE
+#define MO__SYM  MO(_SYM)
+#define MO__NAV  MO(_NAV)
+#define MO__NUM  MO(_NUM)
+#define MO__ADJ  MO(_ADJUST)
 
-#define __________________MINE__R1_________________  DE_W    , DE_B   , DE_D   , DE_G   , DE_Y   , DE_SS
-#define __________________MINE__R3_________________  DE_P    , DE_F   , DE_COMM, DE_DOT , DE_K   , KC_RSFT
-#define __________________MINE__R2_________________  DE_M    , DE_N   , DE_T   , DE_S   , DE_H   , KCZ_SYM
+#define CTL_ESC  MT(MOD_LCTL, KC_ESC)
+#define CTL_QUOT MT(MOD_RCTL, DE_QUOTE)
 
-// DVORAK
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-// |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U  |  I  |  O  |  P  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  A  |  S  |  D  |  F  |  G  |   |  H  |  J  |  K  |  L  |  ;  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _________________DVORAK_L1_________________  KC_TAB  ,KC_QUOTE, DE_COMM, DE__DOT, DE_P   , DE_Y
-#define _________________DVORAK_L2_________________  KC_SYM  , DE_A   , DE_O   , DE_E   , DE_U   , DE_I
-#define _________________DVORAK_L3_________________  KC_LSFT , KC_SCLN, DE_Q   , DE_J   , DE_K   , DE_X
+#define RALT_PR ALGR_T(KC_PSCR)
 
-#define _________________DVORAK_R1_________________  DE_F    , DE_G   , DE_C   , DE_R   , DE_L     , KC_BSPC
-#define _________________DVORAK_R2_________________  DE_D    , DE_H   , DE_T   , DE_N   , DE_S     , MIN_SYM
-#define _________________DVORAK_R3_________________  DE_B    , DE_M   , DE_W   , DE_V   , DE_Z     , KC_RSFT
+#define SFT_SPC  LSFT_T( KC_SPC)
+#define SFT_ENT  LSFT_T( KC_ENT)
+#define SFT_NUM  LSFT_T( NUM)
+#define SFT_PIP  LSFT_T( DE_PIPE)
+#define RFT_ENT  RSFT_T( KC_ENT)
+#define RFT_SPC  RSFT_T( KC_SPC)
+#define RFT__SS  RSFT_T( DE_SS)
+#define RFT_MIN  RSFT_T( DE_MINS)
 
-// COLEMAK DH
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-// |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U  |  I  |  O  |  P  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  A  |  S  |  D  |  F  |  G  |   |  H  |  J  |  K  |  L  |  ;  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _____________COLEMAK_DH_L1_________________  KC_TAB  , DE_Q   , DE_W   , DE_F   , DE_P   , DE_B
-#define _____________COLEMAK_DH_L2_________________  KC_SYM  , DE_A   , DE_R   , DE_S   , DE_T   , DE_G
-#define _____________COLEMAK_DH_L3_________________  KC_LSFT , DE_Z   , DE_X   , DE_C   , DE_D   , DE_V
+#define SFT_CTL  LSFT(KC_LCTL)
 
-#define _____________COLEMAK_DH_R1_________________  DE_J    , DE_L   , DE_U   , DE_Y   , DE_SCLN  , KC_BSPC
-#define _____________COLEMAK_DH_R2_________________  DE_H    , DE_N   , DE_E   , DE_I   , DE_O     , KC_SYM
-#define _____________COLEMAK_DH_R3_________________  DE_K    , DE_H   , DE_COMM, DE_DOT , DE_MINS  , KC_RSFT
+#define SYM__AE  LT(_SYM, DE___AE)
+#define SYM_MIN  LT(_SYM, DE_MINS)
+#define SYM__SS  LT(_SYM, DE_SS)
+#define SYM___Y  LT(_SYM, DE_Y)
+#define SYM___F  LT(_SYM, DE_F)
+#define SYM___Z  LT(_SYM, DE_Z)
+#define SYM_HSH  LT(_SYM,DE_HASH)
+#define SYM_ACU  LT(_SYM,DE_ACUT)
 
-// GAMING
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-// |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U  |  I  |  O  |  P  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  A  |  S  |  D  |  F  |  G  |   |  H  |  J  |  K  |  L  |  ;  |
-// ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
-// |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
-// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _________________GAMING_L1_________________  KC_TAB  , DE_Q   , DE_W   , DE_E   , DE_R   , DE_T
-#define _________________GAMING_L2_________________  KC_SYM  , DE_A   , DE_S   , DE_D   , DE_F   , DE_G
-#define _________________GAMING_L3_________________  KC_LSFT , DE_Y   , DE_X   , DE_C   , DE_V   , DE_B
 
-#define _________________GAMING_R1_________________  DE_Z    , DE_U   , DE_I   , DE_O   , DE_P     , DE___UE
-#define _________________GAMING_R2_________________  DE_H    , DE_J   , DE_K   , DE_L   , DE___OE  , KAE_SYM
-#define _________________GAMING_R3_________________  DE_N    , DE_M   , DE_COMM, DE_DOT , DE_MINS  , KC_RSFT
+#define NUM___Y  LT(_NUM, DE_Y)
+#define NUM_SCL  LT(_NUM, DE_SCLN)
+#define NUM__UE  LT(_NUM, DE___UE)
+#define NUM___X  LT(_NUM, DE_X)
+#define NUM_DEL  LT(_NUM, KC_DEL)
+#define NUM_BSC  LT(_NUM, KC_BSPC)
+#define NUM__SS  LT(_NUM, DE_SS)
+#define NUM___Z  LT(_NUM, DE_Z)
+
+#define NAV_TAB  LT(_NAV, KC_TAB)
+#define NAV_BSC  LT(_NAV, KC_BSPC)
+
+#define SC_BSPC  C_S_T(KC_BSPC)
+#define CTL_ENT  LCTL_T(KC_ENT)
+#define RTL_ENT  RCTL_T(KC_ENT)
+#define CTL_SPC  LCTL_T(KC_SPC)
+#define RALT_AP  RALT_T(KC_APP)
+
+#define FN_EXIT        TO(QWERT)      // Turns off all layers, except the default
+
+
