@@ -73,6 +73,13 @@
 	//#define RGBLIGHT_EFFECT_ALTERNATING
 	//#define RGBLIGHT_EFFECT_TWINKLE
 
+    #define RGBLIGHT_DEFAULT_MODE RGBLIGHT_MODE_STATIC_LIGHT
+    #define RGBLIGHT_DEFAULT_HUE 43
+    #define RGBLIGHT_DEFAULT_SAT 5
+    #define RGBLIGHT_DEFAULT_VAL 40
+
+
+
     #define RGBLED_NUM 58
 	//#define RGBLED_SPLIT
 	#define RGBLED_SPLIT { 29, 29 } // haven't figured out how to use this yet

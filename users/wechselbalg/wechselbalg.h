@@ -97,7 +97,7 @@ enum CustomKeys {
 
 #define NAV_TAB  LT(_NAV, KC_TAB)
 #define NAV_BSC  LT(_NAV, KC_BSPC)
-#define NAV_NM0  LT(_NA, N3_NUM0)
+#define NAV_NM0  LT(_NAV, N3_NUM0)
 
 #define SC_BSPC  C_S_T(KC_BSPC)
 #define CTL_ENT  LCTL_T(KC_ENT)

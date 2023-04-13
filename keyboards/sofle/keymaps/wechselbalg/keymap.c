@@ -373,14 +373,9 @@ char layer_state_str[70];
 
 // QWERT,
 // Light on inner column and underglow
-const rgblight_segment_t PROGMEM [] = RGBLIGHT_LAYER_SEGMENTS(
+const rgblight_segment_t PROGMEM layer_default_lights[] = RGBLIGHT_LAYER_SEGMENTS(
   SET_QWERT(HSV_CHARTREUSE)
-
 );
-const rgblight_segment_t PROGMEM layer_colemakdh_lights[] = RGBLIGHT_LAYER_SEGMENTS(
-  SET_LAYER_ID(HSV_PINK)
-);
-
 // _NUM,
 // Light on outer column and underglow
 const rgblight_segment_t PROGMEM layer_NUM_lights[] = RGBLIGHT_LAYER_SEGMENTS(
@@ -391,56 +386,45 @@ const rgblight_segment_t PROGMEM layer_NUM_lights[] = RGBLIGHT_LAYER_SEGMENTS(
 // Light on inner column and underglow
 const rgblight_segment_t PROGMEM layer_SYM_lights[] = RGBLIGHT_LAYER_SEGMENTS(
 	SET_LAYER_ID(HSV_BLUE)
-
-    );
+);
 // _NAV,
 // Light on inner column and underglow
 const rgblight_segment_t PROGMEM layer_NAV_lights[] = RGBLIGHT_LAYER_SEGMENTS(
   SET_LAYER_ID(HSV_CYAN),
   SET_GAMING(HSV_RED)
 );
-
 //_GAMING
 const rgblight_segment_t PROGMEM layer_gaming_lights[] = RGBLIGHT_LAYER_SEGMENTS(
-	SET_INDICATORS(HSV_VIOLE),
+	SET_INDICATORS(HSV_PURPLE),
 	SET_GAMING(HSV_RED)
-    );
-
+);
 //_ADJUST
 const rgblight_segment_t PROGMEM layer_ADJUST_lights[] = RGBLIGHT_LAYER_SEGMENTS(
 	SET_ADJUST(HSV_ORANGE),
 	SET_ADJUST_PERSIST(HSV_RED)
-    );
-// _SWITCHER   // light up top row
-const rgblight_segment_t PROGMEM layer_switcher_lights[] = RGBLIGHT_LAYER_SEGMENTS(
-	SET_LAYER_ID(HSV_GREEN),
-	SET_NUMROW(HSV_GREEN)
 );
 
+// Light Layer (Order is important)
 const rgblight_segment_t* const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
 
-    layer_qwert_lights,
-    layer_colemakdh_lights,
+    layer_default_lights,
     layer_SYM_lights,
 	layer_NUM_lights,// overrides layer 1
     layer_NAV_lights,
 	layer_gaming_lights,
-    layer_ADJUST_lights,
-	layer_switcher_lights  // Overrides other layers
+    layer_ADJUST_lights
 );
 
 layer_state_t layer_state_set_user(layer_state_t state) {
     state = update_tri_layer_state(state, _NAV, _NUM, _ADJUST);
-	rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULTS) && layer_state_cmp(default_layer_state,_QWERT));
-	rgblight_set_layer_state(1, layer_state_cmp(state, _DEFAULTS) && layer_state_cmp(default_layer_state,_COLEMAKDH));
+	rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULTS)); //  && layer_state_cmp(default_layer_state,_QWERT))
 
+	rgblight_set_layer_state(1, layer_state_cmp(state, _SYM));
+	rgblight_set_layer_state(2, layer_state_cmp(state, _NUM));
+    rgblight_set_layer_state(3, layer_state_cmp(state, _NAV));
 
-	rgblight_set_layer_state(2, layer_state_cmp(state, _SYM));
-	rgblight_set_layer_state(3, layer_state_cmp(state, _NUM));
-    rgblight_set_layer_state(4, layer_state_cmp(state, _NAV));
-
-	rgblight_set_layer_state(5, layer_state_cmp(state, _GAMING));
-    rgblight_set_layer_state(6, layer_state_cmp(state, _ADJUST));
+	rgblight_set_layer_state(4, layer_state_cmp(state, _GAMING));
+    rgblight_set_layer_state(5, layer_state_cmp(state, _ADJUST));
 
     return state;
 }
