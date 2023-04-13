@@ -36,10 +36,6 @@
 
 // Used for tapping in keymap
 #define TAPPING_FORCE_HOLD
-#ifdef TAPPING_TERM
-    #undef TAPPING_TERM
-#endif
-#define RETRO_TAPPING
 #define TAPPING_TOGGLE 3
 #define TAP_CODE_DELAY 10
 

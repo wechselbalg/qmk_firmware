@@ -1,7 +1,8 @@
 #ifdef TAPPING_TERM
     #undef TAPPING_TERM
 #endif
-#define RETRO_TAPPING
+#define TAPPING_TERM 200
+#define HOLD_ON_OTHER_KEY_PRESS
 #define QUICK_TAP_TERM 120
 #define TAPPING_TOGGLE 3
 #define TAP_CODE_DELAY 10
