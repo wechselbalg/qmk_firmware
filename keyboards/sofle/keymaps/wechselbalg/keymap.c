@@ -566,6 +566,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 }
             break;
             case _NUM:
+            case _NAV:
             case _SYM:
                     if (clockwise) {
                         tap_code16(N3_REDO);
@@ -592,6 +593,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             break;
         case _NUM:
         case _SYM:
+        case _NAV:
                 if (clockwise) {
                     tap_code16(C(KC_RGHT));
                 } else {
