@@ -106,7 +106,7 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define __________________MINE__L1_________________  NAV_TAB , DE_J   , DE_L   , DE_U   , DE_A   , DE_Q
-#define __________________MINE__L2_________________  MO__SYM , DE_C   , DE_I   , DE_A   , DE_E   , DE_O
+#define __________________MINE__L2_________________  MO__SYM , DE_C   , DE_R   , DE_I   , DE_E   , DE_O
 #define __________________MINE__L3_________________  SFT_PIP , DE_V   , DE_X   , DE___UE, DE___AE, DE___OE
 
 #define __________________MINE__R1_________________  DE_W    , DE_B   , DE_D   , DE_G   , DE_Y   , NUM___Z
@@ -122,7 +122,7 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define __________________VOUX__L1_________________  NAV_TAB , DE_V   , DE__DOT, DE_O   , DE_U   , DE___AE
-#define __________________VOUX__L2_________________  MO__SYM , DE_C   , DE_A   , DE_E   , DE_I   , DE_Z
+#define __________________VOUX__L2_________________  MO__SYM , DE_C   , DE_A   , DE_E   , DE_I   , DE_Y
 #define __________________VOUX__L3_________________  KC_LSFT , DE_Z   , DE_X   ,DE_COMM , DE___UE, DE___OE
 
 #define __________________VOUX__R1_________________  DE_P    , DE_G   , DE_L   , DE_H   , DE_F   , DE_J
