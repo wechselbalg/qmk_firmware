@@ -20,48 +20,73 @@
 
 #include QMK_KEYBOARD_H
 
-#define INDICATOR_BRIGHTNESS 20
+#define INDICATOR_BRIGHTNESS 120
 
 #define HSV_OVERRIDE_HELP(h, s, v, Override) h, s , Override
 #define HSV_OVERRIDE(hsv, Override) HSV_OVERRIDE_HELP(hsv,Override)
 
 // Light combinations
 #define SET_INDICATORS(hsv) \
-	{0, 1, HSV_OVERRIDE_HELP(hsv, INDICATOR_BRIGHTNESS)}, \
-    {35+0, 1, hsv}
+	{28, 1, HSV_OVERRIDE_HELP(hsv, INDICATOR_BRIGHTNESS)}, \
+    {29+0, 1, hsv}
 #define SET_UNDERGLOW(hsv) \
 	{1, 6, hsv}, \
-    {35+1, 6,hsv}
-#define SET_GAMING(hsv)     \
-	{35+15, 5, hsv},\
-	  {35+22, 3, hsv},\
-	  {35+27, 3, hsv}
+    {29+1, 6,hsv}
+#define SET_GAMING(hsv) \
+	{8, 1, hsv},\
+    {12, 2, hsv},\
+    {18, 1, hsv}
+#define SET_ADJUST(hsv) \
+	{2, 1, hsv},\
+    {8, 1, hsv},\
+    {13, 1, hsv},\
+    {18, 1, hsv},\
+    {23, 1, hsv},\
+    {26, 1, hsv}
+#define SET_ADJUST_PERSIST(hsv) \
+    {9, 1, hsv},\
+    {12, 1, hsv},\
+    {19, 1, hsv},\
+    {22, 1, hsv},\
+    {27, 1, hsv}
+#define SET_QWERT(hsv) \
+	{1, 1, hsv},\
+    {9, 1, hsv},\
+    {12, 1, hsv},\
+    {19, 1, hsv},\
+    {22, 1, hsv},\
+    {29+ 1, 1, hsv}
+#define SET_NUMPAD(hsv) \
+	{29+7, 3, hsv}, \
+	{29+12, 3, hsv}, \
+	{29+17, 3, hsv}
 #define SET_NUMROW(hsv) \
-	{10, 2, hsv}, \
-		{20, 2, hsv}, \
-		{30, 2, hsv}, \
-	  {35+ 10, 2, hsv}, \
-	  {35+ 20, 2, hsv}, \
-	  {35+ 30, 2, hsv}
+	{0, 1, hsv}, \
+    {10, 2, hsv}, \
+    {20, 2, hsv}, \
+    {28, 1, hsv}, \
+      {29+ 0, 1, hsv}, \
+	  {29+ 10, 2, hsv}, \
+	  {29+ 20, 2, hsv}, \
+	  {29+ 28, 1, hsv}
 #define SET_INNER_COL(hsv)	\
 	{33, 4, hsv}, \
-	  {35+ 33, 4, hsv}
-
+	  {29+ 33, 4, hsv}
 #define SET_OUTER_COL(hsv) \
 	{7, 4, hsv}, \
-	  {35+ 7, 4, hsv}
+	  {29+ 7, 4, hsv}
 #define SET_THUMB_CLUSTER(hsv) 	\
-	{25, 2, hsv}, \
-	  {35+ 25, 2, hsv}
+	{5, 3, hsv}, \
+    {16, 2, hsv}, \
+    {29+5, 3, hsv}, \
+	{29+ 16, 2, hsv}
 #define SET_LAYER_ID(hsv) 	\
 	{0, 1, HSV_OVERRIDE_HELP(hsv, INDICATOR_BRIGHTNESS)}, \
-    {35+0, 1, HSV_OVERRIDE_HELP(hsv, INDICATOR_BRIGHTNESS)}, \
-		{1, 6, hsv}, \
-    {35+1, 6, hsv}, \
-		{7, 4, hsv}, \
-	  {35+ 7, 4, hsv}, \
-		{25, 2, hsv}, \
-	  {35+ 25, 2, hsv}
+    {29+0, 1, HSV_OVERRIDE_HELP(hsv, INDICATOR_BRIGHTNESS)}, \
+		{1, 3, hsv}, \
+    {29+1, 3, hsv}, \
+		{25, 4, hsv}, \
+	  {29+ 25, 4, hsv}
 
 // #define SFT_NUB MT(MOD_LSFT, KC_NUBS)
 // #define ALT_GUI MT(MOD_LALT, KC_LGUI)
@@ -348,8 +373,8 @@ char layer_state_str[70];
 
 // QWERT,
 // Light on inner column and underglow
-const rgblight_segment_t PROGMEM layer_qwert_lights[] = RGBLIGHT_LAYER_SEGMENTS(
-  SET_LAYER_ID(HSV_ORANGE)
+const rgblight_segment_t PROGMEM [] = RGBLIGHT_LAYER_SEGMENTS(
+  SET_QWERT(HSV_CHARTREUSE)
 
 );
 const rgblight_segment_t PROGMEM layer_colemakdh_lights[] = RGBLIGHT_LAYER_SEGMENTS(
@@ -359,8 +384,8 @@ const rgblight_segment_t PROGMEM layer_colemakdh_lights[] = RGBLIGHT_LAYER_SEGME
 // _NUM,
 // Light on outer column and underglow
 const rgblight_segment_t PROGMEM layer_NUM_lights[] = RGBLIGHT_LAYER_SEGMENTS(
-	SET_LAYER_ID(HSV_TEAL)
-
+	SET_LAYER_ID(HSV_TEAL),
+    SET_NUMPAD(HSV_MAGENTA)
 );
 // _SYM,
 // Light on inner column and underglow
@@ -371,18 +396,20 @@ const rgblight_segment_t PROGMEM layer_SYM_lights[] = RGBLIGHT_LAYER_SEGMENTS(
 // _NAV,
 // Light on inner column and underglow
 const rgblight_segment_t PROGMEM layer_NAV_lights[] = RGBLIGHT_LAYER_SEGMENTS(
-  SET_LAYER_ID(HSV_PURPLE)
+  SET_LAYER_ID(HSV_CYAN),
+  SET_GAMING(HSV_RED)
 );
 
 //_GAMING
 const rgblight_segment_t PROGMEM layer_gaming_lights[] = RGBLIGHT_LAYER_SEGMENTS(
-	SET_INDICATORS(HSV_RED),
-    SET_UNDERGLOW(HSV_RED),
-	SET_GAMING(HSV_BLUE),
-    {7, 4, HSV_ORANGE},
-    {25, 2, HSV_ORANGE},
-    {35+6, 4, HSV_ORANGE},
-    {35+25, 2, HSV_ORANGE}
+	SET_INDICATORS(HSV_VIOLE),
+	SET_GAMING(HSV_RED)
+    );
+
+//_ADJUST
+const rgblight_segment_t PROGMEM layer_ADJUST_lights[] = RGBLIGHT_LAYER_SEGMENTS(
+	SET_ADJUST(HSV_ORANGE),
+	SET_ADJUST_PERSIST(HSV_RED)
     );
 // _SWITCHER   // light up top row
 const rgblight_segment_t PROGMEM layer_switcher_lights[] = RGBLIGHT_LAYER_SEGMENTS(
@@ -393,25 +420,26 @@ const rgblight_segment_t PROGMEM layer_switcher_lights[] = RGBLIGHT_LAYER_SEGMEN
 const rgblight_segment_t* const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
 
     layer_qwert_lights,
+    layer_colemakdh_lights,
+    layer_SYM_lights,
 	layer_NUM_lights,// overrides layer 1
-	layer_SYM_lights,
     layer_NAV_lights,
 	layer_gaming_lights,
-	layer_switcher_lights,  // Overrides other layers
-	layer_colemakdh_lights
+    layer_ADJUST_lights,
+	layer_switcher_lights  // Overrides other layers
 );
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    state = update_tri_layer_state(state, _SYM, _NUM, _ADJUST);
+    state = update_tri_layer_state(state, _NAV, _NUM, _ADJUST);
 	rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULTS) && layer_state_cmp(default_layer_state,_QWERT));
-	rgblight_set_layer_state(3, layer_state_cmp(state, _DEFAULTS) && layer_state_cmp(default_layer_state,_COLEMAKDH));
+	rgblight_set_layer_state(1, layer_state_cmp(state, _DEFAULTS) && layer_state_cmp(default_layer_state,_COLEMAKDH));
 
 
-	rgblight_set_layer_state(1, layer_state_cmp(state, _SYM));
-	rgblight_set_layer_state(2, layer_state_cmp(state, _NUM));
+	rgblight_set_layer_state(2, layer_state_cmp(state, _SYM));
+	rgblight_set_layer_state(3, layer_state_cmp(state, _NUM));
+    rgblight_set_layer_state(4, layer_state_cmp(state, _NAV));
 
-	rgblight_set_layer_state(4, layer_state_cmp(state, _GAMING));
-	rgblight_set_layer_state(5, layer_state_cmp(state, _NAV));
+	rgblight_set_layer_state(5, layer_state_cmp(state, _GAMING));
     rgblight_set_layer_state(6, layer_state_cmp(state, _ADJUST));
 
     return state;
@@ -423,6 +451,13 @@ void keyboard_post_init_user(void) {
 	rgblight_mode(10);// haven't found a way to set this in a more useful way
 
 }
+
+#else
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+  return update_tri_layer_state(state, _NUM, _NAV, _ADJUST);
+}
+
 #endif
 
 #ifdef OLED_ENABLE
@@ -538,44 +573,57 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
-        if (clockwise) {
-            tap_code(KC_VOLU);
-        } else {
-            tap_code(KC_VOLD);
-        }
-		} else if (index == 1) {
-			switch (get_highest_layer(layer_state)) {
-				case _COLEMAK:
-				case _QWERT:
-				case _COLEMAKDH:
-					if (clockwise) {
-						tap_code(KC_PGDOWN);
-					} else {
-						tap_code(KC_PGUP);
-					}
-				break;
-			case _NUM:
-			case _SYM:
-					if (clockwise) {
-						tap_code(KC_DOWN);
-					} else {
-						tap_code(KC_UP);
-					}
-				break;
-			default:
-					if (clockwise) {
-						tap_code(KC_WH_D);
-					} else {
-						tap_code(KC_WH_U);
-					}
-				break;
+        switch (get_highest_layer(layer_state)) {
+            case _GAMING:
+                if (clockwise) {
+                    tap_code(KC_PGUP);
+                } else {
+                    tap_code(KC_PGDN);
+                }
+            break;
+            case _NUM:
+            case _SYM:
+                    if (clockwise) {
+                        tap_code16(N3_REDO);
+                    } else {
+                        tap_code16(N3_UNDO);
+                    }
+                break;
+            default:
+                    if (clockwise) {
+                        tap_code(KC_PGUP);
+                    } else {
+                        tap_code(KC_PGDN);
+                    }
+                break;
+		}
+    } else if (index == 1) {
+        switch (get_highest_layer(layer_state)) {
+            case _GAMING:
+                if (clockwise) {
+                    tap_code(KC_UP);
+                } else {
+                    tap_code(KC_DOWN);
+                }
+            break;
+        case _NUM:
+        case _SYM:
+                if (clockwise) {
+                    tap_code16(C(KC_RGHT));
+                } else {
+                    tap_code16(C(KC_LEFT));
+                }
+            break;
+        default:
+                if (clockwise) {
+                    tap_code(KC_VOLU);
+                } else {
+                    tap_code(KC_VOLD);
+                }
+            break;
 		}
     }
     return true;
 }
 
 #endif
-
-void keyboard_post_init(void) {
-    set_tri_layer_layers(_NUM, _NAV, _ADJUST);
-}

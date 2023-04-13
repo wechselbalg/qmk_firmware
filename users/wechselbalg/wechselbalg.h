@@ -4,6 +4,11 @@
 #include "keymap_neo2.h"
 #include "quantum.h"
 #include "wrappers.h"
+#include "tap_dance.h"
+
+#ifdef TAP_DANCE_ENABLE
+
+#endif
 
 enum layers {
   _NEO_QWERTZ = 0,
@@ -40,27 +45,7 @@ enum CustomKeys {
   F_LLOCK,
 };
 
-// Tap Dance declarations
-enum {
-    ESC_CIRC,
-    F6___F12,
-    SS___F11,
-    PSCR_APP,
-};
-
-// Tap Dance definitions
-tap_dance_action_t tap_dance_actions[] = {
-    [ESC_CIRC] = ACTION_TAP_DANCE_DOUBLE(KC_ESC, DE_CIRC),
-    [F6___F12] = ACTION_TAP_DANCE_DOUBLE(KC_6, KC_F12),
-    [SS___F11] = ACTION_TAP_DANCE_DOUBLE(DE_SS, KC_F11),
-    [PSCR_APP] = ACTION_TAP_DANCE_DOUBLE(KC_PSCR, KC_APP),
-};
-
 // Aliases for readability
-#define TD_ESCC TD(ESC_CIRC)
-#define TD_F612 TD(F6___F12)
-#define TD_SF11 TD(SS___F11)
-#define TD_PSAP TD(PSCR_APP)
 
 #define D_QWERT  DF(_QWERT)
 #define D_COLMK  DF(_COLEMAKDH)
@@ -108,9 +93,11 @@ tap_dance_action_t tap_dance_actions[] = {
 #define NUM_BSC  LT(_NUM, KC_BSPC)
 #define NUM__SS  LT(_NUM, DE_SS)
 #define NUM___Z  LT(_NUM, DE_Z)
+#define NUM_NM0  LT(_NUM, N3_NUM0)
 
 #define NAV_TAB  LT(_NAV, KC_TAB)
 #define NAV_BSC  LT(_NAV, KC_BSPC)
+#define NAV_NM0  LT(_NA, N3_NUM0)
 
 #define SC_BSPC  C_S_T(KC_BSPC)
 #define CTL_ENT  LCTL_T(KC_ENT)

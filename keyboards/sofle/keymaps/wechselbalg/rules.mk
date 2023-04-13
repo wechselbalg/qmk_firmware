@@ -9,9 +9,6 @@ OLED_ENABLE = yes
 OLED_DRIVER = SSD1306
 ENCODER_ENABLE = yes
 CONSOLE_ENABLE = no
-EXTRAKEY_ENABLE = yes
-NKRO_ENABLE = yes            # USB Nkey Rollover
-TRI_LAYER_ENABLE = yes    # Tri Layer for Adjust Layer
 LTO_ENABLE = yes
 
 RGB_MATRIX_ENABLE = no

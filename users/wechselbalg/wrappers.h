@@ -141,12 +141,12 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _________________GAMING_L2_________________  MO__SYM , DE_G   , DE_A   , DE_S   , DE_D   , DE_F
 #define _________________GAMING_L3_________________  KC_LSFT , DE_Y   , DE_X   , DE_B   , DE_C   , DE_V
 
-#define _________________GAMING_R1_________________  DE_Z    , DE_U   , DE_I   , DE_O   , DE_P     , DE___UE
+#define _________________GAMING_R1_________________  DE_Z    , DE_U   , DE_I   , DE_O   , DE_P     , NUM__UE
 #define _________________GAMING_R2_________________  DE_H    , DE_J   , DE_K   , DE_L   , DE___OE  , SYM__AE
 #define _________________GAMING_R3_________________  DE_N    , DE_M   , DE_COMM, DE_DOT , DE_MINS  , KC_RSFT
 
 #define _________5_GAMING_THUMBS_L__________         KC_LALT, KC_LSFT , KC_SPC , KC_SPC , _______
-#define _________5_GAMING_THUMBS_R__________         _______ , _______, MO__SYM, MO__NAV, MO__NUM
+#define _________5_GAMING_THUMBS_R__________         _______ , _______, MO__NAV, MO__NUM, MO__SYM
 
 // SYMBOL
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
@@ -184,7 +184,7 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _________________NUMBER_R2_________________  N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS
 #define _________________NUMBER_R3_________________  N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL
 
-#define _________5_NUMBER__THUMBS_R_________         _______, _______, N3_NUM0, N3_COMM, N3__DOT
+#define _________5_NUMBER__THUMBS_R_________         _______, _______, NAV_NM0, N3_COMM, N3__DOT
 
 // NAVIGATION
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
@@ -195,8 +195,8 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define _____________NAVIGATION_L0_________________  FN_EXIT, ___NO__, ___NO__, ___NO__, ___NO__, ___NO__
-#define _____________NAVIGATION_L1_________________  NX_PAST, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN
-#define _____________NAVIGATION_L2_________________  NX_COPY, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END
+#define _____________NAVIGATION_L1_________________  ___NO__, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN
+#define _____________NAVIGATION_L2_________________  ___NO__, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END
 #define _____________NAVIGATION_L3_________________  F_LLOCK, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT
 
 
