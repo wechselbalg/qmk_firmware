@@ -523,6 +523,8 @@ bool oled_task_user(void) {
 #endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!process_layer_lock(keycode, record, F_LLOCK)) { return false; }
+
     switch (keycode) {
         case QWERT:
             if (record->event.pressed) {
@@ -595,9 +597,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         case _SYM:
         case _NAV:
                 if (clockwise) {
-                    tap_code16(C(KC_RGHT));
+                    tap_code(KC_TAB);
                 } else {
-                    tap_code16(C(KC_LEFT));
+                    tap_code16(NX_UTAB);
                 }
             break;
         default:

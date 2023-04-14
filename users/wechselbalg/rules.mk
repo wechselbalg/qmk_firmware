@@ -1,4 +1,5 @@
 SRC += wechselbalg.c
+SRC += features/layer_lock.c
 # SRC += custom_shift_keys.c
 
 # ENCODER_ENABLE = no

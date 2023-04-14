@@ -5,6 +5,7 @@
 #include "quantum.h"
 #include "wrappers.h"
 #include "tap_dance.h"
+#include "features/layer_lock.h"
 
 #ifdef TAP_DANCE_ENABLE
 
@@ -93,6 +94,7 @@ enum CustomKeys {
 #define NUM_BSC  LT(_NUM, KC_BSPC)
 #define NUM__SS  LT(_NUM, DE_SS)
 #define NUM___Z  LT(_NUM, DE_Z)
+#define NUM___J  LT(_NUM, DE_J)
 #define NUM_NM0  LT(_NUM, N3_NUM0)
 
 #define NAV_TAB  LT(_NAV, KC_TAB)

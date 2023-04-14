@@ -187,10 +187,12 @@
 
 
 
-#define N3_C_UE        S(DE_UE)        // Ü
-#define N3_C_OE        S(DE_OE)        // Ö
-#define N3_C_AE        S(DE_AE)        // Ä
-#define N3_REDO        RCS(DE_Z)       // Shift + CTL + Z
-#define NX_COPY        LCTL(DE_C)      // CTL + C
-#define NX_PAST        LCTL(DE_V)      // CTL + V
-#define NX__CUT        LCTL(DE_X)      // CTL + X
+#define N3_C_UE     S(DE_UE)        // Ü
+#define N3_C_OE     S(DE_OE)        // Ö
+#define N3_C_AE     S(DE_AE)        // Ä
+#define N3_REDO     RCS(DE_Z)       // Shift + CTL + Z
+#define NX_COPY     LCTL(DE_C)      // CTL + C
+#define NX_PAST     LCTL(DE_V)      // CTL + V
+#define NX__CUT     LCTL(DE_X)      // CTL + X
+#define NX_UTAB     LSFT(KC_TAB)    // Shift + TAB
+#define NX_CENT     LCTL(KC_ENT)    // CTL + ENTER

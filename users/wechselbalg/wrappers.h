@@ -125,9 +125,9 @@ NOTE: These are all the same length.  If you do a search/replace
 #define __________________VOUX__L2_________________  MO__SYM , DE_C   , DE_A   , DE_E   , DE_I   , DE_Y
 #define __________________VOUX__L3_________________  KC_LSFT , DE_Z   , DE_X   ,DE_COMM , DE___UE, DE___OE
 
-#define __________________VOUX__R1_________________  DE_P    , DE_G   , DE_L   , DE_H   , DE_F   , DE_J
+#define __________________VOUX__R1_________________  DE_P    , DE_G   , DE_L   , DE_H   , DE_F   , NUM___J
 #define __________________VOUX__R2_________________  DE_B    , DE_T   , DE_R   , DE_N   , DE_S   , SYM__SS
-#define __________________VOUX__R3_________________  DE_Q    , DE_D   , DE_W   , DE_M   , DE_K   , KC_RSFT
+#define __________________VOUX__R3_________________  DE_Q    , DE_D   , DE_W   , DE_M   , DE_K   , RFT_MIN
 
 // GAMING
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
@@ -195,15 +195,15 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define _____________NAVIGATION_L0_________________  FN_EXIT, ___NO__, ___NO__, ___NO__, ___NO__, ___NO__
-#define _____________NAVIGATION_L1_________________  ___NO__, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN
-#define _____________NAVIGATION_L2_________________  ___NO__, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END
+#define _____________NAVIGATION_L1_________________  N3__TAB, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN
+#define _____________NAVIGATION_L2_________________  NX_UTAB, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END
 #define _____________NAVIGATION_L3_________________  F_LLOCK, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT
 
 
 #define _____________NAVIGATION_R0_________________  KC_TAB , ___NO__, ___NO__, ___NO__, ___NO__, KC_INS
 #define _____________NAVIGATION_R1_________________  ___NO__, NX_COPY, NX_PAST, NX__CUT, KC_PSCR, KC_APP
 #define _____________NAVIGATION_R2_________________  SFT_CTL, KC_LCTL, KC_LSFT, KC_LALT, KC_RALT, KC_RGUI
-#define _____________NAVIGATION_R3_________________  ___NO__, KC_WH_D, KC_MS_U, KC_WH_U, ___NO__, F_LLOCK
+#define _____________NAVIGATION_R3_________________  NX_CENT, KC_WH_D, KC_MS_U, KC_WH_U, ___NO__, F_LLOCK
 #define ______5_NAVIGATION_THUMBS_R_________         KC_BTN2, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R
 
 // ADJUST
