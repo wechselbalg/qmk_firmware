@@ -45,6 +45,9 @@ enum CustomKeys {
   MINE,
   KC_D_MUTE,
   F_LLOCK,
+  DBRACES,
+  FF_WORD,
+  RV_WORD
 };
 
 // Aliases for readability

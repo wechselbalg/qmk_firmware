@@ -161,7 +161,7 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _________________SYMBOL_L2_________________  DE_TILD , N3_BSLS, N3_SLSH, N3_CLBR, N3_CRBR, N3_ASTR
 #define _________________SYMBOL_L3_________________  F_LLOCK , N3_HASH, N3__DLR, N3_PIPE, N3_TILD, N3__GRV
 
-#define _________________SYMBOL_R0_________________  N3_CENT, N2_SECT, N3_SBSQ, N3_L_SQ, N3_R_SQ, ___NO__
+#define _________________SYMBOL_R0_________________  N3_CENT, N2_SECT, DBRACES, N3_L_SQ, N3_R_SQ, ___NO__
 #define _________________SYMBOL_R1_________________  N3_EXLM, N3_LABK, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR
 #define _________________SYMBOL_R2_________________  N3_QUES, N3_LPRN, N3_RPRN, N3_MINS, N3_COLN, N3___AT
 #define _________________SYMBOL_R3_________________  N3_PLUS, N3_PERC, N3_DQUO, N3_QUOT, N3_SCLN, F_LLOCK
@@ -194,7 +194,7 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _____________NAVIGATION_L0_________________  FN_EXIT, ___NO__, ___NO__, ___NO__, ___NO__, ___NO__
+#define _____________NAVIGATION_L0_________________  FN_EXIT, ___NO__, RV_WORD, ___NO__, FF_WORD, ___NO__
 #define _____________NAVIGATION_L1_________________  N3__TAB, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN
 #define _____________NAVIGATION_L2_________________  NX_UTAB, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END
 #define _____________NAVIGATION_L3_________________  F_LLOCK, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT

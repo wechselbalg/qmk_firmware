@@ -525,6 +525,8 @@ bool oled_task_user(void) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, F_LLOCK)) { return false; }
     if (!process_caps_word(keycode, record)) { return false; }
+    const uint8_t mods = get_mods();
+    const uint8_t oneshot_mods = get_oneshot_mods();
 
     switch (keycode) {
         case QWERT:
@@ -550,6 +552,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case VOUX:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_VOUX);
+            }
+            return false;
+        case FF_WORD:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LCTL(SS_TAP(X_RIGHT) SS_TAP(X_RIGHT) SS_TAP(X_LEFT)));
+            }
+            return false;
+        case RV_WORD:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LCTL(SS_TAP(X_LEFT) SS_TAP(X_LEFT) SS_TAP(X_RIGHT)));
+            }
+            return false;
+        case DBRACES:  // Types [], {}, or <> and puts cursor between braces.
+            if (record->event.pressed) {
+            clear_oneshot_mods();  // Temporarily disable mods.
+            unregister_mods(MOD_MASK_CSAG);
+            if ((mods | oneshot_mods) & MOD_MASK_SHIFT) {
+                SEND_STRING("{}");
+            } else if ((mods | oneshot_mods) & MOD_MASK_CTRL) {
+                SEND_STRING("<>");
+            } else {
+                SEND_STRING("[]");
+            }
+            tap_code(KC_LEFT);  // Move cursor between braces.
+            register_mods(mods);  // Restore mods.
             }
             return false;
     }
