@@ -1,7 +1,7 @@
 SRC += wechselbalg.c
 SRC += features/layer_lock.c
 SRC += features/caps_word.c
-# SRC += custom_shift_keys.c
+SRC += features/custom_shift_keys.c
 
 # ENCODER_ENABLE = no
 ENCODER_MAP_ENABLE = no

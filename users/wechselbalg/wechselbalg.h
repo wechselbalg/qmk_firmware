@@ -7,6 +7,7 @@
 #include "tap_dance.h"
 #include "features/layer_lock.h"
 #include "features/caps_word.h"
+#include "features/custom_shift_keys.h"
 
 #ifdef TAP_DANCE_ENABLE
 

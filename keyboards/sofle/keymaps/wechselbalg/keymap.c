@@ -88,35 +88,7 @@
 		{25, 4, hsv}, \
 	  {29+ 25, 4, hsv}
 
-// #define SFT_NUB MT(MOD_LSFT, KC_NUBS)
-// #define ALT_GUI MT(MOD_LALT, KC_LGUI)
-// #define SFT_SPC MT(MOD_LSFT, KC_SPC)
-// #define CK_LCTNU MT(MOD_LCTL, KC_NUHS)
-// #define CK_RCTNU MT(MOD_RCTL, KC_QUOT)
 
-// // SYMBOL-LAYER (Neo Layer 3)
-// #define CK_YSYM LT(_SYM, KC_Y)
-// #define CK_ZSYM LT(_SYM, KC_Z)
-// #define CK_FSYM LT(_SYM, KC_F)
-// #define CK_SSYM LT(_SYM, KC_MINS)
-// #define SYM_DOT LT(_SYM, KC_DOT)
-// #define SYM_AT LT(_SYM, ALGR(KC_Q))
-// #define SYM_AE LT(_SYM, KC_AE)
-
-// // NUMLOCK/NAV-LAYER (Neo Layer 4)
-// #define NUM_UE LT(_NUM, KC_UE)
-// #define NUM_Z LT(_NUM, KC_Z)
-// #define NUM_Y LT(_NUM, KC_Y)
-// #define NUM_X LT(_NUM, KC_X)
-// #define NUM_ESC LT(_NUM, KC_ESC)
-// #define SFT_ENT MT(MOD_RSFT, KC_ENT)
-// #define CK_RALT MT(MOD_RALT, KC_APP)
-// #define SFT_MIN MT(MOD_RSFT, KC_MINS)
-// #define CK_ALF4 LALT(KC_F4)
-// #define KC_AE KC_QUOT
-// #define KC_OE KC_SCLN
-// #define KC_UE KC_LBRC
-// #define CK_AT ALGR(KC_Q)
 
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
@@ -522,9 +494,18 @@ bool oled_task_user(void) {
 
 #endif
 
+const custom_shift_key_t custom_shift_keys[] = {
+  {NAV_BSC, KC_DEL}, // Shift BACKSPACE is DELETE
+};
+uint8_t NUM_CUSTOM_SHIFT_KEYS =
+    sizeof(custom_shift_keys) / sizeof(custom_shift_key_t);
+
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, F_LLOCK)) { return false; }
     if (!process_caps_word(keycode, record)) { return false; }
+    if (!process_custom_shift_keys(keycode, record)) { return false; }
+
     const uint8_t mods = get_mods();
     const uint8_t oneshot_mods = get_oneshot_mods();
 
