@@ -6,6 +6,7 @@
 #include "wrappers.h"
 #include "tap_dance.h"
 #include "features/layer_lock.h"
+#include "features/caps_word.h"
 
 #ifdef TAP_DANCE_ENABLE
 
