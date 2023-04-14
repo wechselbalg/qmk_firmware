@@ -1,11 +1,11 @@
 {
-    "keyboard_name": "Sofle",
-    "manufacturer": "JosefAdamcik",
+    "keyboard_name": "Dell KB216 Wired Keyboard",
+    "manufacturer": "Dell",
     "url": "https://github.com/josefadamcik/SofleKeyboard",
     "maintainer": "Josef Adamcik <josef.adamcik@gmail.com>",
     "usb": {
-        "vid": "0xFC32",
-        "pid": "0x0287",
+        "vid": "0x413C",
+        "pid": "0x2113",
         "device_version": "0.0.1"
     },
     "encoder": {
