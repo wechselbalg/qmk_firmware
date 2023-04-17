@@ -24,6 +24,7 @@
 *******************************************************************************/
 
 #pragma once
+// #include "sendstring_german.h"
 #include "keymap_german.h"
 // clang-format off
 

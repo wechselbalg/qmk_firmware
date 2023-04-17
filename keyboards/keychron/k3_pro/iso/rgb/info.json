@@ -1,12 +1,12 @@
 {
-    "keyboard_name": "Keychron K3 Pro",
-    "manufacturer": "Keychron",
+    "keyboard_name": "Dell KB216 Wired Keyboard",
+    "manufacturer": "Dell",
     "url": "https://github.com/Keychron",
     "maintainer": "lokher",
     "usb": {
-    	"vid": "0x3434",
-    	"pid": "0x0231",
-    	"device_version": "1.0.0"
+        "vid": "0x413C",
+        "pid": "0x2113",
+        "device_version": "1.0.0"
     },
     "layouts": {
         "LAYOUT_iso_85": {

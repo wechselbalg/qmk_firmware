@@ -17,6 +17,7 @@
   // SOFLE RGB
 #include <stdio.h>
 #include "wechselbalg.h"
+#include "sendstring_german.h"
 
 #include QMK_KEYBOARD_H
 
@@ -196,7 +197,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 
 /*
- * VOUX
+ * VOU
  * ,-----------------------------------------.                    ,-----------------------------------------.
  * | ESC  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -210,7 +211,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            |      |      |      |      |/       /         \      \ |      |      |      |      |
  *            `----------------------------------'           '------''---------------------------'
  */
-[_VOUX] = LAYOUT_wrapper(
+[_VOU] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
       TD_ESCC, ____________5_F_L_________________,                          _________________5_F_R____________, TD_SF11,
       __________________VOUX__L1_________________,                          __________________VOUX__R1_________________,
@@ -456,8 +457,8 @@ static void print_status_narrow(void) {
         case _MINE:
             oled_write_P(PSTR("MINE\n"), false);
             break;
-        case _VOUX:
-            oled_write_P(PSTR("VOUX\n"), false);
+        case _VOU:
+            oled_write_P(PSTR("VOU\n"), false);
             break;
         case _NUM:
             oled_write_P(PSTR("NUM \n"), false);
@@ -530,9 +531,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 set_single_persistent_default_layer(_MINE);
             }
             return false;
-        case VOUX:
+        case VOU:
             if (record->event.pressed) {
-                set_single_persistent_default_layer(_VOUX);
+                set_single_persistent_default_layer(_VOU);
             }
             return false;
         case FF_WORD:

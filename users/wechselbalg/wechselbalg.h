@@ -27,7 +27,7 @@ enum splitlayers {
     _DVORAK,
     _COLEMAKDH,
     _MINE,
-    _VOUX,
+    _VOU,
     _SYM,
     _NAV,
     _NUM,
@@ -42,7 +42,7 @@ enum CustomKeys {
   QWERT,
   DVORAK,
   COLEMAK,
-  VOUX,
+  VOU,
   MINE,
   KC_D_MUTE,
   F_LLOCK,
@@ -57,7 +57,7 @@ enum CustomKeys {
 #define D_COLMK  DF(_COLEMAKDH)
 #define D_DVORK  DF(_DVORAK)
 #define D__MINE  DF(_MINE)
-#define D__VOUX  DF(_VOUX)
+#define D__VOU  DF(_VOU)
 #define D__GAME  DF(_GAMING)
 
 #define MO__SYM  MO(_SYM)

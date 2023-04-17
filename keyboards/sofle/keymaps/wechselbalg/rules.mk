@@ -15,6 +15,7 @@ RGB_MATRIX_ENABLE = no
 RGBLIGHT_ENABLE = yes
 RGB_MATRIX_DRIVER = WS2812
 
+
 # Change keymaps without flashing
 # https://caniusevia.com/
 # VIA_ENABLE = yes
