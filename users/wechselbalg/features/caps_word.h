@@ -67,6 +67,7 @@
 #pragma once
 
 #include "quantum.h"
+#include "keymap_german.h"
 
 #ifdef __cplusplus
 extern "C" {

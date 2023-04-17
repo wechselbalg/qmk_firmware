@@ -1,7 +1,7 @@
 #ifdef TAPPING_TERM
     #undef TAPPING_TERM
 #endif
-#define TAPPING_TERM 800
+#define TAPPING_TERM 600
 #define HOLD_ON_OTHER_KEY_PRESS
 #define QUICK_TAP_TERM 80
 #define TAPPING_TOGGLE 3
