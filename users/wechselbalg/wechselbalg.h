@@ -57,7 +57,7 @@ enum CustomKeys {
 #define D_COLMK  DF(_COLEMAKDH)
 #define D_DVORK  DF(_DVORAK)
 #define D__MINE  DF(_MINE)
-#define D__VOU  DF(_VOU)
+#define D___VOU  DF(_VOU)
 #define D__GAME  DF(_GAMING)
 
 #define MO__SYM  MO(_SYM)

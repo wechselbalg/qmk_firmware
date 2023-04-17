@@ -215,8 +215,8 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define _________________ADJUST_L0_________________  FN_EXIT, KC_BRID, KC_BRIU, ___NO__, ___NO__, RGB_VAD
-#define _________________ADJUST_L1_________________  QWERT  , DVORAK , COLEMAK, VOUX   , MINE   , ___NO__
-#define _________________ADJUST_L2_________________  D_QWERT, D_DVORK, D_COLMK, D__VOUX, D__MINE, D__GAME
+#define _________________ADJUST_L1_________________  QWERT  , DVORAK , COLEMAK, VOU    , MINE   , ___NO__
+#define _________________ADJUST_L2_________________  D_QWERT, D_DVORK, D_COLMK, D___VOU, D__MINE, D__GAME
 #define _________________ADJUST_L3_________________  ___NO__, ___NO__, ___NO__, ___NO__, ___NO__, QK_BOOT
 
 #define _________________ADJUST_R0_________________  RGB_VAI, KC_MPRV, KC_MPLY, KC_MNXT, RGB_TOG, RGB_MOD
