@@ -16,11 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 #include "wechselbalg.h"
+#include "sendstring_german.h"
 #include "print.h"
-#include "features/custom_shift_keys.h"
 // clang-format off
 
-#define SYM_HSH  LT(_NEO_3,DE_HASH)
+#define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -31,7 +31,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //      Sh_L     /        Z        X        C        V        B        N        M        ,        .        ?                 Sh_R     Up       End
 //      Ct_L     Win_L    Alt_L                               SPACE                               Alt_R    FN       Ct_R     Left     Down     Right
 
-    // [_BASE] = LAYOUT(
+    // [_BASE] = LAYOUT_wrapper(
     //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
     //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
     //     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
@@ -51,16 +51,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // This keyboard defaults to 6KRO instead of NKRO for compatibility reasons (some KVMs and BIOSes are incompatible with NKRO).
     // Since this is, among other things, a "gaming" keyboard, a key combination to enable NKRO on the fly is provided for convenience.
     // Press Fn+N to toggle between 6KRO and NKRO. This setting is persisted to the EEPROM and thus persists between restarts.
-    [_NEO_QWERTZ] = LAYOUT(
-        KC_ESC,       KC_F1,      KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,     KC_F11,  KC_F12,     RN_CODE,          KC_MUTE,
-        KC_GRV,       KC_1,       KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,       KC_MINS, KC_EQL,     KC_BSPC,          KC_DEL,
-        KC_TAB,       KC_Q,       KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,       DE_UE,   KC_RBRC,                      KC_HOME,
-        MO(_NEO_3),   KC_A,       KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    DE_OE,      DE_AE,   SYM_HSH,    KC_ENT,           KC_END,
-        KC_LSFT,      MO(_NEO_4), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,     KC_SLSH, KC_RSFT,             KC_UP,   MO(_FN),
-        KC_LCTL,      KC_LGUI,    KC_LALT,                            KC_SPC,                             MO(_NEO_4), MO(_FN), KC_RCTL,    KC_LEFT, KC_DOWN, KC_RGHT
+    [_QWERT] = LAYOUT_wrapper(
+        KC_ESC,  KC_F1, KC_F2, KC_F3, KC_F4,  KC_F5,  KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11,  KC_F12,   RN_CODE,  KC_MUTE,
+        KC_GRV,  _________5_NUMBERS_L______________,  _______________5_NUMBERS_R________, KC_MINS, KC_EQL,   KC_BSPC,  KC_DEL,
+        _________________QWERTY_L1_________________,  _________________QWERTY_R1_________________, KC_RBRC,            KC_HOME,
+        _________________QWERTY_L2_________________,  _________________QWERTY_R2_________________, SYM_HSH,  KC_ENT,   KC_END,
+        _________________QWERTY_L3_________________,  _________________QWERTY_R3_________________, KC_UP,    MO(_FN),
+        KC_LCTL, KC_LGUI, KC_LALT,             KC_SPC,               MO(_NEO_4), MO(_FN), KC_RCTL, KC_LEFT,  KC_DOWN,  KC_RGHT
     ),
 
-    [_NEO_3] = LAYOUT(
+    [_SYM] = LAYOUT_wrapper(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
         _______, N3_SUP1, N3_SUP2, N3_SUP3, N3_RSAQ, N3_LSAQ, N3_CENT, N3__YEN, N3_SBSQ, N3_L_SQ, N3_R_SQ, ___NO__, ___NO__, _______,          _______,
         _______, N3_ELPS, N3_UNDS, N3_LBRC, N3_RBRC, N3_CIRC, N3_EXLM, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR, N3_SL_S, N3_SLSH,                   _______,
@@ -69,7 +69,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______,                            _______,                            _______, _______, _______, _______, _______, _______
     ),
 
-    [_NEO_4] = LAYOUT(
+    [_NUM] = LAYOUT_wrapper(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
         _______, N3_F_OR, N3_M_OR, N3_NUMS, ___NO__, N3_MDOT, N3_BPND, N3_CURS,  KC_TAB, N3_SLSH, N3_ASTR, N3_NMNS, ___NO__, _______,          _______,
         _______, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN, N3_IEXL, N3_NUM7, N3_NUM8, N3_NUM9, N3_NPLS, N3_DMNS, ___NO__,                   _______,
@@ -78,7 +78,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______,                            N3_NUM0,                            _______, _______, _______, KC_MS_L, KC_MS_D, KC_MS_R
     ),
 
-    [_FN] = LAYOUT(
+    [_NAV] = LAYOUT_wrapper(
         QK_BOOT, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______,  KC_F13,          _______,
         _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,          _______,
         _______, RGB_VAI,  UC_WIN, UC_WINC, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   UC_NEXT,
@@ -87,7 +87,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______,                            _______,                            _______, _______, _______, RGB_SPD, RGB_RMOD, RGB_SPI
     ),
 
-    [_CONFIG] = LAYOUT(
+    [_GAMING] = LAYOUT_wrapper(
+        KC_ESC,  KC_F1, KC_F2, KC_F3, KC_F4,  KC_F5,  KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11,  KC_F12,   RN_CODE,  KC_MUTE,
+        KC_GRV,  _________5_NUMBERS_L______________,  _______________5_NUMBERS_R________, KC_MINS, KC_EQL,   KC_BSPC,  KC_DEL,
+        _________________QWERTY_L1_________________,  _________________QWERTY_R1_________________, KC_RBRC,            KC_HOME,
+        _________________QWERTY_L2_________________,  _________________QWERTY_R2_________________, SYM_HSH,  KC_ENT,   KC_END,
+        _________________QWERTY_L3_________________,  _________________QWERTY_R3_________________, KC_UP,    MO(_FN),
+        KC_LCTL, KC_LGUI, KC_LALT,             KC_SPC,               MO(_NEO_4), MO(_FN), KC_RCTL, KC_LEFT,  KC_DOWN,  KC_RGHT
+    ),
+
+    [_ADJUST] = LAYOUT_wrapper(
         QK_BOOT, KC_MYCM, KC_WHOM, KC_CALC, KC_MSEL, KC_MPRV, KC_MNXT, KC_MPLY, KC_MSTP, KC_MUTE, KC_VOLD, KC_VOLU, _______, _______,          _______,
         _______, RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,          _______,
         _______, _______, RGB_VAI, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   _______,

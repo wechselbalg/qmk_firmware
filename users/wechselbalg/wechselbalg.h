@@ -90,7 +90,6 @@ enum CustomKeys {
 #define SYM_HSH  LT(_SYM,DE_HASH)
 #define SYM_ACU  LT(_SYM,DE_ACUT)
 
-
 #define NUM___Y  LT(_NUM, DE_Y)
 #define NUM_SCL  LT(_NUM, DE_SCLN)
 #define NUM__UE  LT(_NUM, DE___UE)
