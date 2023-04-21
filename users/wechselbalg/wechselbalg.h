@@ -101,14 +101,17 @@ enum CustomKeys {
 #define NUM___Z  LT(_NUM, DE_Z)
 #define NUM___J  LT(_NUM, DE_J)
 #define NUM_NM0  LT(_NUM, N3_NUM0)
+#define NUM_ENT  LT(_NUM, KC_ENT)
 
 #define NAV_TAB  LT(_NAV, KC_TAB)
 #define NAV_BSC  LT(_NAV, KC_BSPC)
 #define NAV_NM0  LT(_NAV, N3_NUM0)
+#define NAV_ENT  LT(_NAV, KC_ENT)
 
 #define SC_BSPC  C_S_T(KC_BSPC)
 #define CTL_ENT  LCTL_T(KC_ENT)
 #define RTL_ENT  RCTL_T(KC_ENT)
+
 #define CTL_SPC  LCTL_T(KC_SPC)
 #define RALT_AP  RALT_T(KC_APP)
 

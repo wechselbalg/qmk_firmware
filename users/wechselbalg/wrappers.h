@@ -41,12 +41,18 @@ NOTE: These are all the same length.  If you do a search/replace
 #define ____________5_F_L_________________  KC_F1,   KC_F2, KC_F3, KC_F4, KC_F5     // TD_ESCC,
 #define _________________5_F_R____________  TD_F612, KC_F7, KC_F8, KC_F9, KC_F10  // , TD_SF11
 
+// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
+// | F1  | F2  | F3  | F4  | F5  |   | F6  | F7  | F8  | F9  | F10 |
+// ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
+#define ___________________6_F_L____________________  KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6     // TD_ESCC,
+#define _____________________6_F_R__________________  KC_F7, KC_F8, KC_F9, KC_F10, KC_F11, KC_F12  // , TD_SF11
+
 // THUMBKEYS
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 // | F1  | F2  | F3  | F4  | F5  |   | F6  | F7  | F8  | F9  | F10 |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, NUM_DEL, SFT_SPC, CTL_ENT
-#define ____________5_THUMBS_R______________  RTL_ENT, RFT_SPC, NAV_BSC, RALT_PR, KC_RGUI
+#define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, CTL_ENT, SFT_SPC, NUM_DEL
+#define ____________5_THUMBS_R______________  NAV_BSC, RFT_SPC, RTL_ENT, RALT_PR, KC_RGUI
 
 
 // QWERT
