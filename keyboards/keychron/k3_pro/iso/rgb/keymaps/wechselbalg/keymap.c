@@ -26,7 +26,7 @@
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [MINE] = LAYOUT_iso_85(
-     KC_ESC,   ___________________6_F_L____________________,     _____________________6_F_R__________________,   KC_CALC,  KC_MAIL,  RGB_TOG,
+     KC_ESC,   ___________________6_F_L___________________,     ____________________6_F_R__________________,   KC_CALC,  KC_MAIL,  RGB_TOG,
      DE_CIRC,  _________5_NUMBERS_L______________,     _______________5_NUMBERS_R________,     DE_MINS,  DE_GRV,   KC_BSPC,            KC_DEL,
      KC_TAB,   DE_J,     DE_L,     DE_U,     DE_A,     DE_W,     DE_B,     DE_B,     DE_D,     DE_G,     DE_Y,     DE_Z,     DE_SS,    KC_ENT,             KC_HOME,
      MO(SYM),  DE_C,     DE_R,     DE_I,     DE_E,     DE_O,     DE_M,     DE_N,     DE_T,     DE_S,     DE_H,     MO(SYM),  N_SY_AC,                      KC_END,

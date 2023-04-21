@@ -114,6 +114,6 @@ enum CustomKeys {
 #define CTL_SPC  LCTL_T(KC_SPC)
 #define RALT_AP  RALT_T(KC_APP)
 
-#define FN_EXIT        TO(QWERT)      // Turns off all layers, except the default
+#define FN_EXIT      TO(QWERT)      // Turns off all layers, except the default
 
 

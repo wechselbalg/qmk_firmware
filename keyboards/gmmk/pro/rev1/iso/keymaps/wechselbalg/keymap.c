@@ -52,21 +52,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Since this is, among other things, a "gaming" keyboard, a key combination to enable NKRO on the fly is provided for convenience.
     // Press Fn+N to toggle between 6KRO and NKRO. This setting is persisted to the EEPROM and thus persists between restarts.
     [_QWERT] = LAYOUT_wrapper(
-        KC_ESC,  KC_F1, KC_F2, KC_F3, KC_F4,  KC_F5,  KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11,  KC_F12,   RN_CODE,  KC_MUTE,
-        KC_GRV,  _________5_NUMBERS_L______________,  _______________5_NUMBERS_R________, KC_MINS, KC_EQL,   KC_BSPC,  KC_DEL,
-        _________________QWERTY_L1_________________,  _________________QWERTY_R1_________________, KC_RBRC,            KC_HOME,
-        _________________QWERTY_L2_________________,  _________________QWERTY_R2_________________, SYM_HSH,  KC_ENT,   KC_END,
-        _________________QWERTY_L3_________________,  _________________QWERTY_R3_________________, KC_UP,    MO(_FN),
-        KC_LCTL, KC_LGUI, KC_LALT,             KC_SPC,               MO(_NEO_4), MO(_FN), KC_RCTL, KC_LEFT,  KC_DOWN,  KC_RGHT
+        KC_ESC,  KC_F1, KC_F2, KC_F3, KC_F4,  KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11,  KC_F12,   RN_CODE,  KC_MUTE,
+        KC_GRV,  _________5_NUMBERS_L______________, _______________5_NUMBERS_R________, KC_MINS, KC_EQL,   KC_BSPC,  KC_DEL,
+        _________________QWERTY_L1_________________, _________________QWERTY_R1_________________, KC_RBRC,            KC_HOME,
+        _________________QWERTY_L2_________________, _________________QWERTY_R2_________________, SYM_HSH,  KC_ENT,   KC_END,
+        _________________QWERTY_L3_________________, _________________QWERTY_R3_________________, KC_UP,    MO(_FN),
+        ________________________________________7_THUMBS________________________________________, KC_LEFT,  KC_DOWN,  KC_RGHT
     ),
 
     [_SYM] = LAYOUT_wrapper(
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
-        _______, N3_SUP1, N3_SUP2, N3_SUP3, N3_RSAQ, N3_LSAQ, N3_CENT, N3__YEN, N3_SBSQ, N3_L_SQ, N3_R_SQ, ___NO__, ___NO__, _______,          _______,
-        _______, N3_ELPS, N3_UNDS, N3_LBRC, N3_RBRC, N3_CIRC, N3_EXLM, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR, N3_SL_S, N3_SLSH,                   _______,
-        _______, N3_BSLS, N3_SLSH, N3_CLBR, N3_CRBR, N3_ASTR, N3_QUES, N3_LPRN, N3_RPRN, N3_MINS, N3_COLN, N3___AT, _______, _______,          _______,
-        _______, _______, N3_HASH, N3__DLR, N3_PIPE, N3_TILD, N3__GRV, N3_PLUS, N3_PERC, N3_DQUO, N3_QUOT, N3_SCLN, _______,          _______, _______,
-        _______, _______, _______,                            _______,                            _______, _______, _______, _______, _______, _______
+        _______, _________5_NUMBERS_L______________, _______________5_NUMBERS_R________, _______, _______, _______,          _______,
+        _________________SYMBOL_L0_________________, _________________SYMBOL_R0_________________, ___NO__, _______,          _______,
+        _________________SYMBOL_L1_________________, _________________SYMBOL_R1_________________, N3_SLSH,                   _______,
+        _________________SYMBOL_L2_________________, _________________SYMBOL_R2_________________, _______,    _______,       _______,
+        _________________SYMBOL_L3_________________, _________________SYMBOL_R3_________________, _______,       _______,    _______,
+        ________________________________________7_THUMBS________________________________________,       _______, _______, _______
     ),
 
     [_NUM] = LAYOUT_wrapper(

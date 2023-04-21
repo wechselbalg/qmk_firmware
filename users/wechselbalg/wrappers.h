@@ -44,16 +44,16 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 // | F1  | F2  | F3  | F4  | F5  |   | F6  | F7  | F8  | F9  | F10 |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define ___________________6_F_L____________________  KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6     // TD_ESCC,
-#define _____________________6_F_R__________________  KC_F7, KC_F8, KC_F9, KC_F10, KC_F11, KC_F12  // , TD_SF11
+#define ___________________6_F_L___________________  KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6     // TD_ESCC,
+#define ____________________6_F_R__________________  KC_F7, KC_F8, KC_F9, KC_F10, KC_F11, KC_F12  // , TD_SF11
 
 // THUMBKEYS
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 // | F1  | F2  | F3  | F4  | F5  |   | F6  | F7  | F8  | F9  | F10 |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, CTL_ENT, SFT_SPC, NUM_DEL
-#define ____________5_THUMBS_R______________  NAV_BSC, RFT_SPC, RTL_ENT, RALT_PR, KC_RGUI
-
+#define ____________5_THUMBS_R______________  NAV_BSC, RFT_ENT, KC_RCTL, RALT_PR, KC_RGUI
+#define ________________________________________7_THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, KC_SPC, MO__NAV, MO__NUM, KC_RCTL
 
 // QWERT
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
@@ -168,7 +168,7 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _________________SYMBOL_L3_________________  F_LLOCK , N3_HASH, N3__DLR, N3_PIPE, N3_TILD, N3__GRV
 
 #define _________________SYMBOL_R0_________________  N3_CENT, N2_SECT, DBRACES, N3_L_SQ, N3_R_SQ, ___NO__
-#define _________________SYMBOL_R1_________________  N3_EXLM, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR, N3_AMPR
+#define _________________SYMBOL_R1_________________  N3_EXLM, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR, DE_PLUS
 #define _________________SYMBOL_R2_________________  N3_QUES, N3_LPRN, N3_RPRN, N3_MINS, N3_COLN, N3___AT
 #define _________________SYMBOL_R3_________________  N3_PLUS, N3_PERC, N3_DQUO, N3_QUOT, N3_SCLN, F_LLOCK
 
