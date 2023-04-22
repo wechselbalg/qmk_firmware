@@ -144,14 +144,14 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define _________________GAMING_L1_________________  KC_TAB  , DE_Q   , DE_T   , DE_W   , DE_E   , DE_R
-#define _________________GAMING_L2_________________  MO__SYM , DE_G   , DE_A   , DE_S   , DE_D   , DE_F
-#define _________________GAMING_L3_________________  KC_LSFT , DE_Y   , DE_X   , DE_B   , DE_C   , DE_V
+#define _________________GAMING_L2_________________  MO__SYM , KC_LSFT, DE_A   , DE_S   , DE_D   , DE_F
+#define _________________GAMING_L3_________________  DE_Y,     DE_G   , DE_X   , DE_B   , DE_C   , DE_V
 
-#define _________________GAMING_R1_________________  DE_Z    , DE_U   , DE_I   , DE_O   , DE_P     , NUM__UE
-#define _________________GAMING_R2_________________  DE_H    , DE_J   , DE_K   , DE_L   , DE___OE  , SYM__AE
-#define _________________GAMING_R3_________________  DE_N    , DE_M   , DE_COMM, DE_DOT , DE_MINS  , KC_RSFT
+#define _________________GAMING_R1_________________  DE_Z    , DE_U   , DE_I   , DE_O   , DE_P   , NUM__UE
+#define _________________GAMING_R2_________________  DE_H    , DE_J   , DE_K   , DE_L   , DE___OE, SYM__AE
+#define _________________GAMING_R3_________________  DE_N    , DE_M   , DE_COMM, DE_DOT , DE_MINS, KC_RSFT
 
-#define _________5_GAMING_THUMBS_L__________         KC_LALT, KC_LSFT , KC_SPC , KC_SPC , _______
+#define _________5_GAMING_THUMBS_L__________         KC_LCTL , KC_LALT, KC_LCTL, KC_SPC , KC_ENT
 #define _________5_GAMING_THUMBS_R__________         _______ , _______, MO__NAV, MO__NUM, MO__SYM
 
 // SYMBOL
@@ -181,9 +181,9 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define _________________NUMBER_L0_________________  FN_EXIT,  DE_DEG, DE_SUP2, DE_SUP3, ___NO__, N3_MDOT
-#define _________________NUMBER_L1_________________  KC_NUM ,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , ___NO__
-#define _________________NUMBER_L2_________________  KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , ___NO__
-#define _________________NUMBER_L3_________________  F_LLOCK,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , ___NO__
+#define _________________NUMBER_L1_________________  KC_NUM ,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , N3_REDO
+#define _________________NUMBER_L2_________________  KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , N3_UNDO
+#define _________________NUMBER_L3_________________  F_LLOCK,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , N3__ENT
 
 #define _________________NUMBER_R0_________________  N4__TAB, N2_SECT, N3_SLSH, N3_ASTR, DE_HASH, N3_NMNS
 #define _________________NUMBER_R1_________________  N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH
