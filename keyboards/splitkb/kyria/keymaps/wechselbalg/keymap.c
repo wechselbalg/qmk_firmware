@@ -60,6 +60,7 @@
 // Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
 // The notation `mod/tap` denotes a key that activates the modifier `mod` when held down, and
 // produces the key `tap` when tapped (i.e. pressed and released).
+#define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -77,11 +78,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_QWERTY] = LAYOUT(
-     KC_TAB  ,    DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,  DE_T ,                                          DE_Y   ,   DE_U ,  DE_I  ,   DE_O ,   DE_P ,  DE_LBRC,
-     TT(SYM) ,    DE_A ,  DE_S   ,  DE_D  ,   DE_F ,  DE_G ,                                          DE_H   ,   DE_J ,  DE_K  ,   DE_L , DE_SCLN,  SYM_AE ,
-        NUM  ,    NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,  DE_B , KC_ESC , KC_LGUI,     KC_RGUI , RALT_AP, DE_N   ,   DE_M , DE_COMM, DE_DOT , DE_,MINS, SFT_SS ,
-                                   KC_LALT,TT(_NUM), KC_DEL, SFT_SPC, CTL_ENT,     CTL_ENT , SFT_SPC, KC_BSPC,TT(_NAV), NUM
+    [_QWERTY] = LAYOUT_wrapper(
+     _________________QWERTY_L1_________________,                                          _________________QWERTY_R1_________________,
+     _________________QWERTY_L2_________________,                                          _________________QWERTY_R2_________________,
+     _________________QWERTY_L3_________________, KC_ESC , KC_LGUI,     KC_RGUI , RALT_AP, _________________QWERTY_R3_________________,
+                              ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -98,11 +99,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_DVORAK] = LAYOUT(
-     _______ ,KC_QUOTE, DE_COMM,  DE_DOT,   DE_P ,   DE_Y ,                                        DE_F,   DE_G ,  DE_C ,   DE_R ,  DE_L , _______,
-     _______ ,   DE_A , DE_O   ,  DE_E  ,   DE_U ,   DE_I ,                                        DE_D,   DE_H ,  DE_T ,   DE_N ,  DE_S ,SYM_MINS,
-     _______ ,NUM_SCLN, DE_Q   ,  DE_J  ,   DE_K ,   DE_X , _______,_______,     _______, _______, DE_B,   DE_M ,  DE_W ,   DE_V ,  DE_Z , _______,
-                                 _______, _______, _______, _______,_______,     _______, _______, _______,_______, _______
+    [_DVORAK] = LAYOUT_wrapper(
+     _________________DVORAK_L1_________________,                                        _________________DVORAK_R1_________________,
+     _________________DVORAK_L2_________________,                                        _________________DVORAK_R2_________________,
+     _________________DVORAK_L3_________________, _______, _______,     _______, _______, _________________DVORAK_R3_________________,
+                              ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -119,11 +120,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_COLEMAK_DH] = LAYOUT(
-     _______ , DE_Q ,  DE_W   ,  DE_F  ,   DE_P ,   DE_B ,                                        DE_J,   DE_L ,  DE_U ,   DE_Y ,DE_SCLN, _______,
-     _______ , DE_A ,  DE_R   ,  DE_S  ,   DE_T ,   DE_G ,                                        DE_M,   DE_N ,  DE_E ,   DE_I ,  DE_O ,  SYM_AE,
-     _______ , DE_Z ,  DE_X   ,  DE_C  ,   DE_D ,   DE_V ,_______,_______,     _______, _______,  DE_K,   DE_H ,DE_COMM, DE_DOT ,DE_SLSH, _______,
-                               _______, _______, _______, _______,_______,     _______, _______, _______,_______, _______
+    [_COLEMAK_DH] = LAYOUT_wrapper(
+     ______________COLEMAKDH_L1_________________,                                         ______________COLEMAKDH_R1_________________,
+     ______________COLEMAKDH_L2_________________,                                         ______________COLEMAKDH_R2_________________,
+     ______________COLEMAKDH_L3_________________, _______, _______,     _______, _______, ______________COLEMAKDH_R3_________________,
+                              ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -140,11 +141,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_MINE] = LAYOUT(
-     _______ , DE_J,    DE_L,   DE_U,    DE_A,    DE_Q,                                           DE_W,   DE_B,    DE_D,    DE_G,   DE_Y, DE_SS,
-     _______ , DE_C,    DE_I,   DE_A,    DE_E,    DE_O,                                           DE_M,   DE_N,    DE_T,    DE_S,   DE_H, SYM_Z,
-     _______ , DE_V,    DE_X,  DE_UE,   DE_AE,   DE_OE,    _______,_______,     _______, _______, DE_P,   DE_F,    DE_COMM, DE_DOT, DE_K, _______,
-                                _______, _______, _______, _______,_______,     _______, _______, _______,_______, _______
+    [_MINE] = LAYOUT_wrapper(
+     __________________MINE__L1_________________,                                         __________________MINE__R1_________________,
+     __________________MINE__L2_________________,                                         __________________MINE__R2_________________,
+     __________________MINE__L3_________________, _______, _______,     _______, _______, __________________MINE__R3_________________,
+                              ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -161,11 +162,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_VOUX] = LAYOUT(
-     _______ , DE_V , DE_DOT, DE_O   ,   DE_U ,  DE_AE ,                                           DE_P ,  DE_G ,   DE_L ,  DE_H ,  DE_F , _______,
-     _______ , DE_C , DE_A  , DE_E   ,   DE_I ,   DE_Z ,                                           DE_B ,  DE_T ,   DE_R ,  DE_N ,  DE_S , SYM_SS ,
-     _______ , NUM_Z, DE_X  , DE_COMM,  DE_UE ,  DE_OE , _______, _______,     _______, _______,   DE_Q ,  DE_D ,   DE_W ,  DE_M ,  DE_K , _______,
-                              _______, _______, _______, _______, _______,     _______, _______, _______,_______, _______
+    [_VOUX] = LAYOUT_wrapper(
+     __________________VOUX__L1_________________,                                         __________________VOUX__R1_________________,
+     __________________VOUX__L2_________________,                                         __________________VOUX__R2_________________,
+     __________________VOUX__L3_________________, _______, _______,     _______, _______, __________________VOUX__R3_________________,
+                              ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -182,11 +183,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_GAMING] = LAYOUT(
-      _______, DE_Q ,  DE_W   ,  DE_E  ,   DE_R ,   DE_T ,                                     _______, _______, _______, _______,  _______, _______,
-      KC_LSFT, DE_A ,  DE_S   ,  DE_D  ,   DE_F ,   DE_G ,                                     _______, _______, _______, _______,  _______, _______,
-      _______, NUM_Z,  DE_X   ,  DE_C  ,   DE_V ,   DE_B , _______, _______, _______, _______, _______, _______, _______, _______,  _______, _______,
-                                _______, KC_LSFT,  KC_SPC, KC_SPC , _______, _______, _______, _______, _______, _______
+    [_GAMING] = LAYOUT_wrapper(
+      _________________GAMING_L1_________________,                                         _________________GAMING_R1_________________,
+      _________________GAMING_L2_________________,                                         _________________GAMING_R2_________________,
+      _________________GAMING_L3_________________, _______, _______,     FN_EXIT, _______, _________________GAMING_R3_________________,
+                               _________5_GAMING_THUMBS_L__________,     _________5_GAMING_THUMBS_R__________
     ),
 
 /*
@@ -203,11 +204,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_SYM] = LAYOUT(
-     DE_GRV  , DE_DEG , N3_UNDS, N3_LBRC, N3_RBRC, N3_CIRC,                                     N3_EXLM, N3_LABK, N3_LABK, N3_RABK, N3_EQUL, N3_AMPR,
-     DE_TILD , N3_BSLS, N3_SLSH, N3_CLBR, N3_CRBR, N3_ASTR,                                     N3_QUES, N3_LPRN, N3_RPRN, N3_MINS, N3_COLN, N3___AT,
-     _______ , N3_HASH, N3__DLR, N3_PIPE, N3_TILD, N3__GRV, _______, _______, _______, _______, N3_PLUS, N3_PERC, N3_DQUO, N3_QUOT, N3_SCLN, _______,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+    [_SYM] = LAYOUT_wrapper(
+     _________________SYMBOL_L1_________________,                                         _________________SYMBOL_R1_________________,
+     _________________SYMBOL_L2_________________,                                         _________________SYMBOL_R2_________________,
+     _________________SYMBOL_L3_________________, _______, _______,     FN_EXIT, _______, _________________SYMBOL_R3_________________,
+                              ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -224,11 +225,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_NAV] = LAYOUT(
-      NX_PAST, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN,                                     KC_BTN3, KC_BTN1, KC_MS_U, KC_BTN2, KC_WH_U, KC_APP ,
-      NX_COPY, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END,                                     KC_PGDN, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D, KC_LGUI,
-      NX__CUT, N3__ESC, N3_UNDO, N3__ENT, N3_REDO, N3__ENT, _______, _______, _______, _______, CTL_SFT, KC_LCTL, KC_LSFT, KC_LALT, KC_RALT, KC_RSFT,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+    [_NAV] = LAYOUT_wrapper(
+      _________________NUMBER_L1_________________,                                         _________________NUMBER_R1_________________,
+      _________________NUMBER_L2_________________,                                         _________________NUMBER_R2_________________,
+      _________________NUMBER_L3_________________, _______, _______,     FN_EXIT, _______, _________________NUMBER_R3_________________,
+                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -245,11 +246,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_NUM] = LAYOUT(
-      _______,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , DE_SUP3,                                     N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH,
-      KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , DE_SUP2,                                     N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS,
-      _______,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , _______, _______, _______, _______, KC_NUM , N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL,
-                                 _______, _______, _______, _______, _______, _______, _______, N3_NUM0, N3_COMM, N3__DOT
+    [_NUM] = LAYOUT_wrapper(
+      _____________NAVIGATION_L1_________________,                                         _____________NAVIGATION_R1_________________,
+      _____________NAVIGATION_L2_________________,                                         _____________NAVIGATION_R2_________________,
+      _____________NAVIGATION_L3_________________, _______, _______,     FN_EXIT, KC_NUM , _____________NAVIGATION_R3_________________,
+                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 /*
@@ -266,11 +267,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_ADJUST] = LAYOUT(
-      QWERTY , DVORAK , COLEMAK, VOUX   , MINE   , GAMING ,                                    _______, _______, _______, _______,  _______, _______,
-      _______, _______, _______, _______, _______, _______,                                    RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI,  RGB_MOD, _______,
-      QK_BOOT, _______, _______, _______, _______, _______,_______, _______, _______, _______, _______, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, _______,
-                                 _______, _______, _______,_______, _______, _______, _______, _______, _______, _______
+    [_ADJUST] = LAYOUT_wrapper(
+      _________________ADJUST_L1_________________,                                         _________________ADJUST_R1_________________,
+      _________________ADJUST_L2_________________,                                         _________________ADJUST_R2_________________,
+      _________________ADJUST_L3_________________,_______, _______,      FN_EXIT, _______, _________________ADJUST_R3_________________,
+                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
 
 // /*
