@@ -15,47 +15,7 @@
  */
 #include QMK_KEYBOARD_H
 #include "wechselbalg.h"
-
-// Aliases for readability
-#define QWERTY   DF(_QWERTY)
-#define COLEMAK  DF(_COLEMAK_DH)
-#define DVORAK   DF(_DVORAK)
-#define MINE     DF(_MINE)
-#define VOUX     DF(_VOUX)
-#define GAMING   DF(_GAMING)
-
-#define SYM      MO(_SYM)
-#define NAV      MO(_NAV)
-#define NUM      MO(_NUM)
-#define FKEYS    MO(_NUMR)
-#define ADJUST   MO(_ADJUST)
-
-#define CTL_ESC  MT(MOD_LCTL, KC_ESC)
-#define CTL_QUOT MT(MOD_RCTL, DE_QUOTE)
-
-#define SFT_SPC  MT(MOD_LSFT, KC_SPC)
-#define SFT_NUM  MT(MOD_LSFT, NUM)
-
-#define SFT_ENT  MT(MOD_RSFT, KC_ENT)
-#define SFT_SS   MT(MOD_RSFT, DE_SS)
-#define SFT_MINS MT(MOD_RSFT, DE_MINS)
-
-#define SYM_AE   LT(_SYM, DE_AE)
-#define SYM_MINS LT(_SYM, DE_MINS)
-#define SYM_SS   LT(_SYM, DE_SS)
-#define SYM_Y    LT(_SYM, DE_Y)
-#define SYM_F    LT(_SYM, DE_F)
-#define SYM_Z    LT(_SYM, DE_Z)
-
-#define NUM_Z    LT(NUM, DE_Z)
-#define NUM_SCLN LT(NUM, DE_SCLN)
-#define NUM_UE   LT(NUM, DE_UE)
-#define NUM_X    LT(NUM, DE_X)
-
-#define SC_BSPC  C_S_T(KC_BSPC)
-#define CTL_ENT  LCTL_T(KC_ENT)
-#define CTL_SFT  LCTL(KC_LSFT)
-#define RALT_AP  RALT_T(KC_APP)
+#include "sendstring_german.h"
 
 // Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
 // The notation `mod/tap` denotes a key that activates the modifier `mod` when held down, and
@@ -78,7 +38,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_QWERTY] = LAYOUT_wrapper(
+    [_QWERT] = LAYOUT_wrapper(
      _________________QWERTY_L1_________________,                                          _________________QWERTY_R1_________________,
      _________________QWERTY_L2_________________,                                          _________________QWERTY_R2_________________,
      _________________QWERTY_L3_________________, KC_ESC , KC_LGUI,     KC_RGUI , RALT_AP, _________________QWERTY_R3_________________,
@@ -120,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_COLEMAK_DH] = LAYOUT_wrapper(
+    [_COLEMAKDH] = LAYOUT_wrapper(
      ______________COLEMAKDH_L1_________________,                                         ______________COLEMAKDH_R1_________________,
      ______________COLEMAKDH_L2_________________,                                         ______________COLEMAKDH_R2_________________,
      ______________COLEMAKDH_L3_________________, _______, _______,     _______, _______, ______________COLEMAKDH_R3_________________,
@@ -162,7 +122,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [_VOUX] = LAYOUT_wrapper(
+    [_VOU] = LAYOUT_wrapper(
      __________________VOUX__L1_________________,                                         __________________VOUX__R1_________________,
      __________________VOUX__L2_________________,                                         __________________VOUX__R2_________________,
      __________________VOUX__L3_________________, _______, _______,     _______, _______, __________________VOUX__R3_________________,

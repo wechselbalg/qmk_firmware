@@ -15,7 +15,6 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   // SOFLE RGB
-#include <stdio.h>
 #include "wechselbalg.h"
 #include "sendstring_german.h"
 

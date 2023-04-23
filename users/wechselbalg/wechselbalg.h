@@ -13,14 +13,6 @@
 
 #endif
 
-enum layers {
-  _NEO_QWERTZ = 0,
-  _NEO_3,
-  _NEO_4,
-  _FN,
-  _CONFIG
-};
-
 enum splitlayers {
     _DEFAULTS = 0,
     _QWERT = 0,
@@ -115,5 +107,3 @@ enum CustomKeys {
 #define RALT_AP  RALT_T(KC_APP)
 
 #define FN_EXIT      TO(QWERT)      // Turns off all layers, except the default
-
-

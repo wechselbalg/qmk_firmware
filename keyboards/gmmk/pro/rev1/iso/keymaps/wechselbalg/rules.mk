@@ -1,2 +1,2 @@
-# SRC += features/custom_shift_keys.c
-# KEY_OVERRIDE_ENABLE = yes
+#ENCODER_MAP_ENABLE = yes
+STARTUP_NUMLOCK_ON = yes
