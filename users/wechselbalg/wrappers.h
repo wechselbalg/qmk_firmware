@@ -56,7 +56,7 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, CTL_ENT, SFT_SPC, NUM_DEL
 #define ____________5_THUMBS_R______________  NAV_BSC, RFT_ENT, KC_RCTL, RALT_PR, KC_RGUI
-#define ________________________________________7_THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, KC_SPC, MO__NAV, MO__NUM, KC_RCTL
+#define ________________________________________7_THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_SPC, MO__NAV, MO__NUM, KC_RCTL
 
 // QWERT
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,

@@ -242,6 +242,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       ____________5_THUMBS_L______________,        ____________5_THUMBS_R______________
   //                 \-------------------------------------|      |------------------------------------/
 ),
+
 /* NUM (Numpad layer - NEO layer 4)
  * ,----------------------------------------.                    ,-----------------------------------------.
  * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
@@ -494,17 +495,17 @@ bool oled_task_user(void) {
 
 #endif
 
-const custom_shift_key_t custom_shift_keys[] = {
-  {NAV_BSC, KC_DEL}, // Shift BACKSPACE is DELETE
-};
-uint8_t NUM_CUSTOM_SHIFT_KEYS =
-    sizeof(custom_shift_keys) / sizeof(custom_shift_key_t);
+// const custom_shift_key_t custom_shift_keys[] = {
+//   {NAV_BSC, KC_DEL}, // Shift BACKSPACE is DELETE
+// };
+// uint8_t NUM_CUSTOM_SHIFT_KEYS =
+//     sizeof(custom_shift_keys) / sizeof(custom_shift_key_t);
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, F_LLOCK)) { return false; }
     if (!process_caps_word(keycode, record)) { return false; }
-    if (!process_custom_shift_keys(keycode, record)) { return false; }
+    // if (!process_custom_shift_keys(keycode, record)) { return false; }
 
     const uint8_t mods = get_mods();
     const uint8_t oneshot_mods = get_oneshot_mods();

@@ -130,27 +130,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
 /*
- * Base Layer: Gaming
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * |  Tab   |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Bksp  |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |Ctrl/Esc|   A  |   S  |   D  |   F  |   G  |                              |   H  |   J  |   K  |   L  | ;  : |Ctrl/' "|
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LShift |   Z  |   X  |   C  |   V  |   B  | [ {  |CapsLk|  |F-keys|  ] } |   N  |   M  | ,  < | . >  | /  ? | RShift |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |Adjust| LGUI | LAlt/| Space| Nav  |  | Sym  | Space| AltGr| RGUI | Menu |
- *                        |      |      | Enter|      |      |  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
-    [_GAMING] = LAYOUT_wrapper(
-      _________________GAMING_L1_________________,                                         _________________GAMING_R1_________________,
-      _________________GAMING_L2_________________,                                         _________________GAMING_R2_________________,
-      _________________GAMING_L3_________________, _______, _______,     FN_EXIT, _______, _________________GAMING_R3_________________,
-                               _________5_GAMING_THUMBS_L__________,     _________5_GAMING_THUMBS_R__________
-    ),
-
-/*
  * Sym Layer: Symbols (Neo layer 3)
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
@@ -172,27 +151,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
 /*
- * Navigation Layer: Navigation
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        | PgUp | Home |   ↑  | End  | PgDn |                              | PgUp | Home |   ↑  | End  | VolUp| Delete |
- * |--------+------+------+------+----- +------|                              |------+------+------+------+------+--------|
- * |        | Home |  ←   |   ↓  |   →  |  END |                              | PgDn |  ←   |   ↓  |   →  | VolDn| Insert |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * |        |      | UNDO | Tab  | REDO |      |      |ScLck |  |      |      | Pause|M Prev|M Play|M Next|VolMut| PrtSc  |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      |      |  |      |      |      |      |      |
- *                        |      |      |      |      |      |  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
-    [_NAV] = LAYOUT_wrapper(
-      _________________NUMBER_L1_________________,                                         _________________NUMBER_R1_________________,
-      _________________NUMBER_L2_________________,                                         _________________NUMBER_R2_________________,
-      _________________NUMBER_L3_________________, _______, _______,     FN_EXIT, _______, _________________NUMBER_R3_________________,
-                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
-    ),
-
-/*
  * NUM Layer: K-Keys and Numpad
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
@@ -207,12 +165,53 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NUM] = LAYOUT_wrapper(
+      _________________NUMBER_L1_________________,                                         _________________NUMBER_R1_________________,
+      _________________NUMBER_L2_________________,                                         _________________NUMBER_R2_________________,
+      _________________NUMBER_L3_________________, _______, _______,     FN_EXIT, _______, _________________NUMBER_R3_________________,
+                               ____________5_THUMBS_L______________,     _________5_NUMBER__THUMBS_R_________
+    ),
+
+/*
+ * Navigation Layer: Navigation
+ *
+ * ,-------------------------------------------.                              ,-------------------------------------------.
+ * |        | PgUp | Home |   ↑  | End  | PgDn |                              | PgUp | Home |   ↑  | End  | VolUp| Delete |
+ * |--------+------+------+------+----- +------|                              |------+------+------+------+------+--------|
+ * |        | Home |  ←   |   ↓  |   →  |  END |                              | PgDn |  ←   |   ↓  |   →  | VolDn| Insert |
+ * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
+ * |        |      | UNDO | Tab  | REDO |      |      |ScLck |  |      |      | Pause|M Prev|M Play|M Next|VolMut| PrtSc  |
+ * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
+ *                        |      |      |      |      |      |  |      |      |      |      |      |
+ *                        |      |      |      |      |      |  |      |      |      |      |      |
+ *                        `----------------------------------'  `----------------------------------'
+ */
+    [_NAV] = LAYOUT_wrapper(
       _____________NAVIGATION_L1_________________,                                         _____________NAVIGATION_R1_________________,
       _____________NAVIGATION_L2_________________,                                         _____________NAVIGATION_R2_________________,
       _____________NAVIGATION_L3_________________, _______, _______,     FN_EXIT, KC_NUM , _____________NAVIGATION_R3_________________,
-                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
+                               ____________5_THUMBS_L______________,     ______5_NAVIGATION_THUMBS_R_________
     ),
 
+/*
+ * Base Layer: Gaming
+ *
+ * ,-------------------------------------------.                              ,-------------------------------------------.
+ * |  Tab   |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Bksp  |
+ * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
+ * |Ctrl/Esc|   A  |   S  |   D  |   F  |   G  |                              |   H  |   J  |   K  |   L  | ;  : |Ctrl/' "|
+ * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
+ * | LShift |   Z  |   X  |   C  |   V  |   B  | [ {  |CapsLk|  |F-keys|  ] } |   N  |   M  | ,  < | . >  | /  ? | RShift |
+ * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
+ *                        |Adjust| LGUI | LAlt/| Space| Nav  |  | Sym  | Space| AltGr| RGUI | Menu |
+ *                        |      |      | Enter|      |      |  |      |      |      |      |      |
+ *                        `----------------------------------'  `----------------------------------'
+ */
+    [_GAMING] = LAYOUT_wrapper(
+      _________________GAMING_L1_________________,                                         _________________GAMING_R1_________________,
+      _________________GAMING_L2_________________,                                         _________________GAMING_R2_________________,
+      _________________GAMING_L3_________________, _______, _______,     FN_EXIT, _______, _________________GAMING_R3_________________,
+                               _________5_GAMING_THUMBS_L__________,     _________5_GAMING_THUMBS_R__________
+    ),
 /*
  * Adjust Layer: Default layer settings, RGB
  *
@@ -262,7 +261,69 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * DO NOT edit the rev1.c file; instead override the weakly defined default functions by your own.
  */
 
-/* DELETE THIS LINE TO UNCOMMENT (1/2)
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!process_layer_lock(keycode, record, F_LLOCK)) { return false; }
+    if (!process_caps_word(keycode, record)) { return false; }
+    // if (!process_custom_shift_keys(keycode, record)) { return false; }
+
+    const uint8_t mods = get_mods();
+    const uint8_t oneshot_mods = get_oneshot_mods();
+
+    switch (keycode) {
+        case QWERT:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_QWERT);
+            }
+            return false;
+        case DVORAK:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_DVORAK);
+            }
+            return false;
+        case COLEMAK:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_COLEMAKDH);
+            }
+            return false;
+        case MINE:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_MINE);
+            }
+            return false;
+        case VOU:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_VOU);
+            }
+            return false;
+        case FF_WORD:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LCTL(SS_TAP(X_RIGHT) SS_TAP(X_RIGHT) SS_TAP(X_LEFT)));
+            }
+            return false;
+        case RV_WORD:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LCTL(SS_TAP(X_LEFT) SS_TAP(X_LEFT) SS_TAP(X_RIGHT)));
+            }
+            return false;
+        case DBRACES:  // Types [], {}, or <> and puts cursor between braces.
+            if (record->event.pressed) {
+            clear_oneshot_mods();  // Temporarily disable mods.
+            unregister_mods(MOD_MASK_CSAG);
+            if ((mods | oneshot_mods) & MOD_MASK_SHIFT) {
+                SEND_STRING("{}");
+            } else if ((mods | oneshot_mods) & MOD_MASK_CTRL) {
+                SEND_STRING("<>");
+            } else {
+                SEND_STRING("[]");
+            }
+            tap_code(KC_LEFT);  // Move cursor between braces.
+            register_mods(mods);  // Restore mods.
+            }
+            return false;
+    }
+    return true;
+}
+
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
 
@@ -277,35 +338,44 @@ bool oled_task_user(void) {
         // clang-format on
 
         oled_write_P(qmk_logo, false);
-        oled_write_P(PSTR("Kyria rev1.0\n\n"), false);
+        oled_write_P(PSTR("Kyria rev2.0\n\n"), false);
 
         // Host Keyboard Layer Status
         oled_write_P(PSTR("Layer: "), false);
-        switch (get_highest_layer(layer_state|default_layer_state)) {
-            case _QWERTY:
-                oled_write_P(PSTR("QWERTY\n"), false);
-                break;
-            case _DVORAK:
-                oled_write_P(PSTR("Dvorak\n"), false);
-                break;
-            case _COLEMAK_DH:
-                oled_write_P(PSTR("Colemak-DH\n"), false);
-                break;
-            case _NAV:
-                oled_write_P(PSTR("Nav\n"), false);
-                break;
-            case _SYM:
-                oled_write_P(PSTR("Sym\n"), false);
-                break;
-            case _NUMR:
-                oled_write_P(PSTR("Function\n"), false);
-                break;
-            case _ADJUST:
-                oled_write_P(PSTR("Adjust\n"), false);
-                break;
-            default:
-                oled_write_P(PSTR("Undefined\n"), false);
-        }
+    switch (get_highest_layer(layer_state  | default_layer_state)) {
+        case _QWERT:
+             oled_write_P(PSTR("QWERT\n"), false);
+            break;
+        case _DVORAK:
+            oled_write_P(PSTR("DVORK\n"), false);
+            break;
+        case _COLEMAKDH:
+            oled_write_P(PSTR("COLE\n"), false);
+            break;
+        case _GAMING:
+            oled_write_P(PSTR("GAME\n"), false);
+            break;
+        case _MINE:
+            oled_write_P(PSTR("MINE\n"), false);
+            break;
+        case _VOU:
+            oled_write_P(PSTR("VOU\n"), false);
+            break;
+        case _NUM:
+            oled_write_P(PSTR("NUM \n"), false);
+            break;
+        case _NAV:
+            oled_write_P(PSTR("NAV \n"), false);
+            break;
+        case _SYM:
+            oled_write_P(PSTR("SYMB\n"), false);
+            break;
+        case _ADJUST:
+            oled_write_P(PSTR("Adj \n"), false);
+            break;
+        default:
+            oled_write_ln_P(PSTR("Undef"), false);
+    }
 
         // Write host Keyboard LED Status to OLEDs
         led_t led_usb_state = host_keyboard_led_state();
@@ -331,25 +401,15 @@ bool oled_task_user(void) {
 }
 #endif
 
-#ifdef ENCODER_ENABLE
-bool encoder_update_user(uint8_t index, bool clockwise) {
-
-    if (index == 0) {
-        // Volume control
-        if (clockwise) {
-            tap_code(DE_VOLU);
-        } else {
-            tap_code(DE_VOLD);
-        }
-    } else if (index == 1) {
-        // Page up/Page down
-        if (clockwise) {
-            tap_code(DE_PGDN);
-        } else {
-            tap_code(DE_PGUP);
-        }
-    }
-    return false;
+#ifdef RGBLIGHT_ENABLE
+void keyboard_post_init_user(void) {
+  rgblight_enable_noeeprom(); // Enables RGB, without saving settings
+  rgblight_sethsv_noeeprom(HSV_RED);
+  rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
 }
 #endif
-DELETE THIS LINE TO UNCOMMENT (2/2) */
+
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+  return update_tri_layer_state(state, _NUM, _NAV, _ADJUST);
+}

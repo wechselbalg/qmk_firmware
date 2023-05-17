@@ -21,12 +21,8 @@
 #    define RGBLIGHT_HUE_STEP  8
 #    define RGBLIGHT_SAT_STEP  8
 #    define RGBLIGHT_VAL_STEP  8
-#    define RGBLIGHT_LIMIT_VAL 150
+#    define RGBLIGHT_LIMIT_VAL 200
 #endif
 
 // Lets you roll mod-tap keys
 #define IGNORE_MOD_TAP_INTERRUPT
-
-#define TRI_LAYER_LOWER_LAYER  6
-#define TRI_LAYER_UPPER_LAYER  7
-#define TRI_LAYER_ADJUST_LAYER 9

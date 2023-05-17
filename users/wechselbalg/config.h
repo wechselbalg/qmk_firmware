@@ -2,7 +2,7 @@
     #undef TAPPING_TERM
 #endif
 #define TAPPING_TERM 600
-#define HOLD_ON_OTHER_KEY_PRESS
+#define PERMISSIVE_HOLD
 #define QUICK_TAP_TERM 80
 #define TAPPING_TOGGLE 3
 #define TAP_CODE_DELAY 10
