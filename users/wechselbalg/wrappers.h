@@ -122,8 +122,8 @@ NOTE: These are all the same length.  If you do a search/replace
 #define __________________MINE__L2_________________  MO__SYM , DE_C   , DE_R   , DE_I   , DE_E   , DE_O
 #define __________________MINE__L3_________________  SFT_PIP , DE_V   , DE_X   , DE___UE, DE___AE, DE___OE
 
-#define __________________MINE__R1_________________  DE_W    , DE_B   , DE_D   , DE_G   , DE_Y   , NUM___Z
-#define __________________MINE__R2_________________  DE_M    , DE_N   , DE_T   , DE_S   , DE_H   , SYM__SS
+#define __________________MINE__R1_________________  DE_W    , DE_B   , DE_D   , DE_G   , DE_Y   , NUM__SS
+#define __________________MINE__R2_________________  DE_M    , DE_N   , DE_T   , DE_S   , DE_H   , SYM___Z
 #define __________________MINE__R3_________________  DE_P    , DE_F   , DE_COMM, DE_DOT , DE_K   , RFT_MIN
 
 // VOUX
