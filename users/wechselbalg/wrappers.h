@@ -197,9 +197,9 @@ NOTE: These are all the same length.  If you do a search/replace
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 #define _________________NUMBER_L0_________________  FN_EXIT,  DE_DEG, DE_SUP2, DE_SUP3, ___NO__, N3_MDOT
-#define _________________NUMBER_L1_________________  KC_NUM ,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , N3_REDO
-#define _________________NUMBER_L2_________________  KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , N3_UNDO
-#define _________________NUMBER_L3_________________  F_LLOCK,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , N3__ENT
+#define _________________NUMBER_L1_________________  KC_NUM ,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , NX__CUT
+#define _________________NUMBER_L2_________________  KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , NX_COPY
+#define _________________NUMBER_L3_________________  F_LLOCK,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , NX_PAST
 
 #define _________________NUMBER_R0_________________  N4__TAB, N2_SECT, N3_SLSH, N3_ASTR, DE_HASH, N3_NMNS
 #define _________________NUMBER_R1_________________  N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH
@@ -222,14 +222,14 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _____________NAVIGATION_L0_________________  FN_EXIT, ___NO__, RV_WORD, ___NO__, FF_WORD, ___NO__
+#define _____________NAVIGATION_L0_________________  FN_EXIT, NX_UTAB, RV_WORD, N3__TAB, FF_WORD, KC_INS
 #define _____________NAVIGATION_L1_________________  N3__TAB, N3_PGUP, N3_BSPC, N3___UP, N3__DEL, N3_PGDN
 #define _____________NAVIGATION_L2_________________  NX_UTAB, N3_HOME, N3_LEFT, N3_DOWN, N3_RGHT, N3__END
 #define _____________NAVIGATION_L3_________________  F_LLOCK, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT
 
 
 #define _____________NAVIGATION_R0_________________  KC_TAB , ___NO__, ___NO__, ___NO__, ___NO__, KC_INS
-#define _____________NAVIGATION_R1_________________  ___NO__, NX_COPY, NX_PAST, NX__CUT, KC_PSCR, KC_APP
+#define _____________NAVIGATION_R1_________________  NX__CUT, NX_COPY, NX_PAST, NX_FIND, KC_PSCR, KC_APP
 #define _____________NAVIGATION_R2_________________  SFT_CTL, KC_LCTL, KC_LSFT, KC_LALT, KC_RALT, KC_RGUI
 #define _____________NAVIGATION_R3_________________  NX_CENT, KC_WH_D, KC_MS_U, KC_WH_U, ___NO__, F_LLOCK
 

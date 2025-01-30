@@ -196,3 +196,4 @@
 #define NX__CUT     LCTL(DE_X)      // CTL + X
 #define NX_UTAB     LSFT(KC_TAB)    // Shift + TAB
 #define NX_CENT     LCTL(KC_ENT)    // CTL + ENTER
+#define NX_FIND     LCTL(KC_F)      // CTL + F
