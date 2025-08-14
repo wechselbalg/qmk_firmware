@@ -18,7 +18,7 @@
 
 // clang-format off
 #ifdef RGB_MATRIX_ENABLE
-const ckled2001_led g_ckled2001_leds[RGB_MATRIX_LED_COUNT] = {
+const snled27351_led g_snled27351_leds[RGB_MATRIX_LED_COUNT] = {
 /* Refer to CKLED2001 manual for these locations
  *   driver
  *   |  R location
