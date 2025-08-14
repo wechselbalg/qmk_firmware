@@ -1,5 +1,5 @@
 #pragma once
-#include "keymap.h"
+#include "quantum.h"
 
 // State bitmap to track which key(s) enabled NEO_3 layer
 // static uint8_t neo3_state = 0;

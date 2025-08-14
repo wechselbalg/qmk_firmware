@@ -37,3 +37,10 @@
 #    undef STM32_SERIAL_USE_USART2
 #    define STM32_SERIAL_USE_USART2 TRUE
 #endif
+
+// LSI oscillator für RTC aktivieren (für Bluetooth-Timing)
+#undef STM32_LSI_ENABLED
+#define STM32_LSI_ENABLED                   TRUE
+
+#undef STM32_RTCSEL
+#define STM32_RTCSEL                        STM32_RTCSEL_LSI

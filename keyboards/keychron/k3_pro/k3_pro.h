@@ -35,7 +35,6 @@ enum {
     KC_ROPTN,
     KC_LCMMD,
     KC_RCMMD,
-    KC_MCTL,
     KC_LNPD,
     KC_TASK,
     KC_FILE,

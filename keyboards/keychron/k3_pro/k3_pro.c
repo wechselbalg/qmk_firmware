@@ -26,7 +26,7 @@
 #endif
 
 #ifdef ENABLE_FACTORY_TEST
-#    include "factory_test.h"
+/#    include "factory_test.h"
 #endif
 
 #define POWER_ON_LED_DURATION 3000
@@ -72,7 +72,10 @@ bool process_record_kb_bt(uint16_t keycode, keyrecord_t *record) {
 #else
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 #endif
+
+#ifdef KC_BLUETOOTH_ENABLE
     static uint8_t host_idx = 0;
+#endif
 
     switch (keycode) {
         case KC_LOPTN:
@@ -157,7 +160,9 @@ void keyboard_post_init_kb(void) {
 #endif
 
     power_on_indicator_timer_buffer = sync_timer_read32() | 1;
+#ifdef KC_BLUETOOTH_ENABLE
     writePin(BAT_LOW_LED_PIN, BAT_LOW_LED_PIN_ON_STATE);
+#endif
     writePin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
 #ifdef KC_BLUETOOTH_ENABLE
     writePin(H3, HOST_LED_PIN_ON_STATE);
@@ -171,10 +176,14 @@ void matrix_scan_kb(void) {
         if (sync_timer_elapsed32(power_on_indicator_timer_buffer) > POWER_ON_LED_DURATION) {
             power_on_indicator_timer_buffer = 0;
 
+#ifdef KC_BLUETOOTH_ENABLE
             writePin(BAT_LOW_LED_PIN, !BAT_LOW_LED_PIN_ON_STATE);
+#endif
             if (!host_keyboard_led_state().caps_lock) writePin(LED_CAPS_LOCK_PIN, !LED_PIN_ON_STATE);
         } else {
-            writePin(BAT_LOW_LED_PIN, BAT_LOW_LED_PIN_ON_STATE);
+#ifdef KC_BLUETOOTH_ENABLE
+            writePin(BAT_LOW_LED_PIN, !BAT_LOW_LED_PIN_ON_STATE);
+#endif
             writePin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
         }
     }
@@ -250,6 +259,8 @@ void bluetooth_pre_task(void) {
 }
 #endif
 
+#ifdef KC_BLUETOOTH_ENABLE
+
 void battery_calculte_voltage(uint16_t value) {
     uint16_t voltage = ((uint32_t)value) * 2246 / 1000;
 
@@ -276,8 +287,12 @@ void battery_calculte_voltage(uint16_t value) {
         voltage += compensation;
     }
 #endif
+
     battery_set_voltage(voltage);
+
 }
+
+#endif
 
 bool via_command_kb(uint8_t *data, uint8_t length) {
     switch (data[0]) {
