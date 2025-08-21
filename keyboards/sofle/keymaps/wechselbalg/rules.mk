@@ -5,8 +5,7 @@ MCU = atmega32u4
 #   change yes to no to disable
 #
 SPLIT_KEYBOARD = yes
-OLED_ENABLE = yes
-OLED_DRIVER = SSD1306
+OLED_DRIVER_ENABLE = yes
 ENCODER_ENABLE = yes
 CONSOLE_ENABLE = no
 LTO_ENABLE = yes
@@ -14,7 +13,6 @@ LTO_ENABLE = yes
 RGB_MATRIX_ENABLE = no
 RGBLIGHT_ENABLE = yes
 RGB_MATRIX_DRIVER = WS2812
-
 
 # Change keymaps without flashing
 # https://caniusevia.com/

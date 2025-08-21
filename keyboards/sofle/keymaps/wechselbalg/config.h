@@ -48,9 +48,6 @@
 
 
 #ifdef RGB_MATRIX_ENABLE
-#define RGBLED_NUM 58    // Number of LEDs
-#define RGB_MATRIX_SPLIT {29,29}
-#define DRIVER_LED_TOTAL RGBLED_NUM
 #endif
 
 #ifdef RGBLIGHT_ENABLE
@@ -75,13 +72,8 @@
     #define RGBLIGHT_DEFAULT_VAL 40
 
 
-
-    #define RGBLED_NUM 58
-	//#define RGBLED_SPLIT
-	#define RGBLED_SPLIT { 29, 29 } // haven't figured out how to use this yet
     #define SPLIT_LAYER_STATE_ENABLE
 
-	//#define RGBLED_NUM 30
     #define RGBLIGHT_LIMIT_VAL 120
     #define RGBLIGHT_HUE_STEP 8
     #define RGBLIGHT_SAT_STEP 10

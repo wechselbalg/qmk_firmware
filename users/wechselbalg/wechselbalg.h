@@ -10,7 +10,7 @@
 #include "features/custom_shift_keys.h"
 
 #ifdef TAP_DANCE_ENABLE
-
+    #include "tap_dance.h"
 #endif
 
 enum splitlayers {

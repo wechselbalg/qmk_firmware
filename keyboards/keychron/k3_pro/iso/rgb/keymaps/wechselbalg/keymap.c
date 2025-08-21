@@ -15,7 +15,6 @@
  */
 #include "wechselbalg.h"
 #include "sendstring_german.h"
-#include "layer_lock.h"
 
 #include QMK_KEYBOARD_H
 
@@ -24,15 +23,15 @@
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [MINE] = LAYOUT_iso_85(
-        KC_ESC,   ___________________6_F_L___________________,     ____________________6_F_R__________________,   KC_CALC,  KC_MAIL,  RGB_TOG,
-        DE_CIRC,  _________5_NUMBERS_L______________,     _______________5_NUMBERS_R________,     DE_MINS,  DE_GRV,   KC_BSPC,            KC_DEL,
-        KC_TAB,   DE_J,     DE_L,     DE_U,     DE_A,     DE_W,     DE_B,     DE_B,     DE_D,     DE_G,     DE_Y,     DE_Z,     DE_SS,    KC_ENT,             KC_HOME,
-        MO(SYM),  DE_C,     DE_R,     DE_I,     DE_E,     DE_O,     DE_M,     DE_N,     DE_T,     DE_S,     DE_H,     MO(SYM),  N_SY_AC,                      KC_END,
-        KC_LSFT,  MO(NUM),  DE_V,     DE_X,     DE_UE,    DE_AE,    DE_OE,    DE_P,     DE_F,     DE_COMM,  DE_DOT,   DE_K,     KC_RSFT,            KC_UP,    MO(FN),
-        KC_LCTL,  KC_LGUI,  KC_LALT,                                KC_SPC,                                 MO(NAV),  KC_RALT,  KC_RCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT),
+    [MINE] = LAYOUT_wrapper(
+        KC_ESC,   _________________________________________F_KEYS_________________________________________,  KC_CALC,  KC_MAIL,  RGB_TOG,
+        KC_GRV, _______________________________NUMBERS________________________________, DE_MINS,   DE_GRV,   KC_BSPC,            KC_DEL,
+        ________________________________________MINE___1________________________________________,  KC_ENT,             KC_HOME,
+        ________________________________________MINE___2________________________________________,  N_SY_AC,                      KC_END,
+        ________________________________________MINE___3________________________________________,            KC_UP,    MO(FN),
+        ________________________________________7_THUMBS________________________________________,  KC_LEFT,  KC_DOWN,  KC_RGHT),
 
-    [TEST] = LAYOUT_iso_85(
+    [TEST] = LAYOUT_wrapper(
         _______,  KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   _______,  _______,  RGB_TOG,
         _______,  BT_HST1,  BT_HST2,  BT_HST3,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
         RGB_TOG,  RGB_MOD,  RGB_VAI,  RGB_HUI,  RGB_SAI,  RGB_SPI,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
@@ -98,9 +97,9 @@ bool caps_word_press_user(uint16_t keycode) {
     switch (keycode) {
         // Keycodes that continue Caps Word, with shift applied.
         case KC_A ... KC_Z:
-        case DE_AE:
-        case DE_OE:
-        case DE_UE:
+        case DE___AE:
+        case DE___OE:
+        case DE___UE:
         case DE_MINS:
             add_weak_mods(MOD_BIT(KC_LSFT));  // Apply shift to next key.
             return true;
