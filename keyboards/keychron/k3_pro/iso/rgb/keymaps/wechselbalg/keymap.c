@@ -17,21 +17,38 @@
 #include "sendstring_german.h"
 
 #include QMK_KEYBOARD_H
+#include "tap_dance_actions.h"  // Zentrale Definition
+
+// Einfacher Include statt direkter Definition
+tap_dance_action_t tap_dance_actions[] = {
+    WECHSELBALG_TAP_DANCE_ACTIONS
+};
 
 // clang-format off
 
-#define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
+// Zusaetzliche Layer neben dem Userspace-Enum (_TEST: RGB-/BT-Testlayer)
+enum k3_pro_layers { _TEST = _ADJUST + 1 };
+
+// Bluetooth-Keycodes existieren nur im Bluetooth-Build (Keychron-Fork)
+#ifndef KC_BLUETOOTH_ENABLE
+#    define BT_HST1 _______
+#    define BT_HST2 _______
+#    define BT_HST3 _______
+#endif
+
+#undef LAYOUT_wrapper
+#define LAYOUT_wrapper(...) LAYOUT_iso_85(__VA_ARGS__)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [MINE] = LAYOUT_wrapper(
+    [_MINE] = LAYOUT_wrapper(
         KC_ESC,   _________________________________________F_KEYS_________________________________________,  KC_CALC,  KC_MAIL,  RGB_TOG,
         KC_GRV, _______________________________NUMBERS________________________________, DE_MINS,   DE_GRV,   KC_BSPC,            KC_DEL,
-        ________________________________________MINE___1________________________________________,  KC_ENT,             KC_HOME,
-        ________________________________________MINE___2________________________________________,  N_SY_AC,                      KC_END,
-        ________________________________________MINE___3________________________________________,            KC_UP,    MO(FN),
+        ________________________________________MINE___1________________________________________,  DE_PLUS,  KC_ENT,   KC_HOME,
+        ________________________________________MINE___2________________________________________,  SYM_ACU,                      KC_END,
+        ________________________________________MINE___3________________________________________,            KC_UP,    MO__ADJ,
         ________________________________________7_THUMBS________________________________________,  KC_LEFT,  KC_DOWN,  KC_RGHT),
 
-    [TEST] = LAYOUT_wrapper(
+    [_TEST] = LAYOUT_wrapper(
         _______,  KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   _______,  _______,  RGB_TOG,
         _______,  BT_HST1,  BT_HST2,  BT_HST3,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
         RGB_TOG,  RGB_MOD,  RGB_VAI,  RGB_HUI,  RGB_SAI,  RGB_SPI,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
@@ -39,12 +56,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,  _______,  _______,  _______,  _______,  _______,  BAT_LVL,  NK_TOGG,  _______,  _______,  _______,  _______,  _______,            _______,  _______,
         _______,  _______,  _______,                                _______,                                _______,  _______,  _______,  _______,  _______,  _______),
 
-    [QWERT] = LAYOUT_wrapper(
+    [_QWERT] = LAYOUT_wrapper(
         KC_ESC,  _________________________________________F_KEYS_________________________________________, RN_CODE,  KC_CALC,  RGB_MOD,
         KC_GRV, _______________________________NUMBERS________________________________, DE_SS,    DE_ACUT,           KC_BSPC,  KC_DEL,
         ________________________________________QWERTY_1________________________________________, KC_RBRC, KC_ENT,             KC_HOME,
-        ________________________________________QWERTY_2________________________________________, N_SY_HS,                     KC_END,
-        ________________________________________QWERTY_3________________________________________,          KC_UP,    MO(FN),
+        ________________________________________QWERTY_2________________________________________, SYM_HSH,                     KC_END,
+        ________________________________________QWERTY_3________________________________________,          KC_UP,    MO__ADJ,
         ________________________________________7_THUMBS________________________________________, KC_LEFT, KC_DOWN,  KC_RGHT),
 
     [_SYM] = LAYOUT_wrapper(
@@ -61,7 +78,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ________________________________________NUMBER__0_______________________________________, ___NO__,           _______,  _______,
         ________________________________________NUMBER__1_______________________________________, N3_SLSH, _______,            _______,
         ________________________________________NUMBER__2_______________________________________, _______,                     _______,
-        ________________________________________NUMBER__3_______________________________________           _______,  _______,
+        ________________________________________NUMBER__3_______________________________________,           _______,  _______,
         ________________________________7_NUMBER__THUMBS________________________________________, _______, _______,  _______
     ),
 

@@ -161,11 +161,11 @@ void keyboard_post_init_kb(void) {
 
     power_on_indicator_timer_buffer = sync_timer_read32() | 1;
 #ifdef KC_BLUETOOTH_ENABLE
-    writePin(BAT_LOW_LED_PIN, BAT_LOW_LED_PIN_ON_STATE);
+    gpio_write_pin(BAT_LOW_LED_PIN, BAT_LOW_LED_PIN_ON_STATE);
 #endif
-    writePin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
+    gpio_write_pin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
 #ifdef KC_BLUETOOTH_ENABLE
-    writePin(H3, HOST_LED_PIN_ON_STATE);
+    gpio_write_pin(H3, HOST_LED_PIN_ON_STATE);
 #endif
 
     keyboard_post_init_user();
@@ -177,14 +177,14 @@ void matrix_scan_kb(void) {
             power_on_indicator_timer_buffer = 0;
 
 #ifdef KC_BLUETOOTH_ENABLE
-            writePin(BAT_LOW_LED_PIN, !BAT_LOW_LED_PIN_ON_STATE);
+            gpio_write_pin(BAT_LOW_LED_PIN, !BAT_LOW_LED_PIN_ON_STATE);
 #endif
-            if (!host_keyboard_led_state().caps_lock) writePin(LED_CAPS_LOCK_PIN, !LED_PIN_ON_STATE);
+            if (!host_keyboard_led_state().caps_lock) gpio_write_pin(LED_CAPS_LOCK_PIN, !LED_PIN_ON_STATE);
         } else {
 #ifdef KC_BLUETOOTH_ENABLE
-            writePin(BAT_LOW_LED_PIN, !BAT_LOW_LED_PIN_ON_STATE);
+            gpio_write_pin(BAT_LOW_LED_PIN, !BAT_LOW_LED_PIN_ON_STATE);
 #endif
-            writePin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
+            gpio_write_pin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
         }
     }
 
@@ -250,9 +250,9 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
 void bluetooth_pre_task(void) {
     static uint8_t mode = 1;
 
-    if (readPin(USB_BT_MODE_SELECT_PIN) != mode) {
-        if (readPin(USB_BT_MODE_SELECT_PIN) != mode) {
-            mode = readPin(USB_BT_MODE_SELECT_PIN);
+    if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+        if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+            mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
             set_transport(mode == 0 ? TRANSPORT_BLUETOOTH : TRANSPORT_USB);
         }
     }

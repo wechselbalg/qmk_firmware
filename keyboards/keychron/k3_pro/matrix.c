@@ -56,44 +56,44 @@ static void HC595_output(uint16_t data) {
     uint8_t n = 1;
 
     for (i = 16; i > 0; i--) {
-        writePinLow(HC595_SHCP);
+        gpio_write_pin_low(HC595_SHCP);
 
         if (data & 0x8000)
-            writePinHigh(HC595_DS);
+            gpio_write_pin_high(HC595_DS);
         else
-            writePinLow(HC595_DS);
+            gpio_write_pin_low(HC595_DS);
 
         data <<= 1;
 
         HC595_delay(n);
 
-        writePinHigh(HC595_SHCP);
+        gpio_write_pin_high(HC595_SHCP);
         HC595_delay(n);
     }
 
     HC595_delay(n);
-    writePinLow(HC595_STCP);
+    gpio_write_pin_low(HC595_STCP);
     HC595_delay(n);
-    writePinHigh(HC595_STCP);
+    gpio_write_pin_high(HC595_STCP);
 #endif
 }
 
 static inline void setPinOutput_writeLow(pin_t pin) {
     ATOMIC_BLOCK_FORCEON {
-        setPinOutput(pin);
-        writePinLow(pin);
+        gpio_set_pin_output(pin);
+        gpio_write_pin_low(pin);
     }
 }
 
 static inline void setPinInputHigh_atomic(pin_t pin) {
     ATOMIC_BLOCK_FORCEON {
-        setPinInputHigh(pin);
+        gpio_set_pin_input_high(pin);
     }
 }
 
 static inline uint8_t readMatrixPin(pin_t pin) {
     if (pin != NO_PIN) {
-        return readPin(pin);
+        return gpio_read_pin(pin);
     } else {
         return 1;
     }
@@ -173,9 +173,9 @@ void matrix_init_custom(void) {
     palSetPadMode(PAL_PORT(HC595_STCP), PAL_PAD(HC595_STCP), PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST); /* CS*/
     spiStart(&SPID1, &hs_spicfg);
 #else
-    setPinOutput(HC595_DS);
-    setPinOutput(HC595_STCP);
-    setPinOutput(HC595_SHCP);
+    gpio_set_pin_output(HC595_DS);
+    gpio_set_pin_output(HC595_STCP);
+    gpio_set_pin_output(HC595_SHCP);
 #endif
     unselect_cols();
 }
