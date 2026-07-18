@@ -5,7 +5,7 @@ MCU = atmega32u4
 #   change yes to no to disable
 #
 SPLIT_KEYBOARD = yes
-OLED_DRIVER_ENABLE = yes
+OLED_ENABLE = yes
 ENCODER_ENABLE = yes
 CONSOLE_ENABLE = no
 LTO_ENABLE = yes

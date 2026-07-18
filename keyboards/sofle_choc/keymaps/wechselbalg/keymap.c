@@ -19,6 +19,12 @@
 #include "sendstring_german.h"
 
 #include QMK_KEYBOARD_H
+#include "tap_dance_actions.h"  // Zentrale Definition
+
+// Einfacher Include statt direkter Definition
+tap_dance_action_t tap_dance_actions[] = {
+    WECHSELBALG_TAP_DANCE_ACTIONS
+};
 
 #define INDICATOR_BRIGHTNESS 120
 

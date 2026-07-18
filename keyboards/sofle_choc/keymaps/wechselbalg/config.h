@@ -43,8 +43,7 @@
 //
 #define RGBLIGHT_LAYERS
 
-/* ws2812 RGB LED */
-#define RGB_DI_PIN D3
+/* ws2812 RGB LED: Pin (D3) kommt aus keyboard.json des Boards */
 
 
 #ifdef RGB_MATRIX_ENABLE
@@ -54,8 +53,6 @@
 #endif
 
 #ifdef RGBLIGHT_ENABLE
-    #undef RGBLED_NUM
-
     //#define RGBLIGHT_ANIMATIONS
 	//#define RGBLIGHT_EFFECT_BREATHING
     #define RGBLIGHT_EFFECT_STATIC_GRADIENT
@@ -76,9 +73,8 @@
 
 
 
-    #define RGBLED_NUM 58
-	//#define RGBLED_SPLIT
-	#define RGBLED_SPLIT { 29, 29 } // haven't figured out how to use this yet
+    #define RGBLIGHT_LED_COUNT 58
+	#define RGBLED_SPLIT { 29, 29 }
     #define SPLIT_LAYER_STATE_ENABLE
 
 	//#define RGBLED_NUM 30

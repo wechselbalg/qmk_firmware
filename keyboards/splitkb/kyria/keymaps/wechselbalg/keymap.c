@@ -16,6 +16,12 @@
 #include QMK_KEYBOARD_H
 #include "wechselbalg.h"
 #include "sendstring_german.h"
+#include "tap_dance_actions.h"  // Zentrale Definition
+
+// Einfacher Include statt direkter Definition
+tap_dance_action_t tap_dance_actions[] = {
+    WECHSELBALG_TAP_DANCE_ACTIONS
+};
 
 // Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
 // The notation `mod/tap` denotes a key that activates the modifier `mod` when held down, and
