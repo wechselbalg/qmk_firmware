@@ -85,8 +85,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ______________________________________NAVIGATION__0_____________________________________, ___NO__,  _______,  _______,
         ______________________________________NAVIGATION__1_____________________________________, N3_SLSH,            UC_NEXT,
         ______________________________________NAVIGATION__2_____________________________________, _______,  _______,  UC_PREV,
-        ______________________________________NAVIGATION__3_____________________________________,           KC_MS_U,  _______,
-        __________________________________7_NAVIGATION__THUMBS__________________________________, KC_MS_L,  KC_MS_D,  KC_MS_R
+        ______________________________________NAVIGATION__3_____________________________________,           MS_UP  ,  _______,
+        __________________________________7_NAVIGATION__THUMBS__________________________________, MS_LEFT,  MS_DOWN,  MS_RGHT
     ),
 
     [_GAMING] = LAYOUT_wrapper(
@@ -115,7 +115,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_QWERT] =    { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [_SYM] =      { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
     [_NUM] =      { ENCODER_CCW_CW(KC_MPRV, KC_MNXT) },
-    [_NAV] =      { ENCODER_CCW_CW(KC_WH_D, KC_WH_U) },
+    [_NAV] =      { ENCODER_CCW_CW(MS_WHLD, MS_WHLU) },
     [_GAMING] =   { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [_ADJUST] =   { ENCODER_CCW_CW(KC_MSEL, KC_MPRV) }
 };

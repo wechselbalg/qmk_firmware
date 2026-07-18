@@ -10,6 +10,44 @@ expanded before being used as arguments to the LAYOUT_xxx macro.
 #    define LAYOUT KEYMAP
 #endif
 
+/*
+QMK hat die alten RGB_x-Keycodes aufgeteilt: RM_x steuert RGB Matrix
+(GMMK Pro, K3 Pro, Sofle Choc), UG_x steuert RGBLIGHT/Underglow
+(Sofle rev1, Lotus58). Diese Aliase wählen je Board das passende Feature,
+damit die gemeinsamen Layer-Blöcke unten überall funktionieren.
+*/
+#if defined(RGB_MATRIX_ENABLE)
+#    define RGB_TOG  RM_TOGG
+#    define RGB_MOD  RM_NEXT
+#    define RGB_RMOD RM_PREV
+#    define RGB_HUI  RM_HUEU
+#    define RGB_HUD  RM_HUED
+#    define RGB_SAI  RM_SATU
+#    define RGB_SAD  RM_SATD
+#    define RGB_VAI  RM_VALU
+#    define RGB_VAD  RM_VALD
+#elif defined(RGBLIGHT_ENABLE)
+#    define RGB_TOG  UG_TOGG
+#    define RGB_MOD  UG_NEXT
+#    define RGB_RMOD UG_PREV
+#    define RGB_HUI  UG_HUEU
+#    define RGB_HUD  UG_HUED
+#    define RGB_SAI  UG_SATU
+#    define RGB_SAD  UG_SATD
+#    define RGB_VAI  UG_VALU
+#    define RGB_VAD  UG_VALD
+#else
+#    define RGB_TOG  KC_NO
+#    define RGB_MOD  KC_NO
+#    define RGB_RMOD KC_NO
+#    define RGB_HUI  KC_NO
+#    define RGB_HUD  KC_NO
+#    define RGB_SAI  KC_NO
+#    define RGB_SAD  KC_NO
+#    define RGB_VAI  KC_NO
+#    define RGB_VAD  KC_NO
+#endif
+
 // clang-format off
 
 #define KEYMAP_wrapper(...)                  LAYOUT(__VA_ARGS__)
@@ -236,9 +274,9 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _____________NAVIGATION_R0_________________  KC_TAB , ___NO__, ___NO__, ___NO__, ___NO__, KC_INS
 #define _____________NAVIGATION_R1_________________  NX__CUT, NX_COPY, NX_PAST, NX_FIND, KC_PSCR, KC_APP
 #define _____________NAVIGATION_R2_________________  SFT_CTL, KC_LCTL, KC_LSFT, KC_LALT, KC_RALT, KC_RGUI
-#define _____________NAVIGATION_R3_________________  NX_CENT, KC_WH_D, KC_MS_U, KC_WH_U, ___NO__, F_LLOCK
+#define _____________NAVIGATION_R3_________________  NX_CENT, MS_WHLD, MS_UP  , MS_WHLU, ___NO__, F_LLOCK
 
-#define ______5_NAVIGATION_THUMBS_R_________         KC_BTN2, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R
+#define ______5_NAVIGATION_THUMBS_R_________         MS_BTN2, MS_BTN1, MS_LEFT, MS_DOWN, MS_RGHT
 
 #define ______________________________________NAVIGATION__0_____________________________________  _____________NAVIGATION_L0_________________, _____________NAVIGATION_R0_________________
 #define ______________________________________NAVIGATION__1_____________________________________  _____________NAVIGATION_L1_________________, _____________NAVIGATION_R1_________________
