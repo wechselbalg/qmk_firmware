@@ -1,5 +1,4 @@
 SRC += wechselbalg.c
-SRC += features/caps_word.c
 #SRC += features/custom_shift_keys.c
 
 # ENCODER_ENABLE = no
@@ -13,7 +12,7 @@ KEYBOARD_SHARED_EP = no
 UNICODE_ENABLE = yes
 TAP_DANCE_ENABLE = yes
 LAYER_LOCK_ENABLE = yes
-CAPS_WORD_ENABLE = no
+CAPS_WORD_ENABLE = yes
 LTO_ENABLE = yes
 KEY_OVERRIDE_ENABLE = no
 SPACE_CADET_ENABLE = no
