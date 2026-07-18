@@ -343,6 +343,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       ____________5_THUMBS_L______________,        ____________5_THUMBS_R______________
   //                 \-------------------------------------|      |------------------------------------/
   ),
+
+  // Mac-Overlay: nur die Daumenreihe (Cmd/Opt getauscht), alles andere transparent
+  [_MAC] = LAYOUT_wrapper(
+      _______, _______, _______, _______, _______, _______,                 _______, _______, _______, _______, _______, _______,
+      _______, _______, _______, _______, _______, _______,                 _______, _______, _______, _______, _______, _______,
+      _______, _______, _______, _______, _______, _______,                 _______, _______, _______, _______, _______, _______,
+      _______, _______, _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______, _______, _______,
+                      ________5_MAC_THUMBS_L______________,        ________5_MAC_THUMBS_R______________
+  ),
 };
 
 #ifdef RGBLIGHT_ENABLE
@@ -477,6 +486,9 @@ static void print_status_narrow(void) {
         case _ADJUST:
             oled_write_P(PSTR("Adj \n"), false);
             break;
+        case _MAC:
+            oled_write_P(PSTR("MAC \n"), false);
+            break;
         default:
             oled_write_ln_P(PSTR("Undef"), false);
     }
@@ -572,7 +584,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
-        switch (get_highest_layer(layer_state)) {
+        switch (get_highest_layer(layer_state & ~((layer_state_t)1 << _MAC))) {
             case _GAMING:
                 if (clockwise) {
                     tap_code(KC_PGUP);
@@ -598,7 +610,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 break;
 		}
     } else if (index == 1) {
-        switch (get_highest_layer(layer_state)) {
+        switch (get_highest_layer(layer_state & ~((layer_state_t)1 << _MAC))) {
             case _GAMING:
                 if (clockwise) {
                     tap_code(KC_UP);

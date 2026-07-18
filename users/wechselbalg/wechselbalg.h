@@ -23,6 +23,7 @@ enum splitlayers {
     _NUM,
     _GAMING,
     _ADJUST,
+    _MAC,   // Mac-Modifier-Overlay: liegt ueber allen anderen Layern, nur Daumenreihe belegt (TG__MAC)
 };
 
 enum CustomKeys {
@@ -53,6 +54,7 @@ enum CustomKeys {
 #define MO__NAV  MO(_NAV)
 #define MO__NUM  MO(_NUM)
 #define MO__ADJ  MO(_ADJUST)
+#define TG__MAC  TG(_MAC)
 
 // Layer Lock kommt aus dem QMK-Core (LAYER_LOCK_ENABLE); Alias behaelt die 7-Zeichen-Rasterbreite
 #define F_LLOCK  QK_LLCK

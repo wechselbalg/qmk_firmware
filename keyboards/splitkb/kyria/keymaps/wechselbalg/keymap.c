@@ -259,6 +259,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //       _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 //                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
 //     ),
+
+    // Mac-Overlay: nur die Daumenreihe (Cmd/Opt getauscht), alles andere transparent
+    [_MAC] = LAYOUT_wrapper(
+      _______, _______, _______, _______, _______, _______,                                     _______, _______, _______, _______, _______, _______,
+      _______, _______, _______, _______, _______, _______,                                     _______, _______, _______, _______, _______, _______,
+      _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+                               ________5_MAC_THUMBS_L______________,     ________5_MAC_THUMBS_R______________
+    ),
 };
 
 /* The default OLED and rotary encoder code can be found at the bottom of qmk_firmware/keyboards/splitkb/kyria/rev1/rev1.c
@@ -376,6 +384,9 @@ bool oled_task_user(void) {
             break;
         case _ADJUST:
             oled_write_P(PSTR("Adj \n"), false);
+            break;
+        case _MAC:
+            oled_write_P(PSTR("MAC \n"), false);
             break;
         default:
             oled_write_ln_P(PSTR("Undef"), false);

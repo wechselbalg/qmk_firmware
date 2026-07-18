@@ -102,6 +102,12 @@ NOTE: These are all the same length.  If you do a search/replace
 #define ____________5_THUMBS_R______________  NAV_BSC, RFT_ENT, KC_RCTL, RALT_PR, KC_RGUI
 #define ________________________________________7_THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_SPC, MO__NAV, MO__NUM, KC_RCTL
 
+// Mac-Varianten der Daumenreihen fuer den _MAC-Overlay-Layer:
+// Cmd (GUI) und Opt (Alt) tauschen die Plaetze, Layer-Taps bleiben identisch.
+#define ________5_MAC_THUMBS_L______________  KC_LALT, KC_LGUI, CTL_ENT, SFT_SPC, NUM_DEL
+#define ________5_MAC_THUMBS_R______________  NAV_BSC, RFT_ENT, KC_RCTL, KC_RGUI, RALT_PR
+#define ____________________________________7_THUMBS_MAC_____________________________________  KC_LCTL, KC_LALT, KC_LGUI, NAV_SPC, MO__NAV, MO__NUM, KC_RCTL
+
 // QWERT
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 // |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U  |  I  |  O  |  P  |
@@ -298,7 +304,7 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _________________ADJUST_L0_________________  FN_EXIT, KC_BRID, KC_BRIU, ___NO__, ___NO__, RGB_VAD
+#define _________________ADJUST_L0_________________  FN_EXIT, KC_BRID, KC_BRIU, TG__MAC, ___NO__, RGB_VAD
 #define _________________ADJUST_L1_________________  QWERT  , DVORAK , COLEMAK, VOU    , MINE   , ___NO__
 #define _________________ADJUST_L2_________________  D_QWERT, D_DVORK, D_COLMK, D___VOU, D__MINE, D__GAME
 #define _________________ADJUST_L3_________________  ___NO__, ___NO__, ___NO__, ___NO__, ___NO__, QK_BOOT
