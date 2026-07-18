@@ -1,5 +1,4 @@
 SRC += wechselbalg.c
-SRC += features/layer_lock.c
 SRC += features/caps_word.c
 #SRC += features/custom_shift_keys.c
 
@@ -12,7 +11,8 @@ CONSOLE_ENABLE = no
 COMMAND_ENABLE = no
 KEYBOARD_SHARED_EP = no
 UNICODE_ENABLE = yes
-TAP_DANCE_ENABLE =yes
+TAP_DANCE_ENABLE = yes
+LAYER_LOCK_ENABLE = yes
 CAPS_WORD_ENABLE = no
 LTO_ENABLE = yes
 KEY_OVERRIDE_ENABLE = no

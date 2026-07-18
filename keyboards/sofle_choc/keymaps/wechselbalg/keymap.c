@@ -509,7 +509,6 @@ bool oled_task_user(void) {
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (!process_layer_lock(keycode, record, F_LLOCK)) { return false; }
     if (!process_caps_word(keycode, record)) { return false; }
     // if (!process_custom_shift_keys(keycode, record)) { return false; }
 

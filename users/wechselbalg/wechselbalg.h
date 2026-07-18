@@ -5,7 +5,6 @@
 #include "quantum.h"
 #include "wrappers.h"
 #include "tap_dance.h"
-#include "features/layer_lock.h"
 #include "features/caps_word.h"
 #include "features/custom_shift_keys.h"
 
@@ -37,7 +36,6 @@ enum CustomKeys {
   VOU,
   MINE,
   KC_D_MUTE,
-  F_LLOCK,
   DBRACES,
   FF_WORD,
   RV_WORD
@@ -56,6 +54,9 @@ enum CustomKeys {
 #define MO__NAV  MO(_NAV)
 #define MO__NUM  MO(_NUM)
 #define MO__ADJ  MO(_ADJUST)
+
+// Layer Lock kommt aus dem QMK-Core (LAYER_LOCK_ENABLE); Alias behaelt die 7-Zeichen-Rasterbreite
+#define F_LLOCK  QK_LLCK
 
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_QUOT MT(MOD_RCTL, DE_QUOTE)

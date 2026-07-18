@@ -136,7 +136,6 @@ bool caps_word_press_user(uint16_t keycode) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
-  if (!process_layer_lock(keycode, record, F_LLOCK)) { return false; }
 
   return true;
 }
