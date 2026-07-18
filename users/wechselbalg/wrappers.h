@@ -26,6 +26,8 @@ damit die gemeinsamen Layer-Blöcke unten überall funktionieren.
 #    define RGB_SAD  RM_SATD
 #    define RGB_VAI  RM_VALU
 #    define RGB_VAD  RM_VALD
+#    define RGB_SPI  RM_SPDU
+#    define RGB_SPD  RM_SPDD
 #elif defined(RGBLIGHT_ENABLE)
 #    define RGB_TOG  UG_TOGG
 #    define RGB_MOD  UG_NEXT
@@ -36,6 +38,8 @@ damit die gemeinsamen Layer-Blöcke unten überall funktionieren.
 #    define RGB_SAD  UG_SATD
 #    define RGB_VAI  UG_VALU
 #    define RGB_VAD  UG_VALD
+#    define RGB_SPI  UG_SPDU
+#    define RGB_SPD  UG_SPDD
 #else
 #    define RGB_TOG  KC_NO
 #    define RGB_MOD  KC_NO
@@ -46,6 +50,8 @@ damit die gemeinsamen Layer-Blöcke unten überall funktionieren.
 #    define RGB_SAD  KC_NO
 #    define RGB_VAI  KC_NO
 #    define RGB_VAD  KC_NO
+#    define RGB_SPI  KC_NO
+#    define RGB_SPD  KC_NO
 #endif
 
 // clang-format off

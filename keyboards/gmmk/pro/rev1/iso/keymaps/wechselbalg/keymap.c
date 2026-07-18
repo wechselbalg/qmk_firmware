@@ -17,6 +17,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sendstring_german.h"
 
 #include QMK_KEYBOARD_H
+#include "tap_dance_actions.h"  // Zentrale Definition
+
+// Einfacher Include statt direkter Definition
+tap_dance_action_t tap_dance_actions[] = {
+    WECHSELBALG_TAP_DANCE_ACTIONS
+};
 
 // #include "print.h"
 // clang-format off
@@ -76,7 +82,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ________________________________________NUMBER__0_______________________________________, ___NO__,  _______,  _______,
         ________________________________________NUMBER__1_______________________________________, N3_SLSH,            _______,
         ________________________________________NUMBER__2_______________________________________, _______,  _______,  _______,
-        ________________________________________NUMBER__3_______________________________________            _______,  _______,
+        ________________________________________NUMBER__3_______________________________________,           _______,  _______,
         ________________________________7_NUMBER__THUMBS________________________________________, _______,  _______,  _______
     ),
 
