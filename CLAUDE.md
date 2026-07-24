@@ -2,8 +2,15 @@
 
 Persönlicher Fork von QMK zur Pflege eigener Tastaturlayouts. Diese Datei ist der
 zentrale, mit dem Repo mitreisende Statusspeicher, damit die Arbeit an jedem Rechner
-fortgesetzt werden kann. **Nach nennenswerten Änderungen den Abschnitt „Aktueller
-Stand" aktualisieren.**
+fortgesetzt werden kann.
+
+## 📌 Anweisung an Claude: Diese Datei pflegen
+
+Nach jeder nennenswerten Änderung am Repo den Abschnitt **„Aktueller Stand"** unten
+aktualisieren (Datum anpassen, Erledigtes/Offenes fortschreiben) und diese `CLAUDE.md`
+**im selben Zug mit den Code-Commits committen und nach `origin mike` pushen**. So ist
+der Projektstand auf jedem Rechner aktuell. Das gilt automatisch in jeder Session,
+ohne dass Michael es erneut anfordern muss.
 
 ## ⚠️ Wichtigste Regel
 
