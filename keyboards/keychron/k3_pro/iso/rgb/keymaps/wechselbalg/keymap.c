@@ -113,6 +113,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
+/*
+Handedness fuer CHORDAL_HOLD -- siehe den ausfuehrlichen Kommentar in der
+GMMK-Pro-Keymap. Kurz: '*' in der letzten Reihe ist die Leertaste und damit
+NAV_SPC, der einzige Tap-Hold der Daumenreihe.
+Nachpruefbar mit `qmk generate-keyboard-c -kb keychron/k3_pro/iso/rgb`.
+*/
+#ifdef CHORDAL_HOLD
+const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT_wrapper(
+
+  'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', '*', 'R', 'R', 'R', 'R', 'R', 'R'
+);
+#endif
+
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t* record) {
 

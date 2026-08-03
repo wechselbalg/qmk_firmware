@@ -115,6 +115,35 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
+/*
+Handedness fuer CHORDAL_HOLD (users/wechselbalg/config.h).
+
+Uebernimmt exakt die Tabelle, die QMK sonst aus keyboard.json errechnet
+(nachpruefbar mit `qmk generate-keyboard-c -kb gmmk/pro/rev1/iso`) -- hier
+aber explizit, damit sie sichtbar und aenderbar ist statt von einer Heuristik
+abzuhaengen.
+
+Entscheidend ist die '*' in der letzten Reihe: das ist die Leertaste, und
+damit NAV_SPC aus dem 7_THUMBS-Wrapper -- der einzige Tap-Hold der
+Daumenreihe. Ohne die Ausnahme wuerde jede Kombination "Space halten +
+Taste derselben Hand" den Space als Tap abschliessen, statt den _NAV-Layer
+zu erreichen.
+
+Die uebrigen Tap-Holds (NAV_TAB, NUM__UE, SYM__AE) liegen auf den
+Aussenspalten und sind mit der normalen L/R-Regel korrekt bedient.
+*/
+#ifdef CHORDAL_HOLD
+const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT_wrapper(
+
+  'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 
+  'L', 'L', 'L', '*', 'R', 'R', 'R', 'R', 'R', 'R'
+);
+#endif
+
 // clang-format on
 
 #if defined(ENCODER_MAP_ENABLE)

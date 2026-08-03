@@ -164,8 +164,27 @@ gepflegt werden:
   - Details siehe Claude-Memory `sofle-choc-liatris-rp2040`.
 
 **Offen / vor dem Flashen prüfen:**
-- **K3 Pro**: MINE-Ebene enthält Annahmen (neu belegte `+`-Taste, NUBS = `MO__NUM`);
-  `_TEST`-Layer ist von keiner Taste erreichbar. Vor Nutzung sichten.
+- **K3 Pro — gesichtet 2026-08-04.** Zwei der früher hier notierten Bedenken
+  waren gegenstandslos, drei echte Punkte sind offen:
+  - ~~„neu belegte `+`-Taste"~~ — **kein Unterschied**: `DE_PLUS` *ist*
+    `KC_RBRC` (`keymap_german.h:61`). MINE-Zeile und QWERT-Zeile sind identisch.
+  - ~~„NUBS = `MO__NUM` ist eine MINE-Annahme"~~ — **stimmt nicht**: das kommt
+    aus den gemeinsamen 7-wide-Wrappern und gilt für QWERTZ genauso
+    (`QWERTY_3` und `MINE___3` beginnen beide mit `KC_LSFT, MO__NUM`).
+  - ⚠️ **Offen: `SYM_ACU` statt `SYM_HSH`** (keymap.c Zeile 48 vs. 65). Auf der
+    MINE-Ebene sendet die physische ISO-`#`-Taste `´` statt `#`. `#` bleibt
+    über `N3_HASH` im SYM-Layer erreichbar, die Direkttaste ist aber weg.
+  - ⚠️ **Offen: Zahlenreihe rechts.** MINE hat dort `DE_MINS, DE_GRV` statt
+    `DE_SS, DE_ACUT`. `-` gibt es auf MINE bereits über `RFT_MIN` (rechter
+    Pinky) → Dublette; und `DE_GRV` ist `S(DE_ACUT)`, also ein **Dead Key**.
+  - ⚠️ **Offen: `RN_CODE` ist tot** (keymap.c Zeile 62). Der einzige Handler
+    dafür steht in der GMMK-Keymap und auch dort nur unter
+    `#ifdef CONSOLE_ENABLE` — auf dem K3 Pro passiert also nichts.
+  - **`_TEST`-Layer: bestätigt von keiner Taste erreichbar** und in diesem
+    Build vollständig redundant — `BT_HST1..3` sind `_______`, weil Bluetooth
+    aus ist (`# OPT_DEFS += -DKC_BLUETOOTH_ENABLE`, `k3_pro/rules.mk:25`), und
+    RGB-Steuerung + `NK_TOGG` liegen schon auf `_ADJUST`. Entweder löschen oder
+    per `MO(_TEST)`/`TG(_TEST)` erreichbar machen — Entscheidung offen.
 - **Lotus58: nicht mehr anfassen.** Michael besitzt das Board nicht mehr
   (2026-08-04). Die Keymap bleibt im Repo, wird aber **nicht** gepflegt: nicht
   auf das Wrapper-System umstellen, nicht in Feature-Rollouts einbeziehen,
@@ -381,12 +400,13 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
   als angenommen. `lib/python/qmk/cli/generate/keyboard_c.py` markiert die
   **Leertaste automatisch mit `'*'`** und zieht bei Boards mit Spacebar eine
   leicht schräge Trennlinie durch sie hindurch.)
-  - **GMMK Pro / K3 Pro: unkritisch.** Der einzige Tap-Hold in deren
-    Daumenreihe ist `NAV_SPC` aus dem `7_THUMBS`-Wrapper, und der sitzt auf
-    der Leertaste — die Auto-Tabelle gibt ihr `'*'`. Die übrigen Tap-Holds
-    (`NAV_TAB`, `NUM__UE`, `SYM__AE`) liegen auf den Außenspalten und werden
-    korrekt L/R geraten. Eine eigene Tabelle ist Feinschliff, kein Fix.
-  - **Kyria: echtes Problem.** Als symmetrischer Split bekommt sie
+  - **GMMK Pro / K3 Pro: erledigt 2026-08-04.** Beide haben jetzt eine
+    explizite Tabelle im keymap.c — inhaltlich identisch mit der generierten,
+    aber sichtbar und änderbar statt von einer Heuristik abhängig. Der einzige
+    Tap-Hold ihrer Daumenreihe ist `NAV_SPC` auf der Leertaste (`'*'`); die
+    übrigen (`NAV_TAB`, `NUM__UE`, `SYM__AE`) liegen auf den Außenspalten.
+  - **Kyria: echtes Problem, noch offen** (Board wird derzeit nicht benutzt).
+     Als symmetrischer Split bekommt sie
     `'L','L','L','L','L','R','R','R','R','R'` für die Daumenreihe — **kein
     `'*'`**. Damit ist exakt der KMK-Hardware-Bug reproduzierbar: `NUM_ENT`
     (linker Daumen) halten + eine linke Taste drücken settlet den Daumen als
