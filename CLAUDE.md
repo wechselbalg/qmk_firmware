@@ -273,10 +273,13 @@ definieren, sonst Doppel-Symbol beim Linken.
   Auflösen **jeder** Taste an.
 - OLED zeigt statt des Layer-`case` jetzt eine eigene Zeile `MAC` / `PC` aus
   `WB_HOST_IS_MAC()` (= `keymap_config.swap_lctl_lgui`).
-- **Wo die Taste sitzt** (Sofle Choc, `ADJUST_L0` Position 4): oberste Reihe,
-  vierte Taste von links — dort, wo auf der Basisebene **F3** liegt.
-  Hinkommen: beide inneren Daumen halten (links `NUM_ENT`, rechts `NAV_BSC`)
-  → Tri-Layer `_ADJUST` → F3 tippen, Daumen dabei gehalten lassen.
+- **Wo die Taste sitzt** (seit 2026-08-04 auf der **C-Position**): untere
+  Buchstabenreihe, vierte Taste von links — dort, wo auf QWERTZ das **C**
+  liegt. Merksatz: „C wie Cmd", und genau das macht `CG_TOGG` aus der
+  Ctrl-Taste. Hinkommen: beide inneren Daumen halten (links `NUM_ENT`, rechts
+  `NAV_BSC`) → Tri-Layer `_ADJUST` → C tippen, Daumen dabei gehalten lassen.
+  Auf den ISO-Boards (GMMK Pro, K3 Pro) steht sie im Block `ADJUST__3` auf
+  Position **5** statt 4, weil deren Reihe zusätzlich die NUBS-Taste hat.
   Kontrolle: das OLED springt von `PC` auf `MAC`. Falls die Taste nichts tut,
   zuerst prüfen ob `MAGIC_ENABLE` im Build ist:
   `tr ' ' '\n' < .build/obj_<target>/cflags.txt | grep -x -- -DMAGIC_ENABLE`.

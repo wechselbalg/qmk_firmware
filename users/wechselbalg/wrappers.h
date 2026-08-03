@@ -306,12 +306,17 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-// MAC_TOG (= CG_TOGG) sitzt auf dem Platz, den vorher TG__MAC hatte -- gleiche
-// Taste, gleiche Bedeutung ("an welchem Host tippe ich"), jetzt persistent.
-#define _________________ADJUST_L0_________________  FN_EXIT, KC_BRID, KC_BRIU, MAC_TOG, ___NO__, RGB_VAD
+#define _________________ADJUST_L0_________________  FN_EXIT, KC_BRID, KC_BRIU, ___NO__, ___NO__, RGB_VAD
 #define _________________ADJUST_L1_________________  P_QWERT, P_DVORK, P_COLMK, P___VOU, P__MINE, ___NO__
 #define _________________ADJUST_L2_________________  D_QWERT, D_DVORK, D_COLMK, D___VOU, D__MINE, D__GAME
-#define _________________ADJUST_L3_________________  ___NO__, ___NO__, ___NO__, ___NO__, ___NO__, QK_BOOT
+// MAC_TOG auf der C-Position (untere Buchstabenreihe, 4. Taste von links --
+// dort, wo auf QWERTZ das C liegt): "C wie Cmd", und genau das macht CG_TOGG
+// aus der Ctrl-Taste. Die Reihe ist sonst leer, es muss nichts weichen, und
+// der linke Mittelfinger kommt hin, waehrend beide Daumen ADJUST halten.
+// Achtung: der 7-wide-Block ADJUST__3 weiter unten wird NICHT aus dieser
+// Zeile zusammengesetzt -- dort steht MAC_TOG separat auf Position 5, weil
+// die ISO-Boards in dieser Reihe die NUBS-Taste zusaetzlich haben.
+#define _________________ADJUST_L3_________________  ___NO__, ___NO__, ___NO__, MAC_TOG, ___NO__, QK_BOOT
 
 #define _________________ADJUST_R0_________________  RGB_VAI, KC_MPRV, KC_MPLY, KC_MNXT, RGB_TOG, RGB_MOD
 #define _________________ADJUST_R1_________________  ___NO__, ___NO__, ___NO__, ___NO__, ___NO__, A_MSJIG
@@ -321,6 +326,9 @@ NOTE: These are all the same length.  If you do a search/replace
 #define ________________________________________ADJUST__0_______________________________________  _________________ADJUST_L0_________________, _________________ADJUST_R0_________________
 #define ________________________________________ADJUST__1_______________________________________  _________________ADJUST_L1_________________, _________________ADJUST_R1_________________
 #define ________________________________________ADJUST__2_______________________________________  _________________ADJUST_L2_________________, _________________ADJUST_R2_________________
-#define ________________________________________ADJUST__3_______________________________________  ___NO__, ___NO__, ___NO__, ___NO__, ___NO__, ___NO__, QK_BOOT, _________________ADJUST_R3_________________
+// MAC_TOG hier auf Position 5, nicht 4 wie im 6-wide-Block: die ISO-Boards
+// haben in dieser Reihe zusaetzlich die NUBS-Taste (vgl. QWERTY_3), das C
+// rutscht dadurch eine Stelle nach rechts.
+#define ________________________________________ADJUST__3_______________________________________  ___NO__, ___NO__, ___NO__, ___NO__, MAC_TOG, ___NO__, QK_BOOT, _________________ADJUST_R3_________________
 
 // clang-format on
