@@ -26,15 +26,18 @@ tap_dance_action_t tap_dance_actions[] = {
 
 // clang-format off
 
-// Zusaetzliche Layer neben dem Userspace-Enum (_TEST: RGB-/BT-Testlayer)
-enum k3_pro_layers { _TEST = _ADJUST + 1 };
+/*
+Der frueherer _TEST-Layer (RGB-/Bluetooth-Testebene) ist am 2026-08-04
+entfallen: er war von keiner Taste erreichbar (`_TEST` kam im ganzen Repo nur
+in seiner eigenen Definition vor) und in diesem Build vollstaendig redundant --
+BT_HST1..3 waren `_______`, weil Bluetooth aus ist
+(`# OPT_DEFS += -DKC_BLUETOOTH_ENABLE` in keyboards/keychron/k3_pro/rules.mk),
+und RGB-Steuerung plus NK_TOGG liegen bereits auf _ADJUST.
 
-// Bluetooth-Keycodes existieren nur im Bluetooth-Build (Keychron-Fork)
-#ifndef KC_BLUETOOTH_ENABLE
-#    define BT_HST1 _______
-#    define BT_HST2 _______
-#    define BT_HST3 _______
-#endif
+Falls der Bluetooth-Build je aktiviert wird: BT_HST1..3 und BAT_LVL gehoeren
+dann auf _ADJUST, nicht in einen eigenen Layer (siehe git-Historie fuer die
+alte Belegung).
+*/
 
 #undef LAYOUT_wrapper
 #define LAYOUT_wrapper(...) LAYOUT_iso_85(__VA_ARGS__)
@@ -43,23 +46,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #ifdef WB_LAYOUT_MINE
     [_MINE] = LAYOUT_wrapper(
         KC_ESC,   _________________________________________F_KEYS_________________________________________,  KC_CALC,  KC_MAIL,  RGB_TOG,
-        KC_GRV, _______________________________NUMBERS________________________________, DE_MINS,   DE_GRV,   KC_BSPC,            KC_DEL,
+        // 2026-08-04, RUECKGAENGIG MACHEN = `DE_MINS,   DE_GRV,`:
+        // die beiden ISO-Extratasten rechts der 0 senden jetzt das, was auf
+        // ihnen steht (ss und Akut), wie auf allen anderen Basis-Layouts.
+        // Vorher: DE_MINS (Dublette -- `-` liegt auf MINE schon auf RFT_MIN,
+        // rechter Pinky) und DE_GRV (= S(DE_ACUT), ein Dead Key: erst nach
+        // einem zusaetzlichen Space erscheint das Zeichen).
+        KC_GRV, _______________________________NUMBERS________________________________, DE_SS,     DE_ACUT,  KC_BSPC,            KC_DEL,
         ________________________________________MINE___1________________________________________,  DE_PLUS,  KC_ENT,   KC_HOME,
-        ________________________________________MINE___2________________________________________,  SYM_ACU,                      KC_END,
+        // 2026-08-04, RUECKGAENGIG MACHEN = `SYM_ACU,`:
+        // die physische ISO-#-Taste sendet jetzt auch auf MINE `#` statt `\u00b4`,
+        // wie auf allen anderen Basis-Layouts. Der Akut ist seit der Aenderung
+        // eine Zeile darueber auf seiner eigenen Taste erreichbar.
+        ________________________________________MINE___2________________________________________,  SYM_HSH,                      KC_END,
         ________________________________________MINE___3________________________________________,            KC_UP,    MO__ADJ,
         ________________________________________7_THUMBS________________________________________,  KC_LEFT,  KC_DOWN,  KC_RGHT),
 #endif
 
-    [_TEST] = LAYOUT_wrapper(
-        _______,  KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   _______,  _______,  RGB_TOG,
-        _______,  BT_HST1,  BT_HST2,  BT_HST3,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
-        RGB_TOG,  RGB_MOD,  RGB_VAI,  RGB_HUI,  RGB_SAI,  RGB_SPI,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
-        _______,  RGB_RMOD, RGB_VAD,  RGB_HUD,  RGB_SAD,  RGB_SPD,  _______,  _______,  _______,  _______,  _______,  _______,  _______,                      _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  BAT_LVL,  NK_TOGG,  _______,  _______,  _______,  _______,  _______,            _______,  _______,
-        _______,  _______,  _______,                                _______,                                _______,  _______,  _______,  _______,  _______,  _______),
-
     [_QWERT] = LAYOUT_wrapper(
-        KC_ESC,  _________________________________________F_KEYS_________________________________________, RN_CODE,  KC_CALC,  RGB_MOD,
+        // 2026-08-04: RN_CODE -> KC_MAIL. RN_CODE hatte auf diesem Board nie
+        // einen Handler (der einzige steht in der GMMK-Keymap, dort auch nur
+        // unter #ifdef CONSOLE_ENABLE) -- die Taste tat schlicht nichts.
+        KC_ESC,  _________________________________________F_KEYS_________________________________________, KC_MAIL,  KC_CALC,  RGB_MOD,
         KC_GRV, _______________________________NUMBERS________________________________, DE_SS,    DE_ACUT,           KC_BSPC,  KC_DEL,
         ________________________________________QWERTY_1________________________________________, KC_RBRC, KC_ENT,             KC_HOME,
         ________________________________________QWERTY_2________________________________________, SYM_HSH,                     KC_END,

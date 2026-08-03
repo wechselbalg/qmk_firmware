@@ -164,33 +164,27 @@ gepflegt werden:
   - Details siehe Claude-Memory `sofle-choc-liatris-rp2040`.
 
 **Offen / vor dem Flashen prüfen:**
-- **K3 Pro — gesichtet 2026-08-04.** Zwei der früher hier notierten Bedenken
-  waren gegenstandslos, drei echte Punkte sind offen:
+- **K3 Pro — gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
+  notierten Bedenken waren gegenstandslos, der Rest ist erledigt:
   - ~~„neu belegte `+`-Taste"~~ — **kein Unterschied**: `DE_PLUS` *ist*
     `KC_RBRC` (`keymap_german.h:61`). MINE-Zeile und QWERT-Zeile sind identisch.
   - ~~„NUBS = `MO__NUM` ist eine MINE-Annahme"~~ — **stimmt nicht**: das kommt
-    aus den gemeinsamen 7-wide-Wrappern und gilt für QWERTZ genauso
-    (`QWERTY_3` und `MINE___3` beginnen beide mit `KC_LSFT, MO__NUM`).
-  - ⚠️ **Offen: `SYM_ACU` statt `SYM_HSH`** (keymap.c Zeile 48 vs. 65). Auf der
-    MINE-Ebene sendet die physische ISO-`#`-Taste `´` statt `#`. `#` bleibt
-    über `N3_HASH` im SYM-Layer erreichbar, die Direkttaste ist aber weg.
-  - ⚠️ **Offen: Zahlenreihe rechts.** MINE hat dort `DE_MINS, DE_GRV` statt
-    `DE_SS, DE_ACUT`. `-` gibt es auf MINE bereits über `RFT_MIN` (rechter
-    Pinky) → Dublette; und `DE_GRV` ist `S(DE_ACUT)`, also ein **Dead Key**.
-  - ⚠️ **Offen: `RN_CODE` ist tot** (keymap.c Zeile 62). Der einzige Handler
-    dafür steht in der GMMK-Keymap und auch dort nur unter
-    `#ifdef CONSOLE_ENABLE` — auf dem K3 Pro passiert also nichts.
-  - **`_TEST`-Layer: bestätigt von keiner Taste erreichbar** und in diesem
-    Build vollständig redundant — `BT_HST1..3` sind `_______`, weil Bluetooth
-    aus ist (`# OPT_DEFS += -DKC_BLUETOOTH_ENABLE`, `k3_pro/rules.mk:25`), und
-    RGB-Steuerung + `NK_TOGG` liegen schon auf `_ADJUST`. Entweder löschen oder
-    per `MO(_TEST)`/`TG(_TEST)` erreichbar machen — Entscheidung offen.
-- **Lotus58: nicht mehr anfassen.** Michael besitzt das Board nicht mehr
-  (2026-08-04). Die Keymap bleibt im Repo, wird aber **nicht** gepflegt: nicht
-  auf das Wrapper-System umstellen, nicht in Feature-Rollouts einbeziehen,
-  Build-Fehler dort nicht priorisieren. Sie steht bewusst über
-  `OPT_DEFS += -DWB_NO_ADVANCED_TAP_HOLD` in ihrer `rules.mk` auf dem alten
-  Tap-Hold-Verhalten. Erst wieder aufnehmen, wenn Michael es ausdrücklich sagt.
+    aus den gemeinsamen 7-wide-Wrappern und gilt für QWERTZ genauso.
+  - **`_TEST`-Layer gelöscht.** War von keiner Taste erreichbar und in diesem
+    Build redundant (`BT_HST1..3` = `_______`, weil Bluetooth aus ist; RGB und
+    `NK_TOGG` liegen auf `_ADJUST`). Bei aktiviertem Bluetooth-Build gehören
+    `BT_HST1..3`/`BAT_LVL` auf `_ADJUST` — alte Belegung steht in der
+    git-Historie.
+  - **`RN_CODE` → `KC_MAIL`.** Die Taste hatte auf diesem Board nie einen
+    Handler und tat nichts.
+  - **MINE: ISO-Extratasten senden jetzt, was auf ihnen steht** — wie auf allen
+    anderen Basis-Layouts. ⚠️ **Rückgängig zu machen, falls es stört** (die
+    alten Werte stehen als Kommentar direkt an den Zeilen):
+    - Zahlenreihe rechts der 0: `DE_MINS, DE_GRV` → `DE_SS, DE_ACUT`.
+      Vorher war `-` eine Dublette (liegt auf MINE schon auf `RFT_MIN`) und
+      `DE_GRV` = `S(DE_ACUT)` ein **Dead Key**.
+    - ISO-`#`-Taste: `SYM_ACU` → `SYM_HSH`, sendet also `#` statt `´`.
+      Der Akut ist seitdem wieder auf seiner eigenen Taste erreichbar.
 - K3-Pro-Varianten ansi/jis/white bleiben ungebaut (alte LED-Tabellen-Makros).
 - Idee: Mac-Variante des `_NAV`-Layers (Wort-Sprünge Opt+Pfeil statt Ctrl+Pfeil).
   Wird durch C1 (Ctrl⇄GUI-Swap) **wichtiger**, nicht überflüssig — siehe dort.
