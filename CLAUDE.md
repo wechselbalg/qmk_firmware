@@ -95,16 +95,25 @@ gepflegt werden:
   und Duplikat `users/wechselbalg_` entfernt.
 - `_MAC`-Overlay-Layer für alle Wrapper-Keymaps hinzugefügt.
 - Lotus58 vom eigenen Port auf das offizielle `tweetydabird/lotus58` migriert.
-- Sofle Choc (Elite-C) auf aktuellen Stand geflasht und getestet:
+- Sofle Choc auf aktuellen Stand geflasht und getestet (beide Hälften):
   - Linke Hälfte, äußerste Daumentaste: Del/Num → Enter/Num (`NUM_ENT`).
   - Rechte Hälfte, zweite Daumentaste von links: Enter/Shift → Space/Shift (`RFT_SPC`).
-  - `_NUM`-Layer: reine Enter-Taste direkt links neben der Shift-Position
-    (unterste Reihe, vorletzte rechte Spalte) hinzugefügt (ersetzt dort `;`).
+  - `_NAV`-Layer: reine Enter-Taste an der bisher freien Stelle direkt links
+    neben der Shift-Position (unterste Reihe, vorletzte rechte Spalte) hinzugefügt.
+    (`_NUM`-Layer an der gleichen Stelle bleibt unverändert bei `;`.)
   - Mouse Keys global deaktiviert (`MOUSEKEY_ENABLE = no` in `users/wechselbalg/rules.mk`)
     — kollidierten am Mac mit dem Touchpad.
-  - Sofle Choc (Elite-C) meldet sich im Bootloader als **Atmel-DFU**, nicht
-    Caterina → zum Flashen `make sofle_choc:wechselbalg:dfu` statt `qmk flash`
-    verwenden (Details in Claude-Memory `sofle-choc-dfu-bootloader`).
+  - **Wichtig**: die zwei Hälften haben unterschiedliche Controller/Bootloader:
+    rechte Hälfte = Elite-C (Atmel-DFU, `make sofle_choc:wechselbalg:dfu`),
+    linke Hälfte = Standard-Arduino-Pro-Micro (Caterina/seriell,
+    `make sofle_choc:wechselbalg:flash`, Bootloader nur ~8s aktiv → Flash-Befehl
+    vor dem Auslösen des Bootloaders starten, er pollt automatisch auf den
+    neuen seriellen Port). Details in Claude-Memory `sofle-choc-dfu-bootloader`.
+  - Lokales `avrdude` (Homebrew, 8.2) hatte eine kaputte `avrdude.conf`
+    (mehrere veraltete FTDI-Programmer-Blöcke + fehlende `prog_modes` bei
+    `avr109`/`ATmega32U4` verursachen Parse-/Kompatibilitätsfehler) → Workaround
+    ist eine minimale eigene Config statt der System-`avrdude.conf`
+    (siehe Claude-Memory `sofle-choc-dfu-bootloader` für Details/Pfad).
 
 **Offen / vor dem Flashen prüfen:**
 - **K3 Pro**: MINE-Ebene enthält Annahmen (neu belegte `+`-Taste, NUBS = `MO__NUM`);

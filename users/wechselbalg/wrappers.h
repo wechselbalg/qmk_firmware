@@ -259,7 +259,7 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _________________NUMBER_R0_________________  N4__TAB, N2_SECT, N3_SLSH, N3_ASTR, DE_HASH, N3_NMNS
 #define _________________NUMBER_R1_________________  N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH
 #define _________________NUMBER_R2_________________  N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS
-#define _________________NUMBER_R3_________________  N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, KC_ENT , N3_EQUL
+#define _________________NUMBER_R3_________________  N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL
 
 #define _________5_NUMBER__THUMBS_R_________         _______, _______, NAV_NM0, N3_COMM, N3__DOT
 #define ________________________________7_NUMBER__THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_NM0, N3_COMM, N3__DOT, KC_RCTL
@@ -286,7 +286,7 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _____________NAVIGATION_R0_________________  KC_TAB , ___NO__, ___NO__, ___NO__, ___NO__, KC_INS
 #define _____________NAVIGATION_R1_________________  NX__CUT, NX_COPY, NX_PAST, NX_FIND, KC_PSCR, KC_APP
 #define _____________NAVIGATION_R2_________________  SFT_CTL, KC_LCTL, KC_LSFT, KC_LALT, KC_RALT, KC_RGUI
-#define _____________NAVIGATION_R3_________________  NX_CENT, MS_WHLD, MS_UP  , MS_WHLU, ___NO__, F_LLOCK
+#define _____________NAVIGATION_R3_________________  NX_CENT, MS_WHLD, MS_UP  , MS_WHLU, KC_ENT , F_LLOCK
 
 #define ______5_NAVIGATION_THUMBS_R_________         MS_BTN2, MS_BTN1, MS_LEFT, MS_DOWN, MS_RGHT
 
