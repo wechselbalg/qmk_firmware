@@ -57,7 +57,7 @@ oder `make <KB>:wechselbalg`:
 | Sofle Choc (schwarz) | `sofle_choc` + `-e CONVERT_TO=liatris` | RP2040 (2× splitkb Liatris) |
 | splitkb Kyria | `splitkb/kyria/rev1` | AVR (voll, ~92 %) |
 | GMMK Pro ISO | `gmmk/pro/rev1/iso` | STM32 |
-| Lotus58 | `tweetydabird/lotus58` | AVR (voll, ~95 %) |
+| ~~Lotus58~~ | `tweetydabird/lotus58` | AVR — **stillgelegt, siehe unten** |
 | Keychron K3 Pro ISO RGB | `keychron/k3_pro/iso/rgb` | STM32 |
 
 **Zwei physische Sofle-Choc-Boards, farblich unterschieden:**
@@ -166,8 +166,12 @@ gepflegt werden:
 **Offen / vor dem Flashen prüfen:**
 - **K3 Pro**: MINE-Ebene enthält Annahmen (neu belegte `+`-Taste, NUBS = `MO__NUM`);
   `_TEST`-Layer ist von keiner Taste erreichbar. Vor Nutzung sichten.
-- **Lotus58-Keymap** ist noch eigenständig (nicht auf das Wrapper-System umgestellt)
-  → hat daher noch **keinen** `_MAC`-Layer. Nächster natürlicher Schritt.
+- **Lotus58: nicht mehr anfassen.** Michael besitzt das Board nicht mehr
+  (2026-08-04). Die Keymap bleibt im Repo, wird aber **nicht** gepflegt: nicht
+  auf das Wrapper-System umstellen, nicht in Feature-Rollouts einbeziehen,
+  Build-Fehler dort nicht priorisieren. Sie steht bewusst über
+  `OPT_DEFS += -DWB_NO_ADVANCED_TAP_HOLD` in ihrer `rules.mk` auf dem alten
+  Tap-Hold-Verhalten. Erst wieder aufnehmen, wenn Michael es ausdrücklich sagt.
 - K3-Pro-Varianten ansi/jis/white bleiben ungebaut (alte LED-Tabellen-Makros).
 - Idee: Mac-Variante des `_NAV`-Layers (Wort-Sprünge Opt+Pfeil statt Ctrl+Pfeil).
   Wird durch C1 (Ctrl⇄GUI-Swap) **wichtiger**, nicht überflüssig — siehe dort.
@@ -250,6 +254,13 @@ definieren, sonst Doppel-Symbol beim Linken.
   Auflösen **jeder** Taste an.
 - OLED zeigt statt des Layer-`case` jetzt eine eigene Zeile `MAC` / `PC` aus
   `WB_HOST_IS_MAC()` (= `keymap_config.swap_lctl_lgui`).
+- **Wo die Taste sitzt** (Sofle Choc, `ADJUST_L0` Position 4): oberste Reihe,
+  vierte Taste von links — dort, wo auf der Basisebene **F3** liegt.
+  Hinkommen: beide inneren Daumen halten (links `NUM_ENT`, rechts `NAV_BSC`)
+  → Tri-Layer `_ADJUST` → F3 tippen, Daumen dabei gehalten lassen.
+  Kontrolle: das OLED springt von `PC` auf `MAC`. Falls die Taste nichts tut,
+  zuerst prüfen ob `MAGIC_ENABLE` im Build ist:
+  `tr ' ' '\n' < .build/obj_<target>/cflags.txt | grep -x -- -DMAGIC_ENABLE`.
 - **Ein Ctrl⇄Alt-Magic-Keycode existiert in QMK nicht** (nur Ctrl⇄CapsLock,
   Alt⇄GUI, Ctrl⇄GUI, Esc⇄CapsLock, Grave⇄Esc, Backslash⇄Backspace, no_gui) —
   wird hier aber auch nicht gebraucht, siehe oben.
@@ -351,10 +362,13 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
 194 Bytes, kyria 95 % / 1230 Bytes, lotus58 96 % / 912 Bytes.
 
 > ⚠️ **sofle/rev1 hat 22 Bytes Luft.** Das baut heute, aber der nächste
-> Upstream-Merge kippt es mit hoher Wahrscheinlichkeit. Ein-Zeilen-Notausgang:
-> `OPT_DEFS += -DWB_NO_ADVANCED_TAP_HOLD` in
-> `keyboards/sofle/keymaps/wechselbalg/rules.mk` — dann verhält sich das Board
-> wie die Lotus58. Alternativ dort RGB-Animationen ausdünnen.
+> Upstream-Merge kippt es mit hoher Wahrscheinlichkeit. Der Notausgang liegt
+> **auskommentiert bereit** am Ende von
+> [keyboards/sofle/keymaps/wechselbalg/rules.mk](keyboards/sofle/keymaps/wechselbalg/rules.mk):
+> bei „The firmware is too large!" die `OPT_DEFS`-Zeile dort einkommentieren,
+> dann fällt das Board auf TAPPING_TERM 600 ohne Chordal Hold zurück.
+> Alternativ dort die `RGBLIGHT_EFFECT_*`-Animationen ausdünnen, wenn das
+> Tippgefühl wichtiger ist.
 
 **Offen aus diesem Paket:**
 - **Hardware-Test der schwarzen Sofle Choc steht aus** — beide Hälften sind am
@@ -362,12 +376,22 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
   Tippgefühl bei 150 ms, Daumen-Chords unter Chordal Hold, Retro-Tap-Fenster,
   `MAC_TOG` inkl. EEPROM-Persistenz, `FN_EXIT` auf einem Nicht-QWERT-Layout,
   die OLED-Zeile MAC/PC, Power-LED aus, Mouse Keys im `_NAV`-Layer.
-- **`chordal_hold_layout` fehlt für GMMK Pro und K3 Pro.** Beide sind STM32,
-  bekommen `CHORDAL_HOLD` also aktiv — ohne Tabelle rät QMK anhand der
-  Geometrie und nimmt die Daumen/Space-Reihe **nicht** aus. Vor deren nächstem
-  Flash nachtragen.
-- **`chordal_hold_layout` fehlt auch für die Kyria**, die es seit dieser
-  Änderung aktiv hat. Vor ihrem nächsten Flash nachtragen.
+- **`chordal_hold_layout` — nur die Kyria braucht wirklich eine.**
+  (Korrektur einer früheren Notiz hier: QMKs automatische Tabelle ist besser
+  als angenommen. `lib/python/qmk/cli/generate/keyboard_c.py` markiert die
+  **Leertaste automatisch mit `'*'`** und zieht bei Boards mit Spacebar eine
+  leicht schräge Trennlinie durch sie hindurch.)
+  - **GMMK Pro / K3 Pro: unkritisch.** Der einzige Tap-Hold in deren
+    Daumenreihe ist `NAV_SPC` aus dem `7_THUMBS`-Wrapper, und der sitzt auf
+    der Leertaste — die Auto-Tabelle gibt ihr `'*'`. Die übrigen Tap-Holds
+    (`NAV_TAB`, `NUM__UE`, `SYM__AE`) liegen auf den Außenspalten und werden
+    korrekt L/R geraten. Eine eigene Tabelle ist Feinschliff, kein Fix.
+  - **Kyria: echtes Problem.** Als symmetrischer Split bekommt sie
+    `'L','L','L','L','L','R','R','R','R','R'` für die Daumenreihe — **kein
+    `'*'`**. Damit ist exakt der KMK-Hardware-Bug reproduzierbar: `NUM_ENT`
+    (linker Daumen) halten + eine linke Taste drücken settlet den Daumen als
+    Tap. Vor ihrem nächsten Flash die Tabelle nachtragen.
+    Prüfen mit `qmk generate-keyboard-c -kb <board>`.
 
 ## Noch offen — Rest von Schritt 2/3
 
