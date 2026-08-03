@@ -68,6 +68,24 @@ oder `make <KB>:wechselbalg`:
   Flash ganz einfach per UF2 (BOOTSEL halten + einstecken → Laufwerk `RPI-RP2`
   erscheint, `.uf2`-Datei draufkopieren, kein Timing-Fenster wie bei AVR).
 
+**Flash-Skript:** `util/wechselbalg/flash.py` (Python, macOS/Linux/Windows)
+kompiliert automatisch beide Hälften und führt durch den Flash-Vorgang —
+fordert nacheinander zum Anschließen jeder Hälfte auf und wartet dann
+selbständig auf das Gerät (nutzt `qmk flash`s eingebaute Wait-Logik).
+Enthält auch den `avrdude`-Workaround (siehe unten) für die weiße Sofle Choc.
+Boards sind dort in einem Dict eingetragen und leicht um weitere Tastaturen
+(Kyria, GMMK Pro, …) erweiterbar. **Claude sollte dieses Skript für alle
+künftigen Flash-Vorgänge dieser Boards nutzen statt manueller `make`/`qmk
+flash`-Aufrufe.**
+```bash
+python3 util/wechselbalg/flash.py --list
+python3 util/wechselbalg/flash.py sofle_choc_black
+python3 util/wechselbalg/flash.py sofle_choc_white --side right
+```
+Kann den Bootloader nicht selbst auslösen (kein generischer QMK-Software-Weg
+dafür) — der physische Taster (oder die `QK_BOOT`-Tastenkombo im Adjust-Layer)
+muss weiterhin von Hand gedrückt werden, wenn das Skript dazu auffordert.
+
 `keyboards/keychron/k3_pro` + `keyboards/keychron/bluetooth` sind aus dem
 Keychron-Fork einvendort (das K3 Pro existiert nicht im offiziellen QMK) →
 bei Upstream-Merges immer die eigene Version behalten.
