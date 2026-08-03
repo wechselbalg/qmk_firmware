@@ -327,16 +327,22 @@ alle 6 Boards und der Liatris-Build kompilieren.
 
 ## Noch offen — Rest von Schritt 2/3
 
-- **B-Optionen, die QMK zusätzlich hätte und KMK nicht.** Bewusst noch nicht
-  gesetzt, erst nach dem Hardware-Test der 150 ms bewerten:
-  - `FLOW_TAP_TERM` — schaltet Tap-Hold ab, solange schnell getippt wird (die
-    vorige Taste liegt weniger als *n* ms zurück und beide sind Alphas/Space).
-    Zielt auf dasselbe wie Chordal Hold, nur über Zeit statt Händigkeit; wäre
-    die Ergänzung, falls Roll-Overs auf der *Gegen*hand stören.
-  - `SPECULATIVE_HOLD` — setzt den Modifier eines Mod-Taps sofort beim Keydown
-    und nimmt ihn zurück, falls es doch ein Tap wird. Behebt die Trägheit von
-    Shift+Klick, ändert die Tap/Hold-Entscheidung aber **nicht** und löst damit
-    das Retro-Tap-Problem nicht.
+- **⚠️ TODO `FLOW_TAP_TERM` — noch NICHT aktiviert, ggf. nachziehen.**
+  Schaltet Tap-Hold ab, solange schnell getippt wird: liegt der vorherige
+  Tastendruck weniger als *n* ms zurück (empfohlener Startwert 150) und sind
+  beide beteiligten Tasten Buchstaben oder Space, wird sofort als Tap
+  entschieden. Zielt auf dasselbe wie Chordal Hold, aber über Zeit statt über
+  Händigkeit — fängt damit auch Roll-Overs auf der **Gegen**hand, die Chordal
+  Hold durchlässt. Anzuschalten, wenn nach dem Hardware-Test der 150 ms noch
+  versehentliche Modifier bei schnellem Tippen auftreten. Feineinstellung über
+  `is_flow_tap_key()` und `get_flow_tap_term()`.
+- **⚠️ TODO `SPECULATIVE_HOLD` — noch NICHT aktiviert, ggf. nachziehen.**
+  Setzt den Modifier eines Mod-Taps sofort beim Keydown und nimmt ihn zurück,
+  falls es doch ein Tap wird. Behebt die Trägheit von Shift+Klick (der
+  Modifier steht sonst erst nach dem Tapping-Term). Ändert die
+  Tap/Hold-Entscheidung **nicht** und löst deshalb das Retro-Tap-Problem
+  nicht — die beiden sind unabhängig voneinander. Anzuschalten, wenn sich
+  Shift+Klick/Ctrl+Klick am Mod-Tap-Shift träge anfühlt.
 
 - **C2 Caps Word per Shift+Shift** (`COMBO_ENABLE`). KMK: Timeout 150 ms statt 50,
   weil der Split-Link Latenz addiert und jede Hälfte gegen ihre eigene Sicht timet.
@@ -379,6 +385,21 @@ muss dafür eine Lösung stehen, z. B.:
   nicht bei einer kaputt geflashten Firmware.
 - Doppelter Reset-Tap / `RP2040_BOOTLOADER_DOUBLE_TAP_RESET` als zweiter Weg.
 - Reset-/BOOT-Taster nach außen verlängern, oder das OLED steckbar/geklappt montieren.
+
+## Geklärt, nichts zu tun
+
+- **Option-Taste am Mac = Alt-Taste am PC.** Auf HID-Ebene gibt es nur
+  `LALT`/`RALT`; macOS nennt sie Option (⌥). `CG_TOGG` fasst sie nicht an, der
+  mittlere Daumen bleibt in beiden Modi gleich. `RALT_PR` (`ALGR_T`) ist am Mac
+  die rechte Option-Taste und dort genau wie AltGr der Sonderzeichen-Modifier.
+- **Apples fn-Taste ist per USB-HID nicht sendbar** und fehlt deshalb
+  zwangsläufig im Layout — sie ist kein HID-Keycode, sondern wird in
+  Apple-Tastaturen im Controller ausgewertet und über einen proprietären
+  Vendor-Report gemeldet. Keine QMK-Lücke, sondern eine Protokollgrenze.
+  Ersatz: Medientasten direkt (ADJUST-Layer + Encoder), PgUp/PgDn/Home/End/Del
+  im `_NAV`-Layer. Einzig der fn+fn-Doppeldruck (Diktat/Emoji-Picker) hat kein
+  Äquivalent — in den macOS-Systemeinstellungen auf eine sendbare Kombo legen.
+  **Nicht erneut untersuchen.**
 
 ## Ausdrücklich NICHT übertragen
 
