@@ -410,6 +410,23 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
     Tap. Vor ihrem nächsten Flash die Tabelle nachtragen.
     Prüfen mit `qmk generate-keyboard-c -kb <board>`.
 
+## Reihenfolge für die nächste Session (festgelegt 2026-08-04)
+
+Michael will die restlichen Punkte in dieser Reihenfolge angehen:
+
+1. **C2** Caps Word per Shift+Shift
+2. **C4** Mouse Jiggler (`A_MSJIG` hat keinen Handler)
+3. **C6** `DF_PREV`
+4. **C8** Per-Key-RGB-Farbsprache (das große Paket, RGBLIGHT → RGB Matrix)
+5. **C7** Encoder auf `_ADJUST` = RGB-Helligkeit — **bewusst nach C8**, weil
+   die Helligkeits-Keycodes vom gewählten RGB-Feature abhängen (die Aliase in
+   `wrappers.h` wählen `RM_*` bei RGB Matrix, `UG_*` bei RGBLIGHT)
+6. **Status-LED** (Liatris-NeoPixel GP25) — **ebenfalls nach C8**, weil sie
+   dieselben Zustände anzeigt und auf der dort entstehenden Infrastruktur
+   aufsetzt
+
+Danach bleiben nur noch die Kyria-Handedness und ganz zuletzt das OLED.
+
 ## Noch offen — Rest von Schritt 2/3
 
 - **⚠️ TODO `FLOW_TAP_TERM` — noch NICHT aktiviert, ggf. nachziehen.**
