@@ -27,7 +27,7 @@ tap_dance_action_t tap_dance_actions[] = {
 // clang-format off
 
 // Zusaetzliche Layer neben dem Userspace-Enum (_TEST: RGB-/BT-Testlayer)
-enum k3_pro_layers { _TEST = _MAC + 1 };
+enum k3_pro_layers { _TEST = _ADJUST + 1 };
 
 // Bluetooth-Keycodes existieren nur im Bluetooth-Build (Keychron-Fork)
 #ifndef KC_BLUETOOTH_ENABLE
@@ -109,18 +109,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ________________________________________7_THUMBS________________________________________, RGB_SPD, RGB_RMOD,  RGB_SPI
     ),
 
-    // Mac-Overlay: nur die Daumenreihe (Cmd/Opt getauscht), alles andere transparent
-    [_MAC] = LAYOUT_wrapper(
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,            _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,  _______,  _______,
-        ____________________________________7_THUMBS_MAC_____________________________________,  _______,  _______,  _______)
 };
 
 
-bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+bool process_record_keymap(uint16_t keycode, keyrecord_t* record) {
 
   return true;
 }

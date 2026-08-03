@@ -262,13 +262,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
 //     ),
 
-    // Mac-Overlay: nur die Daumenreihe (Cmd/Opt getauscht), alles andere transparent
-    [_MAC] = LAYOUT_wrapper(
-      _______, _______, _______, _______, _______, _______,                                     _______, _______, _______, _______, _______, _______,
-      _______, _______, _______, _______, _______, _______,                                     _______, _______, _______, _______, _______, _______,
-      _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                               ________5_MAC_THUMBS_L______________,     ________5_MAC_THUMBS_R______________
-    ),
 };
 
 /* The default OLED and rotary encoder code can be found at the bottom of qmk_firmware/keyboards/splitkb/kyria/rev1/rev1.c
@@ -277,66 +270,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * DO NOT edit the rev1.c file; instead override the weakly defined default functions by your own.
  */
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // if (!process_custom_shift_keys(keycode, record)) { return false; }
 
-    const uint8_t mods = get_mods();
-    const uint8_t oneshot_mods = get_oneshot_mods();
-
-    switch (keycode) {
-        case QWERT:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_QWERT);
-            }
-            return false;
-        case DVORAK:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_DVORAK);
-            }
-            return false;
-        case COLEMAK:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_COLEMAKDH);
-            }
-            return false;
-        case MINE:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_MINE);
-            }
-            return false;
-        case VOU:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_VOU);
-            }
-            return false;
-        case FF_WORD:
-            if (record->event.pressed) {
-                SEND_STRING(SS_LCTL(SS_TAP(X_RIGHT) SS_TAP(X_RIGHT) SS_TAP(X_LEFT)));
-            }
-            return false;
-        case RV_WORD:
-            if (record->event.pressed) {
-                SEND_STRING(SS_LCTL(SS_TAP(X_LEFT) SS_TAP(X_LEFT) SS_TAP(X_RIGHT)));
-            }
-            return false;
-        case DBRACES:  // Types [], {}, or <> and puts cursor between braces.
-            if (record->event.pressed) {
-            clear_oneshot_mods();  // Temporarily disable mods.
-            unregister_mods(MOD_MASK_CSAG);
-            if ((mods | oneshot_mods) & MOD_MASK_SHIFT) {
-                SEND_STRING("{}");
-            } else if ((mods | oneshot_mods) & MOD_MASK_CTRL) {
-                SEND_STRING("<>");
-            } else {
-                SEND_STRING("[]");
-            }
-            tap_code(KC_LEFT);  // Move cursor between braces.
-            register_mods(mods);  // Restore mods.
-            }
-            return false;
-    }
-    return true;
-}
 
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
@@ -386,9 +320,6 @@ bool oled_task_user(void) {
             break;
         case _ADJUST:
             oled_write_P(PSTR("Adj \n"), false);
-            break;
-        case _MAC:
-            oled_write_P(PSTR("MAC \n"), false);
             break;
         default:
             oled_write_ln_P(PSTR("Undef"), false);

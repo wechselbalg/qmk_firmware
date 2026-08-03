@@ -1,2 +1,5 @@
 #ENCODER_MAP_ENABLE = yes
 STARTUP_NUMLOCK_ON = yes
+
+# MAC_TOG (CG_TOGG) und NK_TOGG brauchen MAGIC_ENABLE; auf STM32 ist Platz.
+MAGIC_ENABLE = yes

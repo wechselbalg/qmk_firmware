@@ -113,15 +113,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ________________________________________7_THUMBS________________________________________, RGB_SPD, RGB_RMOD,  RGB_SPI
     ),
 
-    // Mac-Overlay: nur die Daumenreihe (Cmd/Opt getauscht), alles andere transparent
-    [_MAC] = LAYOUT_wrapper(
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______,
-        ____________________________________7_THUMBS_MAC_____________________________________, _______, _______, _______
-    ),
 };
 
 // clang-format on
@@ -133,8 +124,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_NUM] =      { ENCODER_CCW_CW(KC_MPRV, KC_MNXT) },
     [_NAV] =      { ENCODER_CCW_CW(MS_WHLD, MS_WHLU) },
     [_GAMING] =   { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [_ADJUST] =   { ENCODER_CCW_CW(KC_MSEL, KC_MPRV) },
-    [_MAC] =      { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) }
+    [_ADJUST] =   { ENCODER_CCW_CW(KC_MSEL, KC_MPRV) }
 };
 #endif
 
@@ -165,7 +155,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
 //     sizeof(custom_shift_keys) / sizeof(custom_shift_key_t);
 
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
 
     #ifdef CONSOLE_ENABLE
     uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n", keycode, record->event.key.col, record->event.key.row, record->event.pressed, record->event.time, record->tap.interrupted, record->tap.count);

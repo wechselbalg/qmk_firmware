@@ -21,7 +21,16 @@ LTO_ENABLE = yes
 KEY_OVERRIDE_ENABLE = no
 SPACE_CADET_ENABLE = no
 GRAVE_ESC_ENABLE = no
-MAGIC_ENABLE = no
+# MAGIC_ENABLE traegt MAC_TOG/CG_TOGG (Ctrl<->GUI, EEPROM-persistent) und
+# NK_TOGG. Beides war ohne es stillschweigend tot.
+# Kostet rund 1 KB und sprengt damit die AVR-Boards -- deshalb hier der
+# Default "no", den die Boards mit grossem Controller (RP2040/STM32) in ihrer
+# eigenen rules.mk auf yes ziehen. Sobald die AVR-Boards auf bessere
+# Controller umgezogen sind, kann das hier global auf yes.
+# `?=`, weil die Keymap-rules.mk vor dieser Datei eingelesen wird
+# (builddefs/build_keyboard.mk: Keymap Zeile 146, Userspace Zeile 429) --
+# mit `=` wuerde die Board-Einstellung wieder ueberschrieben.
+MAGIC_ENABLE ?= no
 STARTUP_NUMLOCK_ON = yes
 
 # ifeq ($(strip $(TAP_DANCE_ENABLE)), yes)

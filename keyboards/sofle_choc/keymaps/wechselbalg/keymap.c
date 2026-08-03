@@ -348,16 +348,33 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       ____________5_THUMBS_L______________,        ____________5_THUMBS_R______________
   //                 \-------------------------------------|      |------------------------------------/
   ),
-
-  // Mac-Overlay: nur die Daumenreihe (Cmd/Opt getauscht), alles andere transparent
-  [_MAC] = LAYOUT_wrapper(
-      _______, _______, _______, _______, _______, _______,                 _______, _______, _______, _______, _______, _______,
-      _______, _______, _______, _______, _______, _______,                 _______, _______, _______, _______, _______, _______,
-      _______, _______, _______, _______, _______, _______,                 _______, _______, _______, _______, _______, _______,
-      _______, _______, _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______, _______, _______,
-                      ________5_MAC_THUMBS_L______________,        ________5_MAC_THUMBS_R______________
-  ),
 };
+
+#ifdef CHORDAL_HOLD
+/*
+Handedness fuer CHORDAL_HOLD (users/wechselbalg/config.h).
+
+'L'/'R' = normale Gegenhand-Regel, '*' = von ihr ausgenommen: eine Taste mit
+'*' darf in einem Chord mit jeder anderen Taste als gehalten gelten.
+
+Die zehn Daumentasten und die beiden Encoder-Klicks sind '*'. Grund: die
+Layer-Taps sitzen auf den Daumen (NUM_ENT links, NAV_BSC rechts), und ein
+Daumen-Chord mit einer Taste derselben Haelfte ist hier der Normalfall --
+ohne die Ausnahme wuerde CHORDAL_HOLD den Daumen als Tap abschliessen und du
+bekaemst Enter plus den Basis-Layer-Buchstaben statt der NUM-Belegung.
+(Genau dieser Fehler ist im KMK-Port auf Hardware aufgetreten.)
+
+Geschrieben mit LAYOUT_wrapper, also in derselben visuellen Reihenfolge wie
+die Layer oben -- Zeile 4 enthaelt die beiden Encoder-Klicks in der Mitte.
+*/
+const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT_wrapper(
+    'L', 'L', 'L', 'L', 'L', 'L',            'R', 'R', 'R', 'R', 'R', 'R',
+    'L', 'L', 'L', 'L', 'L', 'L',            'R', 'R', 'R', 'R', 'R', 'R',
+    'L', 'L', 'L', 'L', 'L', 'L',            'R', 'R', 'R', 'R', 'R', 'R',
+    'L', 'L', 'L', 'L', 'L', 'L', '*',  '*', 'R', 'R', 'R', 'R', 'R', 'R',
+              '*', '*', '*', '*', '*',  '*', '*', '*', '*', '*'
+);
+#endif
 
 #ifdef RGBLIGHT_ENABLE
 char layer_state_str[70];
@@ -508,12 +525,14 @@ static void print_status_narrow(void) {
         case _ADJUST:
             oled_write_P(PSTR("Adj \n"), false);
             break;
-        case _MAC:
-            oled_write_P(PSTR("MAC \n"), false);
-            break;
         default:
             oled_write_ln_P(PSTR("Undef"), false);
     }
+
+    // Host-Modus: frueher der _MAC-Layer, jetzt der CG_TOGG-Zustand aus dem
+    // EEPROM -- also auch nach einem Reconnect noch korrekt.
+    oled_write_P(PSTR("\n"), false);
+    oled_write_ln_P(WB_HOST_IS_MAC() ? PSTR("MAC") : PSTR("PC "), false);
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
@@ -541,72 +560,11 @@ bool oled_task_user(void) {
 //     sizeof(custom_shift_keys) / sizeof(custom_shift_key_t);
 
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // if (!process_custom_shift_keys(keycode, record)) { return false; }
-
-    const uint8_t mods = get_mods();
-    const uint8_t oneshot_mods = get_oneshot_mods();
-
-    switch (keycode) {
-        case QWERT:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_QWERT);
-            }
-            return false;
-        case DVORAK:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_DVORAK);
-            }
-            return false;
-        case COLEMAK:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_COLEMAKDH);
-            }
-            return false;
-        case MINE:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_MINE);
-            }
-            return false;
-        case VOU:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_VOU);
-            }
-            return false;
-        case FF_WORD:
-            if (record->event.pressed) {
-                SEND_STRING(SS_LCTL(SS_TAP(X_RIGHT) SS_TAP(X_RIGHT) SS_TAP(X_LEFT)));
-            }
-            return false;
-        case RV_WORD:
-            if (record->event.pressed) {
-                SEND_STRING(SS_LCTL(SS_TAP(X_LEFT) SS_TAP(X_LEFT) SS_TAP(X_RIGHT)));
-            }
-            return false;
-        case DBRACES:  // Types [], {}, or <> and puts cursor between braces.
-            if (record->event.pressed) {
-            clear_oneshot_mods();  // Temporarily disable mods.
-            unregister_mods(MOD_MASK_CSAG);
-            if ((mods | oneshot_mods) & MOD_MASK_SHIFT) {
-                SEND_STRING("{}");
-            } else if ((mods | oneshot_mods) & MOD_MASK_CTRL) {
-                SEND_STRING("<>");
-            } else {
-                SEND_STRING("[]");
-            }
-            tap_code(KC_LEFT);  // Move cursor between braces.
-            register_mods(mods);  // Restore mods.
-            }
-            return false;
-    }
-    return true;
-}
-
 #ifdef ENCODER_ENABLE
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
-        switch (get_highest_layer(layer_state & ~((layer_state_t)1 << _MAC))) {
+        switch (get_highest_layer(layer_state)) {
             case _GAMING:
                 if (clockwise) {
                     tap_code(KC_PGUP);
@@ -632,7 +590,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 break;
 		}
     } else if (index == 1) {
-        switch (get_highest_layer(layer_state & ~((layer_state_t)1 << _MAC))) {
+        switch (get_highest_layer(layer_state)) {
             case _GAMING:
                 if (clockwise) {
                     tap_code(KC_UP);

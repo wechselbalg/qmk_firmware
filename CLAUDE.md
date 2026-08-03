@@ -100,11 +100,15 @@ gepflegt werden:
   Achtung: die Wrapper-Blocknamen sind fehleranfällig bei Suchen/Ersetzen
   (Kommentar in der Datei beachten).
 - **Layer** (`wechselbalg.h`): Basis-Layouts `_QWERT`/`_MINE`/`_VOU`/… →
-  Momentary `_SYM`/`_NAV`/`_NUM` → `_ADJUST` → `_MAC`.
-- **`_MAC`** — Overlay über allen Layern, nur Daumenreihe belegt (Cmd⇄Opt
-  getauscht), Rest transparent → funktioniert auf jeder Basis. Umschalten mit
-  `TG__MAC` auf dem Adjust-Layer; OLEDs zeigen „MAC". Encoder-Handler maskieren
-  das `_MAC`-Bit. **Toggle ist nicht persistent** (startet nach Reconnect im PC-Modus).
+  Momentary `_SYM`/`_NAV`/`_NUM` → `_ADJUST`.
+- **Mac-Modus** — `MAC_TOG` (= QMKs `CG_TOGG`) auf dem Adjust-Layer tauscht
+  Ctrl⇄GUI im aufgelösten Keycode, auf beiden Händen und **persistent im
+  EEPROM**; OLEDs zeigen „MAC"/„PC". Kein Layer mehr — der frühere
+  `_MAC`-Overlay ist am 2026-08-04 entfallen, siehe „KMK→QMK-Angleichung".
+  Braucht `MAGIC_ENABLE = yes`, das nur die Nicht-AVR-Boards haben.
+- **`process_record_keymap()`** — Board-Keymaps hängen sich hier ein; das
+  gemeinsame `process_record_user()` liegt in `wechselbalg.c`. Eine Keymap darf
+  `process_record_user` **nicht** selbst definieren (Doppel-Symbol).
 - **Tap Dance** zentral in `tap_dance.h` / `tap_dance_actions.h` (per Include in
   jede Keymap eingebunden, kein separates `.c`).
 - **Layouts**: Neo2-basiert (`keymap_neo2.h`), deutsche Sonderzeichen
@@ -217,66 +221,123 @@ ausführliche Quelle für die Begründungen.
 - Alle 6 Boards + der Liatris-Build kompilieren. AVR-Flash danach: sofle_choc 96 %,
   sofle/rev1 96 %, kyria 92 %, lotus58 95 %.
 
-## Schritt 2 — Tippgefühl (Details noch offen, zusammen zu bewerten)
+## Erledigt (2026-08-04, Schritt 2 + C1) — noch nicht auf Hardware getestet
 
-KMK hat `TAP_TIME` von 600 auf **150 ms** gesenkt und das durch zwei Mechanismen
-abgesichert. Die drei Punkte hängen zusammen und ergeben nur gemeinsam Sinn:
+### Userspace-Refactor: `process_record_keymap()`
 
-- **B1 `TAPPING_TERM` 600 → 150** (`users/wechselbalg/config.h`).
-- **B2 `CHORDAL_HOLD`** + `chordal_hold_layout[][]` im Keymap. Regel: wird
-  innerhalb des Tapping-Terms eine zweite Taste **derselben Hand** gedrückt,
-  gilt der Tap-Hold sofort als *getippt*. Gegenhand → fällt auf das bereits
-  aktive `PERMISSIVE_HOLD` zurück.
-  **Kritisch: die Daumenreihe muss mit `'*'` ausgenommen werden.** KMK hat genau
-  das auf Hardware falsch gehabt: NUM-Daumen halten + linke NUM-Taste drücken
-  ergab Del + Basis-Layer-Buchstabe statt der NUM-Belegung.
-  QMK-Vorteil gegenüber KMK: `chordal_hold_layout` wird mit dem **`LAYOUT`-Makro
-  des Boards** geschrieben, also in *visueller* Reihenfolge — genau der
-  Indexfehler, den KMK dort hatte (KMKs Tabelle ist nach Matrix-Koordinate
-  indiziert), kann hier nicht passieren.
-- **B3 `RETRO_TAPPING`.** KMKs `retro_tap_timeout` (1000 ms für Layer-Taps,
-  500 ms für Mod-Taps) hat QMK **nicht**. Der Grund für das kurze Mod-Tap-Fenster
-  gilt in QMK genauso: ein Klick mit einer *echten* Maus erreicht die Firmware
-  nicht, also zählt er nicht als „Hold benutzt" — Shift+Klick würde beim Loslassen
-  ein Leerzeichen nachschieben, Alt+Klick ein PrintScreen aus `RALT_PR`.
-  Drei Wege, siehe Diskussion:
-  1. `RETRO_TAPPING_PER_KEY` + `get_retro_tapping()` nur für Layer-Taps
-     (`IS_QK_LAYER_TAP`) → Problem verschwindet ganz, aber die Space/Shift-Daumen
-     verlieren den Retro-Tap.
-  2. Zusätzlich ein Zeitfenster für Mod-Taps selbst bauen: `get_retro_tapping()`
-     wird beim **Release** ausgewertet (`quantum/action.c:872`), Press-Zeitpunkt
-     also selbst mitschreiben → ~15 Zeilen, KMK-Parität.
-  3. Gar kein Retro-Tapping (heutiger Zustand).
-  Falls Retro-Tapping auf Mod-Taps bleibt: `DUMMY_MOD_NEUTRALIZER_KEYCODE`
-  einplanen, sonst löst ein Retro-Tap auf GUI/Alt Menüs am Host aus.
-- QMK-eigene Optionen, die es in KMK nicht gibt und die hier evtl. besser passen:
-  `FLOW_TAP_TERM` (Tap-Hold während schnellem Tippen abschalten) und
-  `SPECULATIVE_HOLD` (Modifier sofort beim Keydown setzen — hilft gegen die
-  Trägheit bei Shift+Klick, ändert die Tap/Hold-Entscheidung aber nicht).
+`process_record_user()` lag als Kopie in **jeder** Board-Keymap (dieselben
+QWERT/DVORAK/…/DBRACES/FF_WORD/RV_WORD-Fälle). Es liegt jetzt einmal in
+[users/wechselbalg/wechselbalg.c](users/wechselbalg/wechselbalg.c) und ruft am
+Ende den schwachen Hook `process_record_keymap()` auf, den die Boards für ihr
+Eigenes überschreiben. Alle sechs Keymaps sind entsprechend umbenannt —
+**wichtig**: eine Board-Keymap darf `process_record_user` nicht mehr selbst
+definieren, sonst Doppel-Symbol beim Linken.
 
-## Schritt 3 — Feature-Entscheidungen
+### C1 — `_MAC`-Layer raus, `MAC_TOG` = `CG_TOGG`
 
-- **C1 Mac-Umschaltung: `_MAC`-Layer → Magic-Keycode.** ⚠️ Entscheidung offen.
-  Der heutige `_MAC`-Layer tauscht **GUI⇄Alt** und nur auf der Daumenreihe;
-  er erwischt weder `NX_COPY`/`NX_PAST`/`NX__CUT`/`N3_UNDO` (`LCTL(x)`) noch die
-  Modifier-Homerow im `_NAV`-Layer, und ist nicht persistent.
-  QMK-Core kann das vollständig: `keycode_config()`/`mod_config()` werden in
-  `quantum/keymap_common.c` beim Auflösen jeder Taste angewandt und decken damit
-  **einfache Modifier, Mod-Taps *und* `LCTL(KC_C)`-artige Kombis** ab — genau die
-  drei Fälle, die KMKs `cg_swap.py` nennt. Persistenz im EEPROM inklusive.
-  - `CG_TOGG` (Ctrl⇄GUI) = KMKs Wahl: derselbe Daumen ist auf beiden Hosts
-    „die Befehlstaste", Copy/Paste/Undo im NAV-Layer werden automatisch richtig.
-  - `AG_TOGG` (Alt⇄GUI) = das, was der heutige `_MAC`-Layer tut.
-  - **Empfehlung: `CG_TOGG`.**
-  - **Nicht abgedeckt:** `SEND_STRING(SS_LCTL(...))`, also `FF_WORD`/`RV_WORD` —
-    die laufen am Keymap vorbei. Und Wort-/Zeilennavigation ist am Mac ohnehin
-    ein anderer Modifier (Opt/Cmd+Pfeil) → braucht weiterhin eine Mac-Variante
-    des `_NAV`-Layers, siehe „Offen" oben.
-  - **Blocker/Kosten:** braucht `MAGIC_ENABLE = yes`. **Gemessen 2026-08-04:
-    global in `users/wechselbalg/rules.mk` geht nicht — sofle/rev1 läuft über den
-    AVR-Flash (Build-Abbruch), sofle_choc-AVR landet bei 99 % / 88 Bytes frei.**
-    Also nur board-weise aktivieren (Liatris/RP2040 und die STM32-Boards).
-    Nebeneffekt: `NK_TOGG` im ADJUST-Layer ist ohne `MAGIC_ENABLE` ebenfalls tot.
+- `_MAC` ist aus dem Layer-Enum, aus `wrappers.h` (MAC-Daumenreihen) und aus
+  allen fünf Board-Keymaps entfernt, ebenso die `& ~(1 << _MAC)`-Masken im
+  Encoder-Handler und der OLED-`case`.
+- `MAC_TOG` (= `CG_TOGG`) sitzt auf dem Platz von `TG__MAC` in `ADJUST_L0`.
+  Tauscht Ctrl⇄GUI auf **beiden** Händen (`process_magic.c` setzt
+  `swap_lctl_lgui` *und* `swap_rctl_rgui`), persistent im EEPROM.
+- **Ctrl geht nicht verloren** — es ist ein Tausch: der GUI-Daumen (außen)
+  sendet dann Ctrl, der Ctrl-Daumen (innen) sendet Cmd.
+- Deckt automatisch mit ab, was der `_MAC`-Layer nie erreichte: die
+  `LCTL(x)`-Kombis (`NX_COPY`/`NX_PAST`/`NX__CUT`/`N3_UNDO`/`N3_REDO`/`NX_CENT`),
+  Mod-Taps und die Modifier-Homerow im `_NAV`-Layer. Grund:
+  `quantum/keymap_common.c` wendet `mod_config()`/`keycode_config()` beim
+  Auflösen **jeder** Taste an.
+- OLED zeigt statt des Layer-`case` jetzt eine eigene Zeile `MAC` / `PC` aus
+  `WB_HOST_IS_MAC()` (= `keymap_config.swap_lctl_lgui`).
+- **Ein Ctrl⇄Alt-Magic-Keycode existiert in QMK nicht** (nur Ctrl⇄CapsLock,
+  Alt⇄GUI, Ctrl⇄GUI, Esc⇄CapsLock, Grave⇄Esc, Backslash⇄Backspace, no_gui) —
+  wird hier aber auch nicht gebraucht, siehe oben.
+
+### `FN_EXIT` → `LR_EXIT`
+
+Springt **nicht** mehr auf ein festes Layout, sondern räumt nur `layer_state`
+ab (`layer_clear()`) und lässt `default_layer_state` stehen → du landest auf
+dem Basis-Layout, das gerade persistent hinterlegt ist. Dazu
+`layer_lock_all_off()`: QMKs Layer Lock führt seinen `locked_layers`-Bitmask
+**getrennt**, ein bloßes `layer_clear()` würde den Layer abschalten und das
+Lock-Bit gesetzt lassen — danach würde `QK_LLCK` auf demselben Layer ent-
+statt sperren.
+
+### Wortsprünge host-abhängig statt Mac-`_NAV`-Layer
+
+`FF_WORD`/`RV_WORD` sind `SEND_STRING(SS_LCTL(...))` und laufen am Keymap
+vorbei, `CG_TOGG` erreicht sie also nicht. Sie sind aber ohnehin kein Fall für
+einen Modifier-*Tausch*: wortweise Bewegung ist Ctrl+Pfeil (Windows/Linux) vs.
+Opt+Pfeil (macOS) — ein **anderer** Modifier. Deshalb `wb_word_jump()` mit
+einer echten Fallunterscheidung auf `WB_HOST_IS_MAC()`. Ein eigener
+Mac-`_NAV`-Layer ist damit vom Tisch; falls später mehr Tasten host-abhängig
+werden (Home/End, PrintScreen), nach demselben Muster erweitern.
+
+### Schritt 2 — Tap-Hold
+
+- `TAPPING_TERM` 600 → **150**, `CHORDAL_HOLD`, `RETRO_TAPPING_PER_KEY` mit
+  eigenen Zeitfenstern (`get_retro_tapping()` in `wechselbalg.c`: 1000 ms für
+  Layer-Taps, 500 ms für Mod-Taps — baut KMKs `retro_tap_timeout` nach, das QMK
+  nicht kennt; der Callback wird beim *Release* ausgewertet, die Press-Zeit
+  schreiben wir selbst mit).
+- `chordal_hold_layout` mit `'*'` für die zehn Daumentasten und die beiden
+  Encoder-Klicks in sofle_choc und sofle/rev1, geschrieben mit `LAYOUT_wrapper`
+  (also in visueller Reihenfolge — der Indexfehler, den KMK dort hatte, ist so
+  strukturell ausgeschlossen).
+- `DUMMY_MOD_NEUTRALIZER_KEYCODE` **nicht** gesetzt: es schützt davor, dass ein
+  Retro-Tap auf einem GUI/Alt-Mod-Tap am Host ein Menü öffnet — die Mod-Taps
+  dieses Layouts sind aber nur Shift und AltGr. Bei einem neuen GUI/Alt-Mod-Tap
+  wieder aufnehmen.
+
+### AVR-Trennung (bewusst, gemessen)
+
+Die vier ATmega32u4-Boards haben den Flash für die neuen Features nicht.
+Statt halber Sachen gibt es zwei ganze Setups:
+
+| | AVR (sofle_choc weiß, sofle/rev1, kyria, lotus58) | RP2040/STM32 |
+|---|---|---|
+| `TAPPING_TERM` | 600 (unverändert) | 150 |
+| `CHORDAL_HOLD` | aus | an |
+| `RETRO_TAPPING_PER_KEY` | aus | an |
+| `MAGIC_ENABLE` / `MAC_TOG` / `NK_TOGG` | aus (Taste wirkungslos) | an |
+
+Umgesetzt über `#ifdef __AVR__` in `users/wechselbalg/config.h`; `MAGIC_ENABLE`
+steht dort auf `?= no` und wird in den Keymap-`rules.mk` der großen Boards auf
+`yes` gezogen (**`?=` ist nötig**: `builddefs/build_keyboard.mk` liest die
+Keymap-`rules.mk` in Zeile 146, den Userspace erst in Zeile 429 — mit `=` würde
+der Userspace die Board-Einstellung wieder überschreiben). Bei sofle_choc hängt
+es an `ifeq ($(strip $(CONVERT_TO)),liatris)`, weil sich weißes und schwarzes
+Board dieselbe `rules.mk` teilen.
+
+**Sobald die AVR-Boards auf bessere Controller umgezogen sind, fallen alle
+diese `#ifdef __AVR__`/`ifeq`-Zweige ersatzlos weg.**
+
+Flash danach: sofle_choc 95 %, sofle/rev1 96 %, kyria 92 %, lotus58 96 % —
+alle 6 Boards und der Liatris-Build kompilieren.
+
+**Offen aus diesem Paket:**
+- **Hardware-Test steht komplett aus** (schwarze Sofle Choc): Tippgefühl bei
+  150 ms, Daumen-Chords unter Chordal Hold, Retro-Tap-Fenster, `MAC_TOG` inkl.
+  EEPROM-Persistenz, `FN_EXIT` auf einem Nicht-QWERT-Basislayout, OLED-Zeile.
+- **`chordal_hold_layout` fehlt für GMMK Pro und K3 Pro.** Beide sind STM32,
+  bekommen `CHORDAL_HOLD` also aktiv — ohne Tabelle rät QMK anhand der
+  Geometrie und nimmt die Daumen/Space-Reihe **nicht** aus. Vor deren nächstem
+  Flash nachtragen. (Kyria ist AVR und damit vorerst nicht betroffen.)
+
+## Noch offen — Rest von Schritt 2/3
+
+- **B-Optionen, die QMK zusätzlich hätte und KMK nicht.** Bewusst noch nicht
+  gesetzt, erst nach dem Hardware-Test der 150 ms bewerten:
+  - `FLOW_TAP_TERM` — schaltet Tap-Hold ab, solange schnell getippt wird (die
+    vorige Taste liegt weniger als *n* ms zurück und beide sind Alphas/Space).
+    Zielt auf dasselbe wie Chordal Hold, nur über Zeit statt Händigkeit; wäre
+    die Ergänzung, falls Roll-Overs auf der *Gegen*hand stören.
+  - `SPECULATIVE_HOLD` — setzt den Modifier eines Mod-Taps sofort beim Keydown
+    und nimmt ihn zurück, falls es doch ein Tap wird. Behebt die Trägheit von
+    Shift+Klick, ändert die Tap/Hold-Entscheidung aber **nicht** und löst damit
+    das Retro-Tap-Problem nicht.
+
 - **C2 Caps Word per Shift+Shift** (`COMBO_ENABLE`). KMK: Timeout 150 ms statt 50,
   weil der Split-Link Latenz addiert und jede Hälfte gegen ihre eigene Sicht timet.
 - **C4 Mouse Jiggler.** `A_MSJIG` ist im ADJUST-Layer verdrahtet, hat aber

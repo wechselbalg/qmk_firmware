@@ -23,9 +23,20 @@ enum splitlayers {
     _NUM,
     _GAMING,
     _ADJUST,
-    _MAC,   // Mac-Modifier-Overlay: liegt ueber allen anderen Layern, nur Daumenreihe belegt (TG__MAC)
 };
+/*
+Der frueherer `_MAC`-Overlay-Layer ist entfallen (2026-08-04). Er tauschte nur
+GUI/Alt auf der Daumenreihe, war nicht persistent und erwischte weder die
+LCTL(x)-Kombis im _NAV-Layer (Copy/Paste/Undo) noch dessen Modifier-Homerow.
+Ersetzt durch MAC_TOG = CG_TOGG, siehe unten.
+*/
 
+/*
+ACHTUNG bei Aenderungen an dieser Liste: die Werte sind Keycodes, keine
+Layer-Indizes. Ein Custom-Keycode als Argument von TO()/MO()/LSFT_T() ergibt
+stillschweigend Unsinn -- genau das war der FN_EXIT-Bug (TO(QWERT) -> TO(3)).
+Neue Eintraege deshalb am Ende anhaengen, nicht dazwischen einfuegen.
+*/
 enum CustomKeys {
   RN_STEM = SAFE_RANGE,
   RN_CODE,
@@ -38,8 +49,27 @@ enum CustomKeys {
   KC_D_MUTE,
   DBRACES,
   FF_WORD,
-  RV_WORD
+  RV_WORD,
+  LR_EXIT   // raeumt momentane Layer + Layer Lock ab, laesst das Basis-Layout stehen
 };
+
+/*
+Board-Keymaps haengen sich hier ein statt process_record_user() selbst zu
+definieren: das gemeinsame process_record_user() liegt in wechselbalg.c und
+ruft diesen Hook am Ende auf.
+*/
+bool process_record_keymap(uint16_t keycode, keyrecord_t *record);
+
+/*
+"Tippe ich gerade an einem Mac?" -- eine Frage, keine zweite Wahrheit: der
+Zustand ist derselbe, den CG_TOGG umschaltet und QMK im EEPROM haelt.
+Fuer OLED-Anzeige und die host-abhaengigen Makros in wechselbalg.c.
+*/
+#ifdef MAGIC_ENABLE
+#    define WB_HOST_IS_MAC() (keymap_config.swap_lctl_lgui)
+#else
+#    define WB_HOST_IS_MAC() false
+#endif
 
 // Aliases for readability
 
@@ -54,7 +84,26 @@ enum CustomKeys {
 #define MO__NAV  MO(_NAV)
 #define MO__NUM  MO(_NUM)
 #define MO__ADJ  MO(_ADJUST)
-#define TG__MAC  TG(_MAC)
+
+/*
+Mac-Umschaltung: Ctrl und GUI tauschen im aufgeloesten Keycode die Rolle
+(CG_TOGG schaltet swap_lctl_lgui *und* swap_rctl_rgui, also beide Haende).
+
+Warum das die vollstaendige Loesung ist und der alte _MAC-Layer nicht:
+quantum/keymap_common.c wendet mod_config()/keycode_config() beim Aufloesen
+JEDER Taste an -- das erfasst einfache Modifier, Mod-Taps *und* Kombis wie
+LCTL(KC_C). Also werden NX_COPY/NX_PAST/NX__CUT/N3_UNDO/N3_REDO/NX_CENT und
+die Modifier-Homerow im _NAV-Layer automatisch mit umgestellt. Persistenz
+im EEPROM ist eingebaut.
+
+Ctrl geht dabei NICHT verloren: es ist ein Tausch, kein Ersetzen -- der
+GUI-Daumen (aussen) sendet dann Ctrl, der Ctrl-Daumen (innen) sendet Cmd.
+
+Braucht MAGIC_ENABLE = yes (siehe rules.mk); ohne das ist die Taste tot.
+Nicht erfasst: SEND_STRING(SS_LCTL(...)), also FF_WORD/RV_WORD -- die laufen
+am Keymap vorbei und sind in wechselbalg.c stattdessen host-abhaengig.
+*/
+#define MAC_TOG  CG_TOGG
 
 // Layer Lock kommt aus dem QMK-Core (LAYER_LOCK_ENABLE); Alias behaelt die 7-Zeichen-Rasterbreite
 #define F_LLOCK  QK_LLCK
@@ -112,18 +161,19 @@ enum CustomKeys {
 /*
 Escape-Taste der Overlay-Layer (linke obere Ecke von SYM/NUM/NAV/ADJUST).
 
-ACHTUNG, hier stand frueher TO(QWERT): `QWERT` ist der *Custom-Keycode* aus
-enum CustomKeys (SAFE_RANGE+3 = 0x7E43), nicht der Layer-Index. TO() maskiert
-mit & 0x1F -> TO(3) -> Layer _MINE. Die Taste sprang also auf MINE statt
-aufzuraeumen. Richtig ist der Layer _QWERT.
+Springt NICHT auf ein festes Layout: LR_EXIT raeumt nur `layer_state` ab
+(layer_clear) und laesst `default_layer_state` in Ruhe -- du landest also auf
+dem Basis-Layout, das gerade persistent hinterlegt ist. Dazu
+layer_lock_all_off(), weil QMKs Layer Lock seinen `locked_layers`-Bitmask
+getrennt fuehrt: ein blosses layer_clear() wuerde den Layer abschalten, das
+Lock-Bit aber gesetzt lassen -- danach wuerde QK_LLCK auf demselben Layer
+ent- statt sperren. Implementierung in wechselbalg.c.
 
-Semantik in QMK: TO(_QWERT) = layer_move(0), loescht also alle momentanen und
-getoggelten Layer (auch _MAC). Das gewaehlte Basis-Layout bleibt erhalten,
-weil QMK default_layer_state getrennt fuehrt und jedes Basis-Layout einen
-Index >= 0 hat -- Layer 0 liegt dann nur wirkungslos darunter.
+Historie: hier stand TO(QWERT) mit dem *Custom-Keycode* QWERT statt dem
+Layer-Index -> TO(3) -> die Taste sprang auf _MINE.
 
-Das gilt NICHT fuer _GAMING: das wird per DF(_GAMING) als *Default*-Layer
-betreten und liegt damit ueber Layer 0. GAMING braucht deshalb D_QWERT
-(bzw. spaeter ein DF_PREV) als Ausstieg, nicht FN_EXIT.
+Gilt nicht fuer _GAMING: das wird per DF(_GAMING) als *Default*-Layer betreten
+und liegt damit ueber Layer 0, LR_EXIT kommt da nicht raus. GAMING benutzt
+D_QWERT (spaeter DF_PREV).
 */
-#define FN_EXIT      TO(_QWERT)
+#define FN_EXIT      LR_EXIT
