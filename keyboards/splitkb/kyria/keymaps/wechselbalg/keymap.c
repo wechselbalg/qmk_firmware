@@ -224,8 +224,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _________________GAMING_L1_________________,                                         _________________GAMING_R1_________________,
       _________________GAMING_L2_________________,                                         _________________GAMING_R2_________________,
       // GAMING liegt als Default-Layer ueber Layer 0 -> FN_EXIT kommt hier
-      // nicht raus. D_QWERT setzt das Basis-Layout zurueck.
-      _________________GAMING_L3_________________, _______, _______,     D_QWERT, _______, _________________GAMING_R3_________________,
+      // nicht raus. D__PREV stellt das vorherige Basis-Layout wieder her --
+      // ohne WB_DF_PREV (AVR-Default) weiterhin hart QWERT, siehe rules.mk.
+      _________________GAMING_L3_________________, _______, _______,     D__PREV, _______, _________________GAMING_R3_________________,
                                _________5_GAMING_THUMBS_L__________,     _________5_GAMING_THUMBS_R__________
     ),
 /*

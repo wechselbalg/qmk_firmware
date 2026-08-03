@@ -39,6 +39,38 @@ kein Layer dafuer angelegt.
 #    endif
 #endif
 
+/*
+Zusatzfunktionen, die eigenen Flash kosten:
+  WB_JIGGLER  -- Mouse Jiggler auf A_MSJIG (C4)
+  WB_DF_PREV  -- Ruecksprung auf das vorherige Basis-Layout (C6)
+
+Gemessen 2026-08-04, beide zusammen rund 240 Byte. Das haben die AVR-Boards
+nicht: sofle/rev1 waere 226 Byte drueber, sofle_choc (weiss) 50, nur die Kyria
+haette mit 1230 Byte frei Platz. Deshalb dasselbe Muster wie bei
+MAGIC_ENABLE/WB_LAYOUT_*: auf AVR aus, sonst an.
+
+Ohne die Flags sind die Tasten wirkungslos statt falsch: A_MSJIG tut nichts
+(wie bisher), D__PREV faellt unten per Alias auf D_QWERT zurueck.
+
+Ein einzelnes Board abweichend: -DWB_JIGGLER / -DWB_DF_PREV per OPT_DEFS in
+dessen Keymap-rules.mk. Faellt ersatzlos weg, sobald die AVR-Boards auf
+bessere Controller umgezogen sind.
+*/
+#ifndef __AVR__
+#    define WB_JIGGLER
+#    define WB_DF_PREV
+#endif
+
+/*
+Der Jiggler schickt einen Maus-Report -- ohne Mouse Keys gibt es den
+HID-Endpunkt dafuer nicht. MOUSEKEY_ENABLE war in diesem Repo schon einmal
+laengere Zeit `no` (macOS-Touchpad-Konflikt), deshalb hier abgesichert statt
+auf einen Linkfehler zu warten.
+*/
+#if defined(WB_JIGGLER) && !defined(MOUSEKEY_ENABLE)
+#    undef WB_JIGGLER
+#endif
+
 enum splitlayers {
     _DEFAULTS = 0,
     _QWERT = 0,
@@ -86,7 +118,8 @@ enum CustomKeys {
   DBRACES,
   FF_WORD,
   RV_WORD,
-  LR_EXIT   // raeumt momentane Layer + Layer Lock ab, laesst das Basis-Layout stehen
+  LR_EXIT,  // raeumt momentane Layer + Layer Lock ab, laesst das Basis-Layout stehen
+  DF_PREV   // zurueck auf das Basis-Layout, das vor dem aktuellen aktiv war
 };
 
 /*
@@ -119,6 +152,24 @@ Reihen auf ___NO__ zurueck, statt still auf die falsche Ebene zu zeigen.
 #define D_QWERT  DF(_QWERT)
 #define P_QWERT  QWERT
 #define D__GAME  DF(_GAMING)
+
+/*
+Der Ausstieg aus _GAMING (dessen obere rechte Ecke). Nicht persistent, genau
+wie der Einstieg per D__GAME: beide fassen nur default_layer_state an.
+
+ACHTUNG: `D__PREV` ist der Rasterplatz in den Keymaps, `DF_PREV` der
+Custom-Keycode aus dem Enum oben. Zwei Namen, ein Buchstabe Unterschied --
+in den Keymaps steht immer D__PREV.
+
+Ohne WB_DF_PREV (AVR, siehe oben) faellt es auf das alte, feste D_QWERT
+zurueck: dann springt die Taste wie bisher hart auf QWERT statt auf das
+Layout, von dem aus GAMING betreten wurde.
+*/
+#ifdef WB_DF_PREV
+#    define D__PREV  DF_PREV
+#else
+#    define D__PREV  D_QWERT
+#endif
 
 #ifdef WB_LAYOUT_DVORAK
 #    define D_DVORK  DF(_DVORAK)
@@ -246,6 +297,6 @@ Layer-Index -> TO(3) -> die Taste sprang auf _MINE.
 
 Gilt nicht fuer _GAMING: das wird per DF(_GAMING) als *Default*-Layer betreten
 und liegt damit ueber Layer 0, LR_EXIT kommt da nicht raus. GAMING benutzt
-D_QWERT (spaeter DF_PREV).
+D__PREV (siehe oben).
 */
 #define FN_EXIT      LR_EXIT

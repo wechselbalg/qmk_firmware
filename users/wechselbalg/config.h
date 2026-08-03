@@ -64,6 +64,38 @@ Aus, wenn WB_NO_ADVANCED_TAP_HOLD gesetzt ist -- siehe TAPPING_TERM oben.
 #endif
 
 /*
+Caps Word per Shift+Shift (C2).
+
+QMK bringt das mit: process_caps_word.c prueft `mods == MOD_MASK_SHIFT`, also
+den *Modifier-Zustand* -- nicht Keycodes und nicht Koordinaten. Damit ist das
+Problem, das KMK dort hatte (jedes Basis-Layout baut ein eigenes Shift-Objekt
+auf dem rechten Pinky), strukturell weg: SFT_PIP/KC_LSFT links und
+KC_RSFT/RFT_MIN rechts liefern alle LSFT bzw. RSFT.
+
+Geste: beide Shifts ueber den Tapping-Term (150 ms) *halten* und loslassen --
+nicht wie in KMK beide antippen. Bei Mod-Taps ist Halten ohnehin noetig, sonst
+kommen | und - heraus.
+
+Gemessen 2026-08-04 auf sofle/rev1: 14 Byte. Der Combo-Weg (COMBO_ENABLE +
+combo_ref_from_layer) kostete dort 1794 Byte und puffert ausserdem jeden
+Shift-Druck bis zu COMBO_TERM, weil process_combo in
+pre_process_record_quantum vor der Tap-Hold-Aufloesung sitzt.
+
+Nebeneffekt: es feuert bei *jedem* LSFT+RSFT, also auch wenn beide
+Shift-Daumen (SFT_SPC + RFT_SPC) zusammen gehalten werden. Im Hardware-Test
+beobachten. SFT_CTL ist unkritisch (LSFT+LCTL != MOD_MASK_SHIFT).
+
+COMMAND_ENABLE ist `no` (rules.mk) -> keine IS_COMMAND-Kollision.
+
+Abschalten fuer ein Board: -DWB_NO_BOTH_SHIFTS_CW per OPT_DEFS in dessen
+Keymap-rules.mk (nicht per config.h -- die wird nach dieser Datei eingelesen).
+Aktuell nur sofle/rev1, der die 14 Byte von ihren 22 nicht abgeben soll.
+*/
+#ifndef WB_NO_BOTH_SHIFTS_CW
+#    define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
+#endif
+
+/*
 Doppelt tippen und halten wiederholt die Tap-Taste, statt den Hold zu
 erreichen -- das QMK-Gegenstueck zu KMKs repeat=HoldTapRepeat.TAP.
 */

@@ -322,10 +322,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_GAMING] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
       // GAMING wird per DF(_GAMING) als Default-Layer betreten, liegt also
-      // ueber Layer 0 -- FN_EXIT (= TO(_QWERT)) kommt hier nicht raus und war
-      // wirkungslos. D_QWERT setzt das Basis-Layout zurueck. TODO: durch ein
-      // DF_PREV ersetzen, das das *vorherige* Layout wiederherstellt (KMK: KC.DF_PREV).
-      KC_ESC , _________5_NUMBERS_L______________,                          _______________5_NUMBERS_R________, D_QWERT,
+      // ueber Layer 0 -- FN_EXIT (= LR_EXIT) kommt hier nicht raus und war
+      // wirkungslos. D__PREV stellt das Basis-Layout wieder her, von dem aus
+      // GAMING betreten wurde (ohne WB_DF_PREV: hart QWERT, siehe wechselbalg.h).
+      KC_ESC , _________5_NUMBERS_L______________,                          _______________5_NUMBERS_R________, D__PREV,
       _________________GAMING_L1_________________,                          _________________GAMING_R1_________________,
       _________________GAMING_L2_________________,                          _________________GAMING_R2_________________,
       _________________GAMING_L3_________________, KC_MUTE,        KC_MPLY, _________________GAMING_R3_________________,

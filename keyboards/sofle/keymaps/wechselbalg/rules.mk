@@ -18,6 +18,11 @@ RGB_MATRIX_DRIVER = WS2812
 # https://caniusevia.com/
 # VIA_ENABLE = yes
 
+# Caps Word per Shift+Shift kostet 14 Byte (gemessen 2026-08-04). Bei 22 Byte
+# frei bliebe danach nichts mehr -- deshalb hier aus. Anschalten heisst: diese
+# Zeile loeschen und vorher mit dem Notausgang unten Platz schaffen.
+OPT_DEFS += -DWB_NO_BOTH_SHIFTS_CW
+
 # ---------------------------------------------------------------------------
 # NOTAUSGANG, falls der Flash ueberlaeuft
 #

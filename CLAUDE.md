@@ -115,9 +115,17 @@ gepflegt werden:
   (`keymap_german_ia.h`). Umlaute setzen Caps Word fort (Hook in `wechselbalg.c`).
 - **Features** (`rules.mk`): Layer Lock + Caps Word aus dem QMK-Core
   (`LAYER_LOCK_ENABLE`/`CAPS_WORD_ENABLE`); `F_LLOCK` = Alias für `QK_LLCK`.
+  Caps Word geht zusätzlich per **beide Shifts halten und loslassen**
+  (`BOTH_SHIFTS_TURNS_ON_CAPS_WORD`, überall außer sofle/rev1).
   `LTO_ENABLE = yes` (die AVR-Boards sind flash-eng).
+- **Flash-Gating im Userspace**: `WB_LAYOUT_*` (welche Basis-Layouts),
+  `WB_JIGGLER`/`WB_DF_PREV` (C4/C6, auf AVR aus),
+  `WB_NO_ADVANCED_TAP_HOLD` (Lotus58), `WB_NO_BOTH_SHIFTS_CW` (sofle/rev1).
+  Merkregel: `rules.mk`-Schalter mit `?=` im Userspace (Keymap wird *vorher*
+  gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
+  *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-03, Liatris-Migration ergänzt)
+## Aktueller Stand (Stand: 2026-08-04, Schritt 3 der KMK-Angleichung)
 
 **Fertig:**
 - Fork aufgeräumt (nur noch master/develop/mike), auf aktuellen QMK-Stand gemergt.
@@ -191,7 +199,7 @@ gepflegt werden:
 
 ---
 
-# KMK→QMK-Angleichung (laufend, Stand 2026-08-04)
+# KMK→QMK-Angleichung (laufend, Stand 2026-08-04 — Schritt 3 erledigt)
 
 Parallel läuft unter `/Users/mike/dev/kmkfw` ein KMK-Port derselben Sofle Choc
 (schwarz/Liatris). Dort sind seit Juli 2026 etliche Funktions- und
@@ -392,6 +400,10 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
   Tippgefühl bei 150 ms, Daumen-Chords unter Chordal Hold, Retro-Tap-Fenster,
   `MAC_TOG` inkl. EEPROM-Persistenz, `FN_EXIT` auf einem Nicht-QWERT-Layout,
   die OLED-Zeile MAC/PC, Power-LED aus, Mouse Keys im `_NAV`-Layer.
+  Dazu seit Schritt 3: Caps Word per beide-Shifts-halten (und ob die beiden
+  Shift-*Daumen* es versehentlich auslösen), der Jiggler auf `A_MSJIG` (5 s,
+  1 px, kein Drift) und `D__PREV` als GAMING-Ausstieg auf einem
+  Nicht-QWERT-Layout.
 - **`chordal_hold_layout` — nur die Kyria braucht wirklich eine.**
   (Korrektur einer früheren Notiz hier: QMKs automatische Tabelle ist besser
   als angenommen. `lib/python/qmk/cli/generate/keyboard_c.py` markiert die
@@ -410,20 +422,114 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
     Tap. Vor ihrem nächsten Flash die Tabelle nachtragen.
     Prüfen mit `qmk generate-keyboard-c -kb <board>`.
 
-## Reihenfolge für die nächste Session (festgelegt 2026-08-04)
+## Erledigt (2026-08-04, Schritt 3 — C2 + C4 + C6) — noch nicht auf Hardware getestet
 
-Michael will die restlichen Punkte in dieser Reihenfolge angehen:
+### C2 — Caps Word per Shift+Shift = `BOTH_SHIFTS_TURNS_ON_CAPS_WORD`
 
-1. **C2** Caps Word per Shift+Shift
-2. **C4** Mouse Jiggler (`A_MSJIG` hat keinen Handler)
-3. **C6** `DF_PREV`
-4. **C8** Per-Key-RGB-Farbsprache (das große Paket, RGBLIGHT → RGB Matrix)
-5. **C7** Encoder auf `_ADJUST` = RGB-Helligkeit — **bewusst nach C8**, weil
+**Kein Combo.** QMK bringt das Feature mit
+(`quantum/process_keycode/process_caps_word.c:99`) und prüft dort
+`mods == MOD_MASK_SHIFT`, also den **Modifier-Zustand** — nicht Keycodes und
+nicht Koordinaten. Damit ist das Problem, an dem KMK hing (jedes Basis-Layout
+baut ein eigenes Shift-Objekt auf dem rechten Pinky), strukturell weg:
+`SFT_PIP`/`KC_LSFT` links und `KC_RSFT`/`RFT_MIN` rechts liefern alle LSFT bzw.
+RSFT. Steht in [users/wechselbalg/config.h](users/wechselbalg/config.h).
+
+**Gemessen auf sofle/rev1 (2026-08-04):**
+
+| Weg | Flash |
+|---|---|
+| `BOTH_SHIFTS_TURNS_ON_CAPS_WORD` | **14 Byte** |
+| `COMBO_ENABLE` + ein Combo + `combo_ref_from_layer()` | **1794 Byte** |
+
+Der Combo-Weg hätte außerdem **jeden Shift-Druck bis zu `COMBO_TERM` gepuffert**:
+`process_combo` sitzt in `pre_process_record_quantum`, also *vor* der
+Tap-Hold-Auflösung, und hält Combo-Tasten zurück. Falls doch je Combos
+gebraucht werden: `key_combos` muss für `keymap_introspection.c` sichtbar sein
+(das macht `#include KEYMAP_C`) — der Userspace-Weg dafür ist
+`INTROSPECTION_KEYMAP_C`, so festgelegt (Michael, 2026-08-04).
+
+- **Geste anders als in KMK**: beide Shifts über den Tapping-Term (150 ms)
+  **halten** und loslassen, statt beide anzutippen. Bei Mod-Taps ist Halten
+  ohnehin nötig, sonst kommen `|` und `-` heraus.
+- ⚠️ **Feuert bei jedem LSFT+RSFT**, also auch wenn beide Shift-*Daumen*
+  (`SFT_SPC` + `RFT_SPC`) zusammen gehalten werden. Im Hardware-Test
+  beobachten. `SFT_CTL` ist unkritisch (LSFT+LCTL ≠ `MOD_MASK_SHIFT`).
+  Rückfallebene, falls es stört: eigene positionsbasierte Prüfung über
+  `record->event.key` in `process_record_user()` (~40 Byte, aber pro Board
+  eigene Koordinaten).
+- `COMMAND_ENABLE = no` → keine `IS_COMMAND`-Kollision.
+- Auf **sofle/rev1 abgeschaltet** (`OPT_DEFS += -DWB_NO_BOTH_SHIFTS_CW` in ihrer
+  `rules.mk`): 14 von 22 Byte wollten wir dort nicht abgeben.
+
+### C4 — Mouse Jiggler auf `A_MSJIG`
+
+Handler in [wechselbalg.c](users/wechselbalg/wechselbalg.c), 5 s Takt, 1 px,
+Richtung alternierend (KMKs Anti-Drift 1:1). Der Keycode saß schon im Enum, nur
+der Handler fehlte.
+
+- **Takt per `housekeeping_task_user()`**, nicht `DEFERRED_EXEC_ENABLE`: für
+  genau einen Timer sind ein `uint32_t` und `timer_elapsed32()` billiger als
+  `quantum/deferred_exec.c`, und der Callback liefe im selben
+  Schleifendurchlauf.
+- **Bewegung als roher `host_mouse_send()`-Report**, nicht `tap_code(MS_LEFT)`:
+  Mouse Keys bewegen um `MOUSEKEY_MOVE_DELTA` *mit Beschleunigung*, hier soll
+  es genau ein Pixel sein.
+- Der Report trägt auch die Maustasten — ein `{0}`-Report würde eine gehaltene
+  Taste loslassen. Deshalb setzt der Jiggler einen Takt aus, wenn
+  `mousekey_get_report().buttons != 0`.
+- Ein Tastendruck beendet ihn **nicht** (Michael, 2026-08-04), nur `A_MSJIG`.
+- Läuft nur auf dem Master — QMK verarbeitet alle Key-Events dort. Die
+  *Anzeige* auf der Peripherie-Hälfte braucht den Zustands-Sync aus C8.
+
+### C6 — `DF_PREV`
+
+```c
+layer_state_t default_layer_state_set_user(layer_state_t state) {
+    const uint8_t next    = get_highest_layer(state);
+    const uint8_t current = get_highest_layer(default_layer_state);  // noch alt
+    if (next != current) wb_prev_default_layer = current;
+    return state;
+}
+```
+
+Der Trick ist QMKs Reihenfolge: `default_layer_state_set()`
+(`quantum/action_layer.c:42-48`) ruft erst die `_kb`/`_user`-Kette und weist
+`default_layer_state` **danach** zu — im Callback steht also noch der alte Wert.
+Fängt `DF()` und `set_single_persistent_default_layer()` gleichermaßen ab, weil
+beide dort durchlaufen; und weil der Rücksprung selbst wieder durch den Hook
+geht, bringt zweimal Drücken einen zurück (wie KMK).
+
+- Bewusst **nicht persistent** — `_GAMING` wird per `DF()` betreten.
+- Direkt nach dem Boot zeigt es auf `_QWERT`.
+- Keycode **am Ende** von `enum CustomKeys` angehängt (FN_EXIT-Lehre).
+- **In den Keymaps steht `D__PREV`, nicht `DF_PREV`** — ein Buchstabe
+  Unterschied, aufpassen. `D__PREV` ist der Rasterplatz und fällt ohne
+  `WB_DF_PREV` auf das alte `D_QWERT` zurück.
+- Belegt in sofle_choc, sofle/rev1, kyria (obere rechte Ecke von `_GAMING`).
+  GMMK Pro und K3 Pro haben in `_GAMING` gar keine Ausstiegstaste — sie kommen
+  über ADJUST (`MO__NAV`+`MO__NUM` → `D_QWERT`) raus, das bleibt so.
+
+### AVR-Gating: `WB_JIGGLER` / `WB_DF_PREV`
+
+C4+C6 kosten zusammen rund 240 Byte, gemessen: sofle/rev1 wäre **226 Byte
+drüber**, sofle_choc (weiß) **50**, nur die Kyria hätte Platz. Deshalb dasselbe
+Muster wie `MAGIC_ENABLE`/`WB_LAYOUT_*` — in
+[wechselbalg.h](users/wechselbalg/wechselbalg.h): `#ifndef __AVR__` → an, sonst
+aus. Ein einzelnes Board abweichend: `-DWB_JIGGLER` / `-DWB_DF_PREV` per
+`OPT_DEFS`. Ohne die Flags sind die Tasten **wirkungslos statt falsch**.
+
+**Flash danach:** sofle/rev1 **22 Byte frei (unverändert)**, sofle_choc weiß
+180 (−14, nur C2), kyria 1212, lotus58 896. Alle sechs Boards + der
+Liatris-Build kompilieren.
+
+## Reihenfolge für die nächste Session (Stand 2026-08-04)
+
+1. **C8** Per-Key-RGB-Farbsprache (das große Paket, RGBLIGHT → RGB Matrix)
+2. **C7** Encoder auf `_ADJUST` = RGB-Helligkeit — **bewusst nach C8**, weil
    die Helligkeits-Keycodes vom gewählten RGB-Feature abhängen (die Aliase in
    `wrappers.h` wählen `RM_*` bei RGB Matrix, `UG_*` bei RGBLIGHT)
-6. **Status-LED** (Liatris-NeoPixel GP25) — **ebenfalls nach C8**, weil sie
-   dieselben Zustände anzeigt und auf der dort entstehenden Infrastruktur
-   aufsetzt
+3. **Status-LED** (Liatris-NeoPixel GP25) — **ebenfalls nach C8**, weil sie
+   auf der dort entstehenden Infrastruktur aufsetzt
 
 Danach bleiben nur noch die Kyria-Handedness und ganz zuletzt das OLED.
 
@@ -446,34 +552,131 @@ Danach bleiben nur noch die Kyria-Handedness und ganz zuletzt das OLED.
   nicht — die beiden sind unabhängig voneinander. Anzuschalten, wenn sich
   Shift+Klick/Ctrl+Klick am Mod-Tap-Shift träge anfühlt.
 
-- **C2 Caps Word per Shift+Shift** (`COMBO_ENABLE`). KMK: Timeout 150 ms statt 50,
-  weil der Split-Link Latenz addiert und jede Hälfte gegen ihre eigene Sicht timet.
-- **C4 Mouse Jiggler.** `A_MSJIG` ist im ADJUST-Layer verdrahtet, hat aber
-  **nirgends einen Handler** — die Taste tut nichts. KMK: 5 s Takt, 1 px,
-  Richtung alternierend (sonst driftet der Zeiger über den Tag).
-- **C6 `DF_PREV`** — zurück zum *vorherigen* Basis-Layout statt hart QWERT
-  (GAMING-Ausstieg, siehe Schritt 1). In QMK selbst zu bauen.
-- **C7 Encoder auf `_ADJUST` = RGB-Helligkeit.** `encoder_update_user()` hat
-  keinen `_ADJUST`-Fall, fällt auf PgUp/PgDn + Volume zurück. KMK gibt beiden
-  Encodern dort die Helligkeit, weil Seiten/Lautstärke auf jedem anderen Layer
-  erreichbar sind.
-- **C8 Per-Key-RGB-Farbsprache** (eigenes, größeres Paket). KMK leitet alle
-  LED-Farben aus dem Keymap ab: Modifier-Farben (GUI blau / Alt orange /
-  Ctrl magenta / Shift gelb, Mischfarbe bei Shift+Ctrl), jede Taste die einen
-  Layer *erreicht* trägt dessen Farbe dauerhaft, Tri-Layer-Hinweis (NUM-Taste
-  wird rot solange NAV gehalten wird), `KC_NO` → aus, Zustandsfarben für
-  Layer-Lock/Caps-Word/Jiggler/Mac, Maus-Block neutralgrau.
-  QMK-Seite: `keyboards/sofle_choc/keyboard.json` hat eine vollständige
-  `rgb_matrix`-Definition mit 58 Per-Key-LEDs; der Keymap nutzt aber
-  `RGBLIGHT` mit handgepflegten LED-Index-Makros. Umsetzung über
-  `rgb_matrix_indicators_advanced_user()`, Umstellung RGBLIGHT→RGB Matrix nötig.
-  Sinnvoll in Stufen (erst „tote Tasten dunkel" + Modifier-Farben).
-- **C-Status-LED.** Liatris hat eine eigene WS2812 an **GP25** (KMK zeigt dort
-  Layer-Farbe / Caps Word / Jiggler / Mac-Modus). ⚠️ Technische Hürde: QMKs
-  WS2812-Treiber kennt genau **eine** Kette (`WS2812_DI_PIN`), und GP0 ist schon
-  von der Per-Key-Kette belegt. Braucht also entweder eine zweite PIO-Instanz
-  oder einen kleinen eigenen Treiber → eigenes Arbeitspaket, vor der Umsetzung
-  Machbarkeit klären.
+### C8 Per-Key-RGB-Farbsprache — Vorarbeit erledigt 2026-08-04, Umsetzung offen
+
+KMK leitet alle LED-Farben aus dem Keymap **ab**, statt sie zu pflegen:
+Modifier-Farben (GUI blau / Alt orange / Ctrl magenta / Shift gelb, Mischfarbe
+bei Shift+Ctrl), jede Taste die einen Layer *erreicht* trägt dessen Farbe
+dauerhaft, Tri-Layer-Hinweis (NUM-Taste wird rot solange NAV gehalten wird),
+`KC_NO` → aus, Maus-Block neutralgrau. Regeln in
+`/Users/mike/dev/kmkfw/boards/wechselbalg/design/palette.py` + `rgb_rules.py`.
+
+**Ausgangslage ist besser als früher hier notiert:**
+`keyboards/sofle_choc/keyboard.json` hat `features.rgb_matrix: true` und eine
+`rgb_matrix.layout` mit **allen 58 LEDs samt `matrix: [row, col]`** und
+`split_count: [29,29]`. Die Reverse-Map LED→Taste, die KMK in `led_tables.py`
+von Hand herleiten und per Chase-Test korrigieren musste, ist also schon da:
+`g_led_config.matrix_co[row][col]`.
+
+**Gemessen 2026-08-04:**
+- `RGB_MATRIX_ENABLE = yes` / `RGBLIGHT_ENABLE = no` **baut auf dem
+  Liatris-Target sauber durch**, sobald der tote `#ifdef RGB_MATRIX_ENABLE`-Block
+  in [keymaps/wechselbalg/config.h](keyboards/sofle_choc/keymaps/wechselbalg/config.h)
+  raus ist — der redefiniert `RGB_MATRIX_SPLIT`, das keyboard.json schon
+  liefert (`-Werror`). UF2 96768 → 104448 Byte.
+- **Auf dem weißen AVR-Board ist RGB Matrix 3270 Byte zu groß.** Der Umschalter
+  muss also an `ifeq ($(strip $(CONVERT_TO)),liatris)` hängen wie
+  `MAGIC_ENABLE`; alte und neue Welt koexistieren im keymap.c per `#ifdef`.
+
+**KMKs Host-Build-Schritt ist in QMK nicht nötig** — der existierte nur wegen
+CircuitPythons Heap-Fragmentierung. QMK-Keycodes sind `uint16_t` mit
+Bitfeldern, und QMK liefert genau die zwei Funktionen, die die Ableitung zur
+Laufzeit trivial machen:
+- `layer_switch_get_layer(keypos_t)` (`quantum/action_layer.h:170`) — der
+  höchste aktive Layer, der dort **nicht** `KC_TRNS` ist. Das ist KMKs
+  „TRNS fällt auf base_layer durch", nur korrekt statt als Näherung.
+- `keymap_key_to_keycode(layer, keypos_t)` (`quantum/keymap_common.h:10`)
+
+Damit ist `rgb_matrix_indicators_advanced_user()` ~60 Zeilen. Klassifikation
+statt KMKs `isinstance`: `IS_QK_MOD_TAP` + `QK_MOD_TAP_GET_MODS`,
+`IS_MODIFIER_KEYCODE`, `IS_QK_MODS(kc) && QK_MODS_GET_BASIC_KEYCODE(kc)==0`
+für reine Modifier-Combos (`SFT_CTL`) — genau KMKs `key.key is None` —, sowie
+`IS_QK_LAYER_TAP`/`IS_QK_MOMENTARY`/`IS_QK_TO`/… fürs Layer-Ziel.
+
+**Zusätzliche Entscheidungen (Michael, 2026-08-04):**
+- Die **Zustände (Caps Word, Layer Lock, Jiggler, Mac) wandern auf die
+  Status-LED**, statt die Tastenmatrix zu fluten. Die Status-LED soll
+  ergänzende Information tragen statt den Layer nochmal zu wiederholen.
+  Damit schrumpft die per-Key-Seite auf Identität + Layer + Semantik.
+- **Indikatoren unabhängig konfigurierbar.** Nebenbefund: die beiden Zeilen
+  `RGB_DISABLE_AFTER_TIMEOUT` / `RGB_DISABLE_WHEN_USB_SUSPENDED` in der
+  Keymap-config.h sind **tote Namen** — RGB Matrix kennt nur
+  `RGB_MATRIX_TIMEOUT` (Default 0 = nie) und `RGB_MATRIX_SLEEP`. Ohne die
+  laufen die Indikatoren immer.
+- **Alle LEDs werden mitgedimmt**, nicht nur das Grundleuchten:
+  `rgb_matrix_set_color()` schreibt rohes RGB, also müssen wir jede
+  Indikatorfarbe selbst mit `rgb_matrix_get_val()` skalieren. Das ist die
+  Nahtstelle zu C7.
+- **Die QMK-Beleuchtungsschemata bleiben erhalten und werden abgeleitet
+  statt gepflegt**: der beleuchtete Nummernblock auf `_NUM` und das Pfeilkreuz
+  auf `_NAV` (heute `SET_NUMPAD`/`SET_GAMING` als handgepflegte LED-Indizes)
+  sind reine Keycode-Regeln, weil `keymap_neo2.h` auf Standard-Keycodes
+  abbildet: `N3_NUM0..9` = `KC_P0..P9` (zusammenhängend `KC_KP_1 ... KC_KP_0`)
+  und `N3___UP/LEFT/DOWN/RGHT` = `KC_UP/LEFT/DOWN/RIGHT` (zusammenhängend
+  `KC_RIGHT ... KC_UP`). Also: **semantische Tastenklassen** als eigene
+  Regelstufe neben KMKs Modifier- und Layer-Regeln.
+- LED-Reihenfolge in Stufe 0 **sichtprüfen**, nicht der Board-Definition blind
+  vertrauen — genau der Fehler, den KMKs Chase-Test gefunden hat.
+
+**Split:** QMK synchronisiert von sich aus `layer_state`
+(`SPLIT_LAYER_STATE_ENABLE` — steht heute im `#ifdef RGBLIGHT_ENABLE`-Block der
+Keymap-config.h und muss dort raus) und die komplette RGB-Matrix-Config
+(`PUT_RGB_MATRIX`, `quantum/split_common/transactions.c:576` — Helligkeit also
+automatisch, wichtig für C7). **Nicht** synchronisiert: Caps Word, Layer Lock,
+Jiggler, Mac-Modus → eine eigene Transaktion (`SPLIT_TRANSACTION_IDS_USER`,
+`docs/features/split_keyboard.md:335`), **ein Byte Statusflags** reicht für
+alle vier. Gehört jetzt zum Status-LED-Paket, nicht mehr zu C8.
+
+**Stufenplan:**
+
+| Stufe | Inhalt |
+|---|---|
+| 0 | RGBLIGHT → RGB Matrix, nur Liatris. Toter Block raus, `SPLIT_LAYER_STATE_ENABLE` befreien, LED-Reihenfolge sichtprüfen. **Baut bereits.** |
+| 1 | `rgb_matrix_indicators_advanced_user()`: `KC_NO` → aus, Base-Glow, Modifier-Farben, Maus-Grau |
+| 2 | Layer-Farben (Taste trägt Ziel-Layer-Farbe dauerhaft), aktiver Layer, Tri-Layer-Hinweis |
+| 3 | Semantische Klassen: Numpad auf `_NUM`, Pfeilkreuz auf `_NAV` |
+
+### C7 Encoder auf `_ADJUST` = RGB-Helligkeit
+
+`encoder_update_user()` hat keinen `_ADJUST`-Fall und fällt dort auf PgUp/PgDn
++ Volume zurück. KMK gibt beiden Encodern die Helligkeit, weil Seiten und
+Lautstärke auf jedem anderen Layer erreichbar sind.
+
+⚠️ **`rgb_matrix_increase_val_noeeprom()` / `_decrease_val_noeeprom()`** — nicht
+die EEPROM-Variante, sonst schreibt jede Encoder-Rastung ins EEPROM (auf
+RP2040 emuliert im Flash). Direkt die Funktion statt `tap_code16(RGB_VAI)`.
+Über den Split kostenlos: die RGB-Matrix-Config wird automatisch
+synchronisiert, beide Hälften dimmen zusammen.
+
+### Status-LED (Liatris-NeoPixel GP25) — Machbarkeit belegt 2026-08-04
+
+Jede Liatris-Hälfte hat eine eigene WS2812 an GP25. Sie soll **die Zustände
+tragen, die nicht auf die Tastenmatrix sollen** (Caps Word, Layer Lock,
+Jiggler, Mac-Modus) und perspektivisch weitere ergänzende Information — nicht
+nur den Layer wiederholen.
+
+⚠️ **Die Hürde ist real:** `platforms/chibios/drivers/vendor/RP/RP2040/ws2812_vendor.c`
+ist eindeutig Single-Instance — ein `WS2812_DI_PIN`, ein statisches
+`WS2812_BUFFER[WS2812_LED_COUNT]`, eine `STATE_MACHINE`, ein DMA-Kanal, ein
+Semaphor. Keine zweite Kette, kein Parameter dafür.
+
+Belegung bestätigt: Per-Key-Kette auf **GP0** (keyboard.json `ws2812.pin = "D3"`,
+`platforms/chibios/converters/promicro_to_rp2040_ce/_pin_defs.h:7` sagt
+`#define D3 0U`) → PIO0. Split-Serial auf PIO1. Status-LED GP25.
+
+**Der Weg: PIO0 hat vier State Machines, der Treiber belegt genau eine.** Eine
+zweite SM auf PIO0 mit eigener Kopie des 6-Instruktionen-WS2812-Programms
+(Instruktionsspeicher: 32 Wörter) und `sideset` auf GP25. Für **eine** LED
+braucht es weder DMA noch Interrupt — ein `pio_sm_put_blocking()` mit einem
+32-Bit-Wort, nur bei Farbwechsel. Geschätzt 60–80 Zeilen im Keymap, ohne
+Eingriff in den QMK-Core. Bit-Bang mit `chSysLock()` wären ~30 µs Interrupts
+aus pro Update — machbar, aber schlechter neben Split-Link und USB.
+
+Erst am Board endgültig zu belegen: dass `pio_claim_unused_sm(pio0, …)` zu
+unserem Init-Zeitpunkt noch eine SM findet und `hal_lld_peripheral_unreset`
+gelaufen ist. Die Reihenfolge spricht dafür — `ws2812_init()` läuft in
+`keyboard_init` vor `keyboard_post_init_user()`. **Mit einem Wegwerf-Prototyp
+anfangen (LED dauerhaft grün), bevor Zustandslogik dazukommt.**
 
 ## Zuletzt: OLED (bewusst als letzter Punkt)
 

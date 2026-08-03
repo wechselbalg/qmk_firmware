@@ -95,6 +95,97 @@ static void wb_word_jump(bool forward) {
 }
 
 /* ------------------------------------------------------------------------
+   DF_PREV -- zurueck auf das vorherige Basis-Layout (C6)
+
+   Der Ausstieg aus _GAMING, ohne hart auf QWERT zu springen. Nachbau von
+   KMKs Layers.previous_default_layer.
+
+   Der Trick steckt in QMKs Reihenfolge: default_layer_state_set() (siehe
+   quantum/action_layer.c) ruft erst die _kb/_user-Kette und weist
+   `default_layer_state` **danach** zu -- im Callback steht also noch der alte
+   Wert. Damit reicht ein Vergleich, kein zweiter Zustand.
+
+   Faengt DF() und set_single_persistent_default_layer() gleichermassen ab,
+   weil beide durch dieselbe Funktion laufen. Und weil der Ruecksprung selbst
+   wieder durch den Hook geht, bringt zweimal Druecken einen dorthin zurueck,
+   wo man war -- genau wie in KMK.
+
+   Bewusst nicht persistent (kein EEPROM): _GAMING wird per DF() betreten,
+   also nur fuer die Sitzung, und der Ausstieg muss dazu passen.
+
+   Direkt nach dem Boot zeigt es auf _QWERT. Ist ein anderes Layout
+   persistent hinterlegt, landet der allererste Druck also dort -- gelesen
+   als "vorher war Layer 0" ist das richtig, KMK wuerde in dem Fall nichts tun.
+   ------------------------------------------------------------------------ */
+#ifdef WB_DF_PREV
+static uint8_t wb_prev_default_layer = _QWERT;
+
+layer_state_t default_layer_state_set_user(layer_state_t state) {
+    const uint8_t next    = get_highest_layer(state);
+    const uint8_t current = get_highest_layer(default_layer_state);  // noch der alte Wert
+    if (next != current) {
+        wb_prev_default_layer = current;
+    }
+    return state;
+}
+#endif  // WB_DF_PREV
+
+/* ------------------------------------------------------------------------
+   Mouse Jiggler auf A_MSJIG (C4)
+
+   QMK hat dafuer kein Core-Feature. Takt per housekeeping_task_user() statt
+   DEFERRED_EXEC_ENABLE: fuer genau einen Timer sind ein uint32 und ein
+   timer_elapsed32() billiger als quantum/deferred_exec.c, und der Callback
+   liefe ohnehin im selben Schleifendurchlauf.
+
+   Bewegung als roher HID-Report und nicht per tap_code(MS_LEFT): Mouse Keys
+   bewegen um MOUSEKEY_MOVE_DELTA *mit Beschleunigung*, hier soll es genau
+   ein Pixel sein.
+
+   Die Richtung alterniert (aus KMK uebernommen): upstream wuerfelte sie pro
+   Takt, was ein 2D-Random-Walk ist -- der Zeiger driftet ueber einen
+   Arbeitstag zig Pixel weg. Mit wechselndem Vorzeichen ist er beim naechsten
+   Takt wieder da, wo er war.
+
+   Der Report traegt auch die Maustasten, ein {0}-Report wuerde also eine
+   gerade gehaltene Taste loslassen. Deshalb der buttons-Check: waehrend
+   wirklich mit der Maus gearbeitet wird, setzt der Jiggler einen Takt aus.
+
+   Laeuft auf beiden Haelften nur auf dem Master -- QMK verarbeitet alle
+   Key-Events dort, und host_mouse_send() gibt es nur da sinnvoll.
+   Ein Tastendruck beendet ihn *nicht* (Michael, 2026-08-04), nur A_MSJIG.
+   ------------------------------------------------------------------------ */
+#ifdef WB_JIGGLER
+#define WB_JIGGLE_PERIOD_MS 5000
+#define WB_JIGGLE_STEP      1
+
+static bool     wb_jiggling     = false;
+static int8_t   wb_jiggle_dir   = WB_JIGGLE_STEP;
+static uint32_t wb_jiggle_timer = 0;
+
+void housekeeping_task_user(void) {
+    if (!wb_jiggling || timer_elapsed32(wb_jiggle_timer) < WB_JIGGLE_PERIOD_MS) {
+        return;
+    }
+    wb_jiggle_timer = timer_read32();
+
+    if (mousekey_get_report().buttons != 0) {
+        return;  // Maustaste gehalten -- diesen Takt auslassen
+    }
+
+    report_mouse_t report = {0};
+    report.x              = wb_jiggle_dir;
+    report.y              = wb_jiggle_dir;
+    host_mouse_send(&report);
+    report.x = 0;
+    report.y = 0;
+    host_mouse_send(&report);
+
+    wb_jiggle_dir = -wb_jiggle_dir;
+}
+#endif  // WB_JIGGLER
+
+/* ------------------------------------------------------------------------
    Gemeinsames process_record_user()
 
    Lag frueher kopiert in jeder Board-Keymap. Board-spezifisches kommt jetzt
@@ -121,6 +212,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 layer_clear();
             }
             return false;
+#ifdef WB_DF_PREV
+        case DF_PREV:
+            if (record->event.pressed) {
+                default_layer_set((layer_state_t)1 << wb_prev_default_layer);
+            }
+            return false;
+#endif
+#ifdef WB_JIGGLER
+        case A_MSJIG:
+            if (record->event.pressed) {
+                wb_jiggling     = !wb_jiggling;
+                wb_jiggle_timer = timer_read32();
+            }
+            return false;
+#endif
         case QWERT:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_QWERT);

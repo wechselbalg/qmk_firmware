@@ -321,8 +321,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_GAMING] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
       // GAMING liegt als Default-Layer ueber Layer 0 -> FN_EXIT kommt hier
-      // nicht raus. D_QWERT setzt das Basis-Layout zurueck.
-      KC_ESC , _________5_NUMBERS_L______________,                          _______________5_NUMBERS_R________, D_QWERT,
+      // nicht raus. D__PREV stellt das vorherige Basis-Layout wieder her --
+      // auf diesem AVR-Board ohne WB_DF_PREV also weiterhin hart QWERT.
+      KC_ESC , _________5_NUMBERS_L______________,                          _______________5_NUMBERS_R________, D__PREV,
       _________________GAMING_L1_________________,                          _________________GAMING_R1_________________,
       _________________GAMING_L2_________________,                          _________________GAMING_R2_________________,
       _________________GAMING_L3_________________, KC_MUTE,        KC_MPLY, _________________GAMING_R3_________________,
