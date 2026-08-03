@@ -309,7 +309,7 @@ NOTE: These are all the same length.  If you do a search/replace
 // MAC_TOG (= CG_TOGG) sitzt auf dem Platz, den vorher TG__MAC hatte -- gleiche
 // Taste, gleiche Bedeutung ("an welchem Host tippe ich"), jetzt persistent.
 #define _________________ADJUST_L0_________________  FN_EXIT, KC_BRID, KC_BRIU, MAC_TOG, ___NO__, RGB_VAD
-#define _________________ADJUST_L1_________________  QWERT  , DVORAK , COLEMAK, VOU    , MINE   , ___NO__
+#define _________________ADJUST_L1_________________  P_QWERT, P_DVORK, P_COLMK, P___VOU, P__MINE, ___NO__
 #define _________________ADJUST_L2_________________  D_QWERT, D_DVORK, D_COLMK, D___VOU, D__MINE, D__GAME
 #define _________________ADJUST_L3_________________  ___NO__, ___NO__, ___NO__, ___NO__, ___NO__, QK_BOOT
 

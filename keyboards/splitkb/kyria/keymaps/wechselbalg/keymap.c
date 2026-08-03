@@ -65,12 +65,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
+#ifdef WB_LAYOUT_DVORAK
     [_DVORAK] = LAYOUT_wrapper(
      _________________DVORAK_L1_________________,                                        _________________DVORAK_R1_________________,
      _________________DVORAK_L2_________________,                                        _________________DVORAK_R2_________________,
      _________________DVORAK_L3_________________, _______, _______,     _______, _______, _________________DVORAK_R3_________________,
                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
+#endif
 
 /*
  * Base Layer: Colemak DH
@@ -86,12 +88,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
+#ifdef WB_LAYOUT_COLEMAKDH
     [_COLEMAKDH] = LAYOUT_wrapper(
      ______________COLEMAKDH_L1_________________,                                         ______________COLEMAKDH_R1_________________,
      ______________COLEMAKDH_L2_________________,                                         ______________COLEMAKDH_R2_________________,
      ______________COLEMAKDH_L3_________________, _______, _______,     _______, _______, ______________COLEMAKDH_R3_________________,
                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
+#endif
 
 /*
  * Base Layer: MINE
@@ -107,12 +111,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
+#ifdef WB_LAYOUT_MINE
     [_MINE] = LAYOUT_wrapper(
      __________________MINE__L1_________________,                                         __________________MINE__R1_________________,
      __________________MINE__L2_________________,                                         __________________MINE__R2_________________,
      __________________MINE__L3_________________, _______, _______,     _______, _______, __________________MINE__R3_________________,
                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
+#endif
 
 /*
  * Base Layer: VOUX
@@ -128,12 +134,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Enter|      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
+#ifdef WB_LAYOUT_VOU
     [_VOU] = LAYOUT_wrapper(
      __________________VOUX__L1_________________,                                         __________________VOUX__R1_________________,
      __________________VOUX__L2_________________,                                         __________________VOUX__R2_________________,
      __________________VOUX__L3_________________, _______, _______,     _______, _______, __________________VOUX__R3_________________,
                               ____________5_THUMBS_L______________,     ____________5_THUMBS_R______________
     ),
+#endif
 
 /*
  * Sym Layer: Symbols (Neo layer 3)
@@ -294,21 +302,29 @@ bool oled_task_user(void) {
         case _QWERT:
              oled_write_P(PSTR("QWERT\n"), false);
             break;
+#ifdef WB_LAYOUT_DVORAK
         case _DVORAK:
             oled_write_P(PSTR("DVORK\n"), false);
             break;
+#endif
+#ifdef WB_LAYOUT_COLEMAKDH
         case _COLEMAKDH:
             oled_write_P(PSTR("COLE\n"), false);
             break;
+#endif
         case _GAMING:
             oled_write_P(PSTR("GAME\n"), false);
             break;
+#ifdef WB_LAYOUT_MINE
         case _MINE:
             oled_write_P(PSTR("MINE\n"), false);
             break;
+#endif
+#ifdef WB_LAYOUT_VOU
         case _VOU:
             oled_write_P(PSTR("VOU\n"), false);
             break;
+#endif
         case _NUM:
             oled_write_P(PSTR("NUM \n"), false);
             break;

@@ -40,6 +40,7 @@ enum k3_pro_layers { _TEST = _ADJUST + 1 };
 #define LAYOUT_wrapper(...) LAYOUT_iso_85(__VA_ARGS__)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+#ifdef WB_LAYOUT_MINE
     [_MINE] = LAYOUT_wrapper(
         KC_ESC,   _________________________________________F_KEYS_________________________________________,  KC_CALC,  KC_MAIL,  RGB_TOG,
         KC_GRV, _______________________________NUMBERS________________________________, DE_MINS,   DE_GRV,   KC_BSPC,            KC_DEL,
@@ -47,6 +48,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ________________________________________MINE___2________________________________________,  SYM_ACU,                      KC_END,
         ________________________________________MINE___3________________________________________,            KC_UP,    MO__ADJ,
         ________________________________________7_THUMBS________________________________________,  KC_LEFT,  KC_DOWN,  KC_RGHT),
+#endif
 
     [_TEST] = LAYOUT_wrapper(
         _______,  KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   _______,  _______,  RGB_TOG,

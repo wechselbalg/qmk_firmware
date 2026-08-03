@@ -11,13 +11,49 @@
     #include "tap_dance.h"
 #endif
 
+/*
+Welche alternativen Basis-Layouts einkompiliert werden.
+
+Jedes kostet rund 120 Byte Flash (60 Tasten x 2 Byte), auf den Split-Boards
+also knapp 500 Byte fuer alle vier. Die ATmega32u4-Boards brauchen den Platz
+fuer CHORDAL_HOLD und Retro Tapping -- dort ist deshalb nur eines dabei,
+per Default COLEMAKDH. Dasselbe Modell wie KMKs ACTIVE_CANDIDATE.
+
+**Umstellen = genau eine Zeile hier aendern und neu flashen.** Ein anderes
+Layout will man: `#define WB_LAYOUT_MINE` statt `WB_LAYOUT_COLEMAKDH`. Ein
+einzelnes Board abweichend: das passende WB_LAYOUT_* per
+`OPT_DEFS += -DWB_LAYOUT_...` in dessen rules.mk setzen -- sobald hier
+irgendeines von aussen definiert ist, gilt ausschliesslich die aeussere Wahl.
+
+Die Layouts selbst bleiben in wrappers.h vollstaendig erhalten, es wird nur
+kein Layer dafuer angelegt.
+*/
+#if !defined(WB_LAYOUT_DVORAK) && !defined(WB_LAYOUT_COLEMAKDH) && !defined(WB_LAYOUT_MINE) && !defined(WB_LAYOUT_VOU)
+#    ifdef __AVR__
+#        define WB_LAYOUT_COLEMAKDH
+#    else
+#        define WB_LAYOUT_DVORAK
+#        define WB_LAYOUT_COLEMAKDH
+#        define WB_LAYOUT_MINE
+#        define WB_LAYOUT_VOU
+#    endif
+#endif
+
 enum splitlayers {
     _DEFAULTS = 0,
     _QWERT = 0,
+#ifdef WB_LAYOUT_DVORAK
     _DVORAK,
+#endif
+#ifdef WB_LAYOUT_COLEMAKDH
     _COLEMAKDH,
+#endif
+#ifdef WB_LAYOUT_MINE
     _MINE,
+#endif
+#ifdef WB_LAYOUT_VOU
     _VOU,
+#endif
     _SYM,
     _NAV,
     _NUM,
@@ -73,12 +109,48 @@ Fuer OLED-Anzeige und die host-abhaengigen Makros in wechselbalg.c.
 
 // Aliases for readability
 
+/*
+Der Layout-Umschalt-Block auf dem ADJUST-Layer, in zwei Reihen:
+  P_* (obere Reihe)  = persistent, ueberlebt den Neustart (set_single_persistent_default_layer)
+  D_* (Home-Row)     = nur diese Sitzung (DF)
+Ein nicht einkompiliertes Layout (siehe WB_LAYOUT_* oben) faellt in beiden
+Reihen auf ___NO__ zurueck, statt still auf die falsche Ebene zu zeigen.
+*/
 #define D_QWERT  DF(_QWERT)
-#define D_COLMK  DF(_COLEMAKDH)
-#define D_DVORK  DF(_DVORAK)
-#define D__MINE  DF(_MINE)
-#define D___VOU  DF(_VOU)
+#define P_QWERT  QWERT
 #define D__GAME  DF(_GAMING)
+
+#ifdef WB_LAYOUT_DVORAK
+#    define D_DVORK  DF(_DVORAK)
+#    define P_DVORK  DVORAK
+#else
+#    define D_DVORK  ___NO__
+#    define P_DVORK  ___NO__
+#endif
+
+#ifdef WB_LAYOUT_COLEMAKDH
+#    define D_COLMK  DF(_COLEMAKDH)
+#    define P_COLMK  COLEMAK
+#else
+#    define D_COLMK  ___NO__
+#    define P_COLMK  ___NO__
+#endif
+
+#ifdef WB_LAYOUT_MINE
+#    define D__MINE  DF(_MINE)
+#    define P__MINE  MINE
+#else
+#    define D__MINE  ___NO__
+#    define P__MINE  ___NO__
+#endif
+
+#ifdef WB_LAYOUT_VOU
+#    define D___VOU  DF(_VOU)
+#    define P___VOU  VOU
+#else
+#    define D___VOU  ___NO__
+#    define P___VOU  ___NO__
+#endif
 
 #define MO__SYM  MO(_SYM)
 #define MO__NAV  MO(_NAV)

@@ -126,26 +126,34 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 set_single_persistent_default_layer(_QWERT);
             }
             return false;
+#ifdef WB_LAYOUT_DVORAK
         case DVORAK:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_DVORAK);
             }
             return false;
+#endif
+#ifdef WB_LAYOUT_COLEMAKDH
         case COLEMAK:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_COLEMAKDH);
             }
             return false;
+#endif
+#ifdef WB_LAYOUT_MINE
         case MINE:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_MINE);
             }
             return false;
+#endif
+#ifdef WB_LAYOUT_VOU
         case VOU:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_VOU);
             }
             return false;
+#endif
         case FF_WORD:
             if (record->event.pressed) {
                 wb_word_jump(true);

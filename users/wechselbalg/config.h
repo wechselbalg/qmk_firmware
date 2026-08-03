@@ -7,12 +7,17 @@ Gefuehl an der Hardware eingestellt (KMK: layouts.py, TAP_TIME). Er ist nur
 zusammen mit CHORDAL_HOLD benutzbar -- ohne das werden Roll-Overs auf
 derselben Hand zu versehentlichen Modifiern.
 
-Genau deshalb haengen die beiden hier zusammen an einer Bedingung: die vier
-ATmega32u4-Boards haben den Flash fuer CHORDAL_HOLD nicht mehr, also behalten
-sie auch das alte, lange Tapping-Term. Kein halbes Setup, sondern zwei ganze.
-Faellt weg, sobald die AVR-Boards auf groessere Controller umgezogen sind.
+Genau deshalb haengen TAPPING_TERM, CHORDAL_HOLD und RETRO_TAPPING_PER_KEY an
+*einer* Bedingung: entweder ein Board hat den Flash fuer alle drei, oder es
+behaelt das alte, lange Tapping-Term. Kein halbes Setup, sondern zwei ganze.
+
+Abschalten fuer ein einzelnes Board: WB_NO_ADVANCED_TAP_HOLD in dessen
+keymaps/<name>/config.h definieren (die wird vor dieser Datei eingelesen).
+Aktuell betrifft das nur die Lotus58 -- sie ist noch nicht auf das
+Wrapper-System umgestellt, bringt ihre eigenen sechs Basis-Layouts mit und
+profitiert deshalb nicht von der WB_LAYOUT_*-Reduktion in wechselbalg.h.
 */
-#ifdef __AVR__
+#ifdef WB_NO_ADVANCED_TAP_HOLD
 #    define TAPPING_TERM 600
 #else
 #    define TAPPING_TERM 150
@@ -35,9 +40,9 @@ NICHT aus, und genau das ist hier noetig: Daumen-Chords auf derselben Hand
 (NUM-Daumen halten + linke NUM-Taste) sind der Normalfall, nicht die
 Ausnahme. In KMK war exakt das ein Hardware-Bug.
 
-Auf AVR aus, siehe TAPPING_TERM oben.
+Aus, wenn WB_NO_ADVANCED_TAP_HOLD gesetzt ist -- siehe TAPPING_TERM oben.
 */
-#ifndef __AVR__
+#ifndef WB_NO_ADVANCED_TAP_HOLD
 #    define CHORDAL_HOLD
 #endif
 
@@ -52,12 +57,9 @@ Mod-Taps dieses Layouts sind aber ausschliesslich Shift (SFT_SPC, RFT_SPC,
 SFT_PIP, RFT_MIN) und AltGr (RALT_PR). Sobald ein GUI- oder Alt-Mod-Tap
 dazukommt, wieder aufnehmen.
 
-Auf AVR bleibt es aus: die vier ATmega32u4-Boards sind am Flash-Limit, und
-von den beiden neuen Tap-Hold-Features ist CHORDAL_HOLD das, ohne das
-TAPPING_TERM 150 nicht funktioniert -- Retro Tapping ist Komfort. Faellt weg,
-sobald die Boards auf groessere Controller umgezogen sind.
+Aus, wenn WB_NO_ADVANCED_TAP_HOLD gesetzt ist -- siehe TAPPING_TERM oben.
 */
-#ifndef __AVR__
+#ifndef WB_NO_ADVANCED_TAP_HOLD
 #    define RETRO_TAPPING_PER_KEY
 #endif
 

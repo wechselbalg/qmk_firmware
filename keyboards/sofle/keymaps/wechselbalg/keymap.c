@@ -139,6 +139,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            |      |      |      |      |/       /         \      \ |      |      |      |      |
  *            `----------------------------------'           '------''---------------------------'
  */
+#ifdef WB_LAYOUT_DVORAK
 [_DVORAK] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
       TD_ESCC, ____________5_F_L_________________,                          _________________5_F_R____________, TD_SF11,
@@ -148,6 +149,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       ____________5_THUMBS_L______________,        ____________5_THUMBS_R______________
   //                 \-------------------------------------|      |------------------------------------/
 ),
+#endif
 
 
 /*
@@ -165,6 +167,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            |      |      |      |      |/       /         \      \ |      |      |      |      |
  *            `----------------------------------'           '------''---------------------------'
  */
+#ifdef WB_LAYOUT_COLEMAKDH
 [_COLEMAKDH] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
       TD_ESCC, ____________5_F_L_________________,                          _________________5_F_R____________, TD_SF11,
@@ -174,6 +177,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       ____________5_THUMBS_L______________,        ____________5_THUMBS_R______________
   //                 \-------------------------------------|      |------------------------------------/
 ),
+#endif
 
 /*
  * MINE
@@ -190,6 +194,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            |      |      |      |      |/       /         \      \ |      |      |      |      |
  *            `----------------------------------'           '------''---------------------------'
  */
+#ifdef WB_LAYOUT_MINE
 [_MINE] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
       TD_ESCC, ____________5_F_L_________________,                          _________________5_F_R____________, TD_SF11,
@@ -199,6 +204,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       ____________5_THUMBS_L______________,        ____________5_THUMBS_R______________
   //                 \-------------------------------------|      |------------------------------------/
 ),
+#endif
 
 /*
  * VOU
@@ -215,6 +221,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            |      |      |      |      |/       /         \      \ |      |      |      |      |
  *            `----------------------------------'           '------''---------------------------'
  */
+#ifdef WB_LAYOUT_VOU
 [_VOU] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
       TD_ESCC, ____________5_F_L_________________,                          _________________5_F_R____________, TD_SF11,
@@ -224,6 +231,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       ____________5_THUMBS_L______________,        ____________5_THUMBS_R______________
   //                 \-------------------------------------|      |------------------------------------/
 ),
+#endif
 /* SYMBOL (Symbo layer - NEO layer 3)
  * ,-----------------------------------------.                    ,-----------------------------------------.
  * | trans|  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F6  |  F7  |  F8  |  F9  | F10  | F11  |
@@ -468,21 +476,29 @@ static void print_status_narrow(void) {
         case _QWERT:
              oled_write_P(PSTR("QWERT\n"), false);
             break;
+#ifdef WB_LAYOUT_DVORAK
         case _DVORAK:
             oled_write_P(PSTR("DVORK\n"), false);
             break;
+#endif
+#ifdef WB_LAYOUT_COLEMAKDH
         case _COLEMAKDH:
             oled_write_P(PSTR("COLE\n"), false);
             break;
+#endif
         case _GAMING:
             oled_write_P(PSTR("GAME\n"), false);
             break;
+#ifdef WB_LAYOUT_MINE
         case _MINE:
             oled_write_P(PSTR("MINE\n"), false);
             break;
+#endif
+#ifdef WB_LAYOUT_VOU
         case _VOU:
             oled_write_P(PSTR("VOU\n"), false);
             break;
+#endif
         case _NUM:
             oled_write_P(PSTR("NUM \n"), false);
             break;

@@ -290,40 +290,84 @@ werden (Home/End, PrintScreen), nach demselben Muster erweitern.
   dieses Layouts sind aber nur Shift und AltGr. Bei einem neuen GUI/Alt-Mod-Tap
   wieder aufnehmen.
 
-### AVR-Trennung (bewusst, gemessen)
+### AVR: alternative Layouts reduziert, Features dafür rein (2026-08-04)
 
-Die vier ATmega32u4-Boards haben den Flash für die neuen Features nicht.
-Statt halber Sachen gibt es zwei ganze Setups:
+Erster Ansatz war, den AVR-Boards die neuen Tap-Hold-Features ganz zu
+verweigern. Stattdessen jetzt nach KMKs Vorbild: **weniger Basis-Layouts,
+dafür die Features.** Jedes alternative Layout kostet ~120 Byte
+(60 Tasten × 2 Byte), vier davon also knapp 500.
 
-| | AVR (sofle_choc weiß, sofle/rev1, kyria, lotus58) | RP2040/STM32 |
-|---|---|---|
-| `TAPPING_TERM` | 600 (unverändert) | 150 |
-| `CHORDAL_HOLD` | aus | an |
-| `RETRO_TAPPING_PER_KEY` | aus | an |
-| `MAGIC_ENABLE` / `MAC_TOG` / `NK_TOGG` | aus (Taste wirkungslos) | an |
+**`WB_LAYOUT_DVORAK` / `WB_LAYOUT_COLEMAKDH` / `WB_LAYOUT_MINE` /
+`WB_LAYOUT_VOU`** in [wechselbalg.h](users/wechselbalg/wechselbalg.h) steuern,
+welche Layer überhaupt angelegt werden. Default: auf AVR nur **COLEMAKDH**, auf
+RP2040/STM32 alle vier. Die Layouts selbst bleiben in `wrappers.h` vollständig
+erhalten — es wird nur kein Layer dafür gebaut.
 
-Umgesetzt über `#ifdef __AVR__` in `users/wechselbalg/config.h`; `MAGIC_ENABLE`
-steht dort auf `?= no` und wird in den Keymap-`rules.mk` der großen Boards auf
-`yes` gezogen (**`?=` ist nötig**: `builddefs/build_keyboard.mk` liest die
-Keymap-`rules.mk` in Zeile 146, den Userspace erst in Zeile 429 — mit `=` würde
-der Userspace die Board-Einstellung wieder überschreiben). Bei sofle_choc hängt
+- **Umstellen = eine Zeile.** Statt `WB_LAYOUT_COLEMAKDH` z. B.
+  `WB_LAYOUT_MINE` definieren, neu flashen. Sobald *irgendeines* der vier von
+  außen definiert ist, gilt ausschließlich die äußere Wahl.
+- Ein einzelnes Board abweichend: `OPT_DEFS += -DWB_LAYOUT_...` in dessen
+  Keymap-`rules.mk`.
+- Der Umschalt-Block auf ADJUST hat jetzt symmetrische Aliase: `P_*` (obere
+  Reihe, persistent) und `D_*` (Home-Row, nur die Sitzung). Ein nicht
+  einkompiliertes Layout fällt in **beiden** Reihen auf `___NO__` zurück,
+  statt still auf die falsche Ebene zu zeigen.
+- Die Layer-Blöcke und OLED-`case`s in den Board-Keymaps sind entsprechend
+  mit `#ifdef WB_LAYOUT_*` geklammert.
+
+**Ergebnis — was welches Board jetzt bekommt:**
+
+| | sofle_choc weiß, sofle/rev1, kyria | lotus58 | RP2040/STM32 |
+|---|---|---|---|
+| Basis-Layouts | QWERT + COLEMAKDH | eigene sechs | alle fünf |
+| `TAPPING_TERM` | **150** | 600 | 150 |
+| `CHORDAL_HOLD` | **an** | aus | an |
+| `RETRO_TAPPING_PER_KEY` | **an** | aus | an |
+| `MAGIC_ENABLE` / `MAC_TOG` | aus | aus | an |
+
+`MAGIC_ENABLE` (~1056 Byte) passt auf AVR weiterhin nicht — das weiße Sofle
+Choc hat also keinen Mac-Modus. Ist so entschieden (Michael, 2026-08-04).
+
+**Lotus58 bleibt außen vor:** sie ist noch nicht auf das Wrapper-System
+umgestellt und bringt ihre eigenen sechs Basis-Layouts mit, die
+`WB_LAYOUT_*`-Reduktion greift dort also nicht (524 Byte drüber, gemessen).
+Abgeschaltet über `OPT_DEFS += -DWB_NO_ADVANCED_TAP_HOLD` in ihrer
+Keymap-`rules.mk`. **Per `OPT_DEFS` und nicht per `keymaps/.../config.h`:**
+`build_keyboard.mk` hängt die Keymap-`config.h` **nach** der
+Userspace-`config.h` ein (Zeile 459 vs. 431) — ein `#define` dort käme zu spät.
+Dasselbe Muster gilt für jedes weitere Board, dem der Flash ausgeht.
+
+`MAGIC_ENABLE` läuft umgekehrt: im Userspace `?= no`, in den Keymap-`rules.mk`
+der großen Boards auf `yes` — **`?=` ist nötig**, weil die Keymap-`rules.mk`
+*vor* dem Userspace eingelesen wird (Zeile 146 vs. 429). Bei sofle_choc hängt
 es an `ifeq ($(strip $(CONVERT_TO)),liatris)`, weil sich weißes und schwarzes
 Board dieselbe `rules.mk` teilen.
 
 **Sobald die AVR-Boards auf bessere Controller umgezogen sind, fallen alle
-diese `#ifdef __AVR__`/`ifeq`-Zweige ersatzlos weg.**
+diese Zweige ersatzlos weg** — `WB_LAYOUT_*` auf „alle" und
+`WB_NO_ADVANCED_TAP_HOLD` löschen.
 
-Flash danach: sofle_choc 95 %, sofle/rev1 96 %, kyria 92 %, lotus58 96 % —
-alle 6 Boards und der Liatris-Build kompilieren.
+Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
+194 Bytes, kyria 95 % / 1230 Bytes, lotus58 96 % / 912 Bytes.
+
+> ⚠️ **sofle/rev1 hat 22 Bytes Luft.** Das baut heute, aber der nächste
+> Upstream-Merge kippt es mit hoher Wahrscheinlichkeit. Ein-Zeilen-Notausgang:
+> `OPT_DEFS += -DWB_NO_ADVANCED_TAP_HOLD` in
+> `keyboards/sofle/keymaps/wechselbalg/rules.mk` — dann verhält sich das Board
+> wie die Lotus58. Alternativ dort RGB-Animationen ausdünnen.
 
 **Offen aus diesem Paket:**
-- **Hardware-Test steht komplett aus** (schwarze Sofle Choc): Tippgefühl bei
-  150 ms, Daumen-Chords unter Chordal Hold, Retro-Tap-Fenster, `MAC_TOG` inkl.
-  EEPROM-Persistenz, `FN_EXIT` auf einem Nicht-QWERT-Basislayout, OLED-Zeile.
+- **Hardware-Test der schwarzen Sofle Choc steht aus** — beide Hälften sind am
+  2026-08-04 geflasht (je 96768 Byte UF2), aber noch nicht benutzt. Zu prüfen:
+  Tippgefühl bei 150 ms, Daumen-Chords unter Chordal Hold, Retro-Tap-Fenster,
+  `MAC_TOG` inkl. EEPROM-Persistenz, `FN_EXIT` auf einem Nicht-QWERT-Layout,
+  die OLED-Zeile MAC/PC, Power-LED aus, Mouse Keys im `_NAV`-Layer.
 - **`chordal_hold_layout` fehlt für GMMK Pro und K3 Pro.** Beide sind STM32,
   bekommen `CHORDAL_HOLD` also aktiv — ohne Tabelle rät QMK anhand der
   Geometrie und nimmt die Daumen/Space-Reihe **nicht** aus. Vor deren nächstem
-  Flash nachtragen. (Kyria ist AVR und damit vorerst nicht betroffen.)
+  Flash nachtragen.
+- **`chordal_hold_layout` fehlt auch für die Kyria**, die es seit dieser
+  Änderung aktiv hat. Vor ihrem nächsten Flash nachtragen.
 
 ## Noch offen — Rest von Schritt 2/3
 
