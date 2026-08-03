@@ -86,7 +86,7 @@ gepflegt werden:
   (`LAYER_LOCK_ENABLE`/`CAPS_WORD_ENABLE`); `F_LLOCK` = Alias für `QK_LLCK`.
   `LTO_ENABLE = yes` (die AVR-Boards sind flash-eng).
 
-## Aktueller Stand (Stand: 2026-07-24)
+## Aktueller Stand (Stand: 2026-08-03)
 
 **Fertig:**
 - Fork aufgeräumt (nur noch master/develop/mike), auf aktuellen QMK-Stand gemergt.
@@ -95,6 +95,16 @@ gepflegt werden:
   und Duplikat `users/wechselbalg_` entfernt.
 - `_MAC`-Overlay-Layer für alle Wrapper-Keymaps hinzugefügt.
 - Lotus58 vom eigenen Port auf das offizielle `tweetydabird/lotus58` migriert.
+- Sofle Choc (Elite-C) auf aktuellen Stand geflasht und getestet:
+  - Linke Hälfte, äußerste Daumentaste: Del/Num → Enter/Num (`NUM_ENT`).
+  - Rechte Hälfte, zweite Daumentaste von links: Enter/Shift → Space/Shift (`RFT_SPC`).
+  - `_NUM`-Layer: reine Enter-Taste direkt links neben der Shift-Position
+    (unterste Reihe, vorletzte rechte Spalte) hinzugefügt (ersetzt dort `;`).
+  - Mouse Keys global deaktiviert (`MOUSEKEY_ENABLE = no` in `users/wechselbalg/rules.mk`)
+    — kollidierten am Mac mit dem Touchpad.
+  - Sofle Choc (Elite-C) meldet sich im Bootloader als **Atmel-DFU**, nicht
+    Caterina → zum Flashen `make sofle_choc:wechselbalg:dfu` statt `qmk flash`
+    verwenden (Details in Claude-Memory `sofle-choc-dfu-bootloader`).
 
 **Offen / vor dem Flashen prüfen:**
 - **K3 Pro**: MINE-Ebene enthält Annahmen (neu belegte `+`-Taste, NUBS = `MO__NUM`);
@@ -103,3 +113,6 @@ gepflegt werden:
   → hat daher noch **keinen** `_MAC`-Layer. Nächster natürlicher Schritt.
 - K3-Pro-Varianten ansi/jis/white bleiben ungebaut (alte LED-Tabellen-Makros).
 - Idee: Mac-Variante des `_NAV`-Layers (Wort-Sprünge Opt+Pfeil statt Ctrl+Pfeil).
+- Anderen Wrapper-Keymaps (Kyria, GMMK Pro, K3 Pro) fehlt noch der Test, ob die
+  globale Mouse-Keys-Deaktivierung dort Layer-Belegungen (`MS_*` im `_NAV`-Layer)
+  stumm werden lässt (keine Compile-Fehler, aber Tasten tun dann nichts mehr).

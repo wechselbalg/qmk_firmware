@@ -98,14 +98,14 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 // | F1  | F2  | F3  | F4  | F5  |   | F6  | F7  | F8  | F9  | F10 |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, CTL_ENT, SFT_SPC, NUM_DEL
-#define ____________5_THUMBS_R______________  NAV_BSC, RFT_ENT, KC_RCTL, RALT_PR, KC_RGUI
+#define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, CTL_ENT, SFT_SPC, NUM_ENT
+#define ____________5_THUMBS_R______________  NAV_BSC, RFT_SPC, KC_RCTL, RALT_PR, KC_RGUI
 #define ________________________________________7_THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_SPC, MO__NAV, MO__NUM, KC_RCTL
 
 // Mac-Varianten der Daumenreihen fuer den _MAC-Overlay-Layer:
 // Cmd (GUI) und Opt (Alt) tauschen die Plaetze, Layer-Taps bleiben identisch.
-#define ________5_MAC_THUMBS_L______________  KC_LALT, KC_LGUI, CTL_ENT, SFT_SPC, NUM_DEL
-#define ________5_MAC_THUMBS_R______________  NAV_BSC, RFT_ENT, KC_RCTL, KC_RGUI, RALT_PR
+#define ________5_MAC_THUMBS_L______________  KC_LALT, KC_LGUI, CTL_ENT, SFT_SPC, NUM_ENT
+#define ________5_MAC_THUMBS_R______________  NAV_BSC, RFT_SPC, KC_RCTL, KC_RGUI, RALT_PR
 #define ____________________________________7_THUMBS_MAC_____________________________________  KC_LCTL, KC_LALT, KC_LGUI, NAV_SPC, MO__NAV, MO__NUM, KC_RCTL
 
 // QWERT
@@ -259,7 +259,7 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _________________NUMBER_R0_________________  N4__TAB, N2_SECT, N3_SLSH, N3_ASTR, DE_HASH, N3_NMNS
 #define _________________NUMBER_R1_________________  N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH
 #define _________________NUMBER_R2_________________  N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS
-#define _________________NUMBER_R3_________________  N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL
+#define _________________NUMBER_R3_________________  N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, KC_ENT , N3_EQUL
 
 #define _________5_NUMBER__THUMBS_R_________         _______, _______, NAV_NM0, N3_COMM, N3__DOT
 #define ________________________________7_NUMBER__THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_NM0, N3_COMM, N3__DOT, KC_RCTL
