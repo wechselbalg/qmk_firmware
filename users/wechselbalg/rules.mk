@@ -1,6 +1,17 @@
 SRC += wechselbalg.c
 #SRC += features/custom_shift_keys.c
 
+# Die abgeleitete Per-Key-Farbsprache (C8). Ausdruecklich opt-in und nicht an
+# RGB_MATRIX_ENABLE gehaengt: GMMK Pro und K3 Pro haben RGB Matrix auch an, und
+# die sollen ihre Beleuchtung nicht ungefragt wechseln. Angeschaltet wird sie
+# in der Keymap-rules.mk des Boards -- die wird VOR dieser Datei eingelesen
+# (build_keyboard.mk Zeile 146 vs. 429), `WB_RGB_LANGUAGE = yes` steht hier
+# also schon fest.
+ifeq ($(strip $(WB_RGB_LANGUAGE)), yes)
+    SRC += rgb_language.c
+    OPT_DEFS += -DWB_RGB_LANGUAGE
+endif
+
 # ENCODER_ENABLE = no
 ENCODER_MAP_ENABLE = no
 EXTRAKEY_ENABLE = yes

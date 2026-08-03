@@ -578,9 +578,43 @@ bool oled_task_user(void) {
 
 #ifdef ENCODER_ENABLE
 
+/*
+C7: beide Encoder regeln auf _ADJUST die Helligkeit.
+
+Seiten (PgUp/PgDn) und Lautstaerke sind auf jedem anderen Layer erreichbar, es
+geht also nichts verloren. Uebernommen aus dem KMK-Port.
+
+WICHTIG die _noeeprom-Variante: die normale schreibt bei JEDER Encoder-Rastung
+ins EEPROM, das auf dem RP2040 im Flash emuliert wird. Und direkt die Funktion
+statt tap_code16(RGB_VAI) -- das spart den Umweg ueber process_record und sagt,
+was gemeint ist.
+
+Ueber den Split kostenlos: QMK synchronisiert die komplette RGB-Matrix-Config
+(PUT_RGB_MATRIX in split_common/transactions.c), beide Haelften dimmen also
+zusammen.
+*/
+static void wb_brightness(bool up) {
+#if defined(RGB_MATRIX_ENABLE)
+    if (up) {
+        rgb_matrix_increase_val_noeeprom();
+    } else {
+        rgb_matrix_decrease_val_noeeprom();
+    }
+#elif defined(RGBLIGHT_ENABLE)
+    if (up) {
+        rgblight_increase_val_noeeprom();
+    } else {
+        rgblight_decrease_val_noeeprom();
+    }
+#endif
+}
+
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
         switch (get_highest_layer(layer_state)) {
+            case _ADJUST:
+                wb_brightness(clockwise);
+                break;
             case _GAMING:
                 if (clockwise) {
                     tap_code(KC_PGUP);
@@ -607,6 +641,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 		}
     } else if (index == 1) {
         switch (get_highest_layer(layer_state)) {
+            case _ADJUST:
+                wb_brightness(clockwise);
+                break;
             case _GAMING:
                 if (clockwise) {
                     tap_code(KC_UP);

@@ -404,6 +404,11 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
   Shift-*Daumen* es versehentlich auslösen), der Jiggler auf `A_MSJIG` (5 s,
   1 px, kein Drift) und `D__PREV` als GAMING-Ausstieg auf einem
   Nicht-QWERT-Layout.
+  Und seit C8/C7: die LED-Reihenfolge (stimmt die Zuordnung LED→Taste aus
+  keyboard.json?), ob die Palette am Board taugt (besonders NUM-Bernstein
+  neben Alt und die Helligkeit von 40), ob der Encoder auf `_ADJUST` beide
+  Hälften zusammen dimmt, und ob die Peripherie-Hälfte die Layer-Farben
+  richtig zeigt (`SPLIT_LAYER_STATE_ENABLE`).
 - **`chordal_hold_layout` — nur die Kyria braucht wirklich eine.**
   (Korrektur einer früheren Notiz hier: QMKs automatische Tabelle ist besser
   als angenommen. `lib/python/qmk/cli/generate/keyboard_c.py` markiert die
@@ -524,14 +529,11 @@ Liatris-Build kompilieren.
 
 ## Reihenfolge für die nächste Session (Stand 2026-08-04)
 
-1. **C8** Per-Key-RGB-Farbsprache (das große Paket, RGBLIGHT → RGB Matrix)
-2. **C7** Encoder auf `_ADJUST` = RGB-Helligkeit — **bewusst nach C8**, weil
-   die Helligkeits-Keycodes vom gewählten RGB-Feature abhängen (die Aliase in
-   `wrappers.h` wählen `RM_*` bei RGB Matrix, `UG_*` bei RGBLIGHT)
-3. **Status-LED** (Liatris-NeoPixel GP25) — **ebenfalls nach C8**, weil sie
-   auf der dort entstehenden Infrastruktur aufsetzt
-
-Danach bleiben nur noch die Kyria-Handedness und ganz zuletzt das OLED.
+1. **Hardware-Test** der schwarzen Sofle Choc — inzwischen sind drei Pakete
+   ungetestet aufeinandergestapelt (Tap-Hold, Schritt 3, C8+C7).
+2. **Status-LED** (Liatris-NeoPixel GP25) inkl. der Split-Transaktion für die
+   Zustandsflags — das letzte große Stück.
+3. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
 
 ## Noch offen — Rest von Schritt 2/3
 
@@ -552,7 +554,7 @@ Danach bleiben nur noch die Kyria-Handedness und ganz zuletzt das OLED.
   nicht — die beiden sind unabhängig voneinander. Anzuschalten, wenn sich
   Shift+Klick/Ctrl+Klick am Mod-Tap-Shift träge anfühlt.
 
-### C8 Per-Key-RGB-Farbsprache — Vorarbeit erledigt 2026-08-04, Umsetzung offen
+### C8 Per-Key-RGB-Farbsprache — umgesetzt 2026-08-04, nicht auf Hardware getestet
 
 KMK leitet alle LED-Farben aus dem Keymap **ab**, statt sie zu pflegen:
 Modifier-Farben (GUI blau / Alt orange / Ctrl magenta / Shift gelb, Mischfarbe
@@ -573,7 +575,10 @@ von Hand herleiten und per Chase-Test korrigieren musste, ist also schon da:
   Liatris-Target sauber durch**, sobald der tote `#ifdef RGB_MATRIX_ENABLE`-Block
   in [keymaps/wechselbalg/config.h](keyboards/sofle_choc/keymaps/wechselbalg/config.h)
   raus ist — der redefiniert `RGB_MATRIX_SPLIT`, das keyboard.json schon
-  liefert (`-Werror`). UF2 96768 → 104448 Byte.
+  liefert (`-Werror`). Mit allen Animationen aus keyboard.json wuchs die UF2
+  von 96768 auf 104448 Byte; **ohne sie und mit der Farbsprache sind es
+  97280** — der Umstieg kostet also praktisch nichts, die Animationen waren
+  der ganze Aufschlag.
 - **Auf dem weißen AVR-Board ist RGB Matrix 3270 Byte zu groß.** Der Umschalter
   muss also an `ifeq ($(strip $(CONVERT_TO)),liatris)` hängen wie
   `MAGIC_ENABLE`; alte und neue Welt koexistieren im keymap.c per `#ifdef`.
@@ -615,8 +620,28 @@ für reine Modifier-Combos (`SFT_CTL`) — genau KMKs `key.key is None` —, sow
   und `N3___UP/LEFT/DOWN/RGHT` = `KC_UP/LEFT/DOWN/RIGHT` (zusammenhängend
   `KC_RIGHT ... KC_UP`). Also: **semantische Tastenklassen** als eigene
   Regelstufe neben KMKs Modifier- und Layer-Regeln.
-- LED-Reihenfolge in Stufe 0 **sichtprüfen**, nicht der Board-Definition blind
-  vertrauen — genau der Fehler, den KMKs Chase-Test gefunden hat.
+- LED-Reihenfolge **sichtprüfen**, nicht der Board-Definition blind vertrauen —
+  genau der Fehler, den KMKs Chase-Test gefunden hat.
+
+**Die Palette und ihre Regel** (alle Werte oben in `rgb_language.c`,
+Nachjustieren am Board ist eine Zeile):
+
+> **Farbton = Bedeutung, Sättigung = Art.**
+> Gesättigter Farbton = Rolle (welcher Layer, welcher Modifier) · Weiß =
+> Inhalt (der Nutzblock des aktiven Layers) · Grau = neutraler Inhalt (Maus)
+> · gedimmtes Warm = nichts Besonderes (Grundleuchten)
+
+Der Farbkreis ist mit fünf Layern + vier Modifiern + Cyan praktisch voll.
+Deshalb liegen Nummernblock und Pfeilkreuz bewusst auf der *Sättigungs*achse
+statt auf noch einem Farbton — so kollidieren sie mit nichts, und der Kontrast
+zur Layer-Farbe ist maximal, egal welche das ist. Damit ersetzt Weiß das
+frühere Magenta (`SET_NUMPAD`) und Rot (`SET_GAMING` auf `_NAV`); Rot hätte
+dort außerdem „diese Taste erreicht ADJUST" bedeutet.
+
+Zwei Abweichungen von KMKs Werten, beide wegen einer echten Kollision:
+`_NUM` (255,80,0) → **(255,140,0)**, weil KMKs Orange neben Alts Orangerot lag
+und `KC_RALT` auf `_NUM` sitzt; `Ctrl` (255,0,90) → **(255,0,140)**, weil es zu
+nah an ADJUSTs Rot lag und die Ctrl-Daumen auf `_ADJUST` liegen.
 
 **Split:** QMK synchronisiert von sich aus `layer_state`
 (`SPLIT_LAYER_STATE_ENABLE` — steht heute im `#ifdef RGBLIGHT_ENABLE`-Block der
@@ -627,26 +652,57 @@ Jiggler, Mac-Modus → eine eigene Transaktion (`SPLIT_TRANSACTION_IDS_USER`,
 `docs/features/split_keyboard.md:335`), **ein Byte Statusflags** reicht für
 alle vier. Gehört jetzt zum Status-LED-Paket, nicht mehr zu C8.
 
-**Stufenplan:**
+**Umsetzung:** [users/wechselbalg/rgb_language.c](users/wechselbalg/rgb_language.c),
+rund 350 Zeilen mit Kommentar. Angeschaltet per `WB_RGB_LANGUAGE = yes` in der
+Keymap-`rules.mk` — **ausdrücklich opt-in und nicht an `RGB_MATRIX_ENABLE`
+gehängt**, weil GMMK Pro und K3 Pro RGB Matrix ebenfalls anhaben und ihre
+Beleuchtung nicht ungefragt wechseln sollen.
 
-| Stufe | Inhalt |
+**Die Prioritätskette** (pro LED einmal `layer_switch_get_layer` +
+`keymap_key_to_keycode`, dann von oben):
+
+| | Regel |
 |---|---|
-| 0 | RGBLIGHT → RGB Matrix, nur Liatris. Toter Block raus, `SPLIT_LAYER_STATE_ENABLE` befreien, LED-Reihenfolge sichtprüfen. **Baut bereits.** |
-| 1 | `rgb_matrix_indicators_advanced_user()`: `KC_NO` → aus, Base-Glow, Modifier-Farben, Maus-Grau |
-| 2 | Layer-Farben (Taste trägt Ziel-Layer-Farbe dauerhaft), aktiver Layer, Tri-Layer-Hinweis |
-| 3 | Semantische Klassen: Numpad auf `_NUM`, Pfeilkreuz auf `_NAV` |
+| 1 | `KC_NO` → **aus** (macht einen Overlay-Layer lesbar: er zeigt nur, was er belegt) |
+| 2 | Einzeltasten: `QK_BOOT` magenta, `CW_TOGG` weiß, `QK_LLCK`/`LR_EXIT`/`DF_PREV` cyan, `A_MSJIG`, `MAC_TOG` |
+| 3 | Modifier-Rolle, Mischfarbe bei Kombination (`SFT_CTL`) |
+| 4 | Layer-Ziel + Tri-Layer-Hinweis |
+| 5 | Semantische Klasse: Numpad, Pfeilkreuz (weiß), Maus (grau) |
+| 6 | Aktiver Overlay-Layer |
+| 7 | Grundleuchten |
 
-### C7 Encoder auf `_ADJUST` = RGB-Helligkeit
+**Stufe 6 ist in QMK geschenkt.** „Der Layer färbt, was er belegt" ist
+`layer_switch_get_layer(pos) != get_highest_layer(default_layer_state)` — an
+einer durchgereichten Position hätte die Funktion das Basis-Layout geliefert.
+KMK brauchte dafür `overlay_positions()`, die Funktion, an der der Boot damals
+an der Speicherzuteilung scheiterte.
 
-`encoder_update_user()` hat keinen `_ADJUST`-Fall und fällt dort auf PgUp/PgDn
-+ Volume zurück. KMK gibt beiden Encodern die Helligkeit, weil Seiten und
-Lautstärke auf jedem anderen Layer erreichbar sind.
+**Der Tri-Layer-Hinweis trifft von selbst die richtigen zwei Tasten**: nur die
+inneren Daumen (`NUM_ENT` links, `NAV_BSC` rechts) werden auf dem jeweils
+anderen Layer nicht überschrieben — ohne dass eine Koordinate im Code steht.
+
+**Prüfung ohne Hardware:** `/private/tmp/.../scratchpad/preview.py` (nicht
+eingecheckt) liest das *echte* `keymaps`-Array aus dem ELF (`.rodata`, Symbol
+`keymaps`) und bildet die Kette in Python nach — damit ist belegt, dass
+Nummernblock, Pfeilkreuz, Maus-Block, `SFT_CTL`-Mischfarbe, die `KC_NO`-Regel
+und der Tri-Layer-Hinweis wirklich herauskommen. Bei Zweifeln am nächsten
+Umbau wieder so machen, das ist billiger als flashen.
+
+### C7 Encoder auf `_ADJUST` = RGB-Helligkeit — umgesetzt 2026-08-04
+
+Beide Encoder regeln auf `_ADJUST` die Helligkeit (`wb_brightness()` im
+sofle_choc-keymap.c, gilt für beide Sofle-Choc-Boards). Seiten und Lautstärke
+sind auf jedem anderen Layer erreichbar, es geht also nichts verloren.
 
 ⚠️ **`rgb_matrix_increase_val_noeeprom()` / `_decrease_val_noeeprom()`** — nicht
 die EEPROM-Variante, sonst schreibt jede Encoder-Rastung ins EEPROM (auf
 RP2040 emuliert im Flash). Direkt die Funktion statt `tap_code16(RGB_VAI)`.
 Über den Split kostenlos: die RGB-Matrix-Config wird automatisch
 synchronisiert, beide Hälften dimmen zusammen.
+
+Auf dem weißen Board läuft derselbe Code über `rgblight_*_noeeprom()`
+(32 Byte, danach noch 148 frei). sofle/rev1 und Kyria haben den Fall bewusst
+nicht — dort ist kein Platz bzw. kein Bedarf.
 
 ### Status-LED (Liatris-NeoPixel GP25) — Machbarkeit belegt 2026-08-04
 

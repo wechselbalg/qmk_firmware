@@ -57,6 +57,13 @@
     #define SOFT_SERIAL_PIN D2
 #endif
 
+/*
+Die aktive Ebene wird auf BEIDEN Haelften gebraucht: die Peripherie rechnet
+ihre LED-Farben selbst aus und muss dafuer wissen, welcher Layer an ist. Stand
+frueher im RGBLIGHT-Block und war damit ans falsche Feature gekoppelt.
+*/
+#define SPLIT_LAYER_STATE_ENABLE
+
 #define CUSTOM_FONT
 
 #define CUSTOM_LAYER_READ //if you remove this it causes issues - needs better guarding
@@ -75,11 +82,6 @@
 /* ws2812 RGB LED: Pin (D3) kommt aus keyboard.json des Boards */
 
 
-#ifdef RGB_MATRIX_ENABLE
-#define RGBLED_NUM 58    // Number of LEDs
-#define RGB_MATRIX_SPLIT {29,29}
-#define DRIVER_LED_TOTAL RGBLED_NUM
-#endif
 
 #ifdef RGBLIGHT_ENABLE
     //#define RGBLIGHT_ANIMATIONS
@@ -104,62 +106,77 @@
 
     #define RGBLIGHT_LED_COUNT 58
 	#define RGBLED_SPLIT { 29, 29 }
-    #define SPLIT_LAYER_STATE_ENABLE
 
 	//#define RGBLED_NUM 30
     #define RGBLIGHT_LIMIT_VAL 120
     #define RGBLIGHT_HUE_STEP 8
     #define RGBLIGHT_SAT_STEP 10
     #define RGBLIGHT_VAL_STEP 10
-    #define RGB_DISABLE_AFTER_TIMEOUT 300 // number of ticks to wait until disabling effects
-    #define RGB_DISABLE_WHEN_USB_SUSPENDED // turn off effects when suspended
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
-#   define RGB_MATRIX_KEYPRESSES // reacts to keypresses
-// #   define RGB_MATRIX_KEYRELEASES // reacts to keyreleases (instead of keypresses)
-#   define RGB_DISABLE_AFTER_TIMEOUT 300 // number of ticks to wait until disabling effects
-#   define RGB_DISABLE_WHEN_USB_SUSPENDED // turn off effects when suspended
-#   define RGB_MATRIX_FRAMEBUFFER_EFFECTS
-// #   define RGB_MATRIX_LED_PROCESS_LIMIT (DRIVER_LED_TOTAL + 4) / 5 // limits the number of LEDs to process in an animation per task run (increases keyboard responsiveness)
-// #   define RGB_MATRIX_LED_FLUSH_LIMIT 16 // limits in milliseconds how frequently an animation will update the LEDs. 16 (16ms) is equivalent to limiting to 60fps (increases keyboard responsiveness)
-#    define RGB_MATRIX_MAXIMUM_BRIGHTNESS 120 // limits maximum brightness of LEDs to 150 out of 255. Higher may cause the controller to crash.
+/*
+Nur der Liatris-Build (schwarzes Board). Die Farben kommen komplett aus
+users/wechselbalg/rgb_language.c, das in rgb_matrix_indicators_advanced_user()
+JEDE LED selbst setzt.
 
-#define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_GRADIENT_LEFT_RIGHT
+Deshalb sind die Animationen hier abgeschaltet (Michael, 2026-08-04): sie
+waeren ohnehin unsichtbar, weil wir jeden Frame drueberschreiben, und
+RM_NEXT/RM_PREV wuerden sonst zwischen Modi umschalten, die man nicht sieht.
+Uebrig bleibt RGB_MATRIX_SOLID_COLOR, das QMK immer mitbaut -- dessen
+Hue/Sat faerben bei uns das **Grundleuchten**, und Val dimmt das ganze Board
+inklusive aller Indikatoren. Damit bleiben alle RGB-Tasten auf _ADJUST
+sinnvoll, ausser den beiden Modus-Tasten.
+
+RGB_MATRIX_KEYPRESSES und RGB_MATRIX_FRAMEBUFFER_EFFECTS sind mit den
+Animationen weggefallen -- beides existiert nur fuer reaktive bzw.
+Framebuffer-Effekte.
+
+Kein RGB_MATRIX_TIMEOUT und kein RGB_MATRIX_SLEEP: die Indikatoren sollen
+immer laufen. (Die frueher hier stehenden RGB_DISABLE_AFTER_TIMEOUT /
+RGB_DISABLE_WHEN_USB_SUSPENDED waren tote Namen -- RGB Matrix kennt sie nicht,
+sie haben nie etwas bewirkt.)
+*/
+#    define RGB_MATRIX_MAXIMUM_BRIGHTNESS 120
+
+// Grundleuchten: warmes Cremeweiss, entspricht KMKs BASE_COLOR (255,200,120).
+#    define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_COLOR
+#    define RGB_MATRIX_DEFAULT_HUE 25
+#    define RGB_MATRIX_DEFAULT_SAT 135
+#    define RGB_MATRIX_DEFAULT_VAL 40
 
 #    define RGB_MATRIX_HUE_STEP 8
 #    define RGB_MATRIX_SAT_STEP 8
 #    define RGB_MATRIX_VAL_STEP 8
-#    define RGB_MATRIX_SPD_STEP 10
 
-/* Disable the animations you don't want/need.  You will need to disable a good number of these    *
- * because they take up a lot of space.  Disable until you can successfully compile your firmware. */
- // #   undef ENABLE_RGB_MATRIX_ALPHAS_MODS
- // #   undef ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN
- #   undef ENABLE_RGB_MATRIX_BREATHING
- // #   undef ENABLE_RGB_MATRIX_CYCLE_ALL
- // #   undef ENABLE_RGB_MATRIX_CYCLE_LEFT_RIGHT
- // #   undef ENABLE_RGB_MATRIX_CYCLE_UP_DOWN
- // #   undef ENABLE_RGB_MATRIX_CYCLE_OUT_IN
- // #   undef ENABLE_RGB_MATRIX_CYCLE_OUT_IN_DUAL
- // #   undef ENABLE_RGB_MATRIX_RAINBOW_MOVING_CHEVRON
- // #   undef ENABLE_RGB_MATRIX_DUAL_BEACON
- // #   undef ENABLE_RGB_MATRIX_RAINBOW_BEACON
- // #   undef ENABLE_RGB_MATRIX_RAINBOW_PINWHEELS
- // #   undef ENABLE_RGB_MATRIX_RAINDROPS
- // #   undef ENABLE_RGB_MATRIX_JELLYBEAN_RAINDROPS
- #   undef ENABLE_RGB_MATRIX_TYPING_HEATMAP
- // #   undef ENABLE_RGB_MATRIX_DIGITAL_RAIN
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_SIMPLE
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_WIDE
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_CROSS
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_MULTICROSS
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_NEXUS
- // #   undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS
- // #   undef ENABLE_RGB_MATRIX_SPLASH
- // #   undef ENABLE_RGB_MATRIX_MULTISPLASH
- // #   undef ENABLE_RGB_MATRIX_SOLID_SPLASH
- // #   undef ENABLE_RGB_MATRIX_SOLID_MULTISPLASH
+// Alle Animationen aus keyboard.json wieder abschalten, siehe oben.
+#    undef ENABLE_RGB_MATRIX_ALPHAS_MODS
+#    undef ENABLE_RGB_MATRIX_BAND_PINWHEEL_SAT
+#    undef ENABLE_RGB_MATRIX_BAND_PINWHEEL_VAL
+#    undef ENABLE_RGB_MATRIX_BAND_SAT
+#    undef ENABLE_RGB_MATRIX_BAND_SPIRAL_SAT
+#    undef ENABLE_RGB_MATRIX_BAND_SPIRAL_VAL
+#    undef ENABLE_RGB_MATRIX_BAND_VAL
+#    undef ENABLE_RGB_MATRIX_BREATHING
+#    undef ENABLE_RGB_MATRIX_CYCLE_ALL
+#    undef ENABLE_RGB_MATRIX_CYCLE_LEFT_RIGHT
+#    undef ENABLE_RGB_MATRIX_CYCLE_OUT_IN
+#    undef ENABLE_RGB_MATRIX_CYCLE_OUT_IN_DUAL
+#    undef ENABLE_RGB_MATRIX_CYCLE_PINWHEEL
+#    undef ENABLE_RGB_MATRIX_CYCLE_SPIRAL
+#    undef ENABLE_RGB_MATRIX_CYCLE_UP_DOWN
+#    undef ENABLE_RGB_MATRIX_DUAL_BEACON
+#    undef ENABLE_RGB_MATRIX_GRADIENT_LEFT_RIGHT
+#    undef ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN
+#    undef ENABLE_RGB_MATRIX_HUE_BREATHING
+#    undef ENABLE_RGB_MATRIX_HUE_PENDULUM
+#    undef ENABLE_RGB_MATRIX_HUE_WAVE
+#    undef ENABLE_RGB_MATRIX_JELLYBEAN_RAINDROPS
+#    undef ENABLE_RGB_MATRIX_PIXEL_FLOW
+#    undef ENABLE_RGB_MATRIX_PIXEL_FRACTAL
+#    undef ENABLE_RGB_MATRIX_PIXEL_RAIN
+#    undef ENABLE_RGB_MATRIX_RAINBOW_BEACON
+#    undef ENABLE_RGB_MATRIX_RAINBOW_MOVING_CHEVRON
+#    undef ENABLE_RGB_MATRIX_RAINBOW_PINWHEELS
+#    undef ENABLE_RGB_MATRIX_RAINDROPS
 #endif
