@@ -109,4 +109,21 @@ enum CustomKeys {
 #define CTL_SPC  LCTL_T(KC_SPC)
 #define RALT_AP  RALT_T(KC_APP)
 
-#define FN_EXIT      TO(QWERT)      // Turns off all layers, except the default
+/*
+Escape-Taste der Overlay-Layer (linke obere Ecke von SYM/NUM/NAV/ADJUST).
+
+ACHTUNG, hier stand frueher TO(QWERT): `QWERT` ist der *Custom-Keycode* aus
+enum CustomKeys (SAFE_RANGE+3 = 0x7E43), nicht der Layer-Index. TO() maskiert
+mit & 0x1F -> TO(3) -> Layer _MINE. Die Taste sprang also auf MINE statt
+aufzuraeumen. Richtig ist der Layer _QWERT.
+
+Semantik in QMK: TO(_QWERT) = layer_move(0), loescht also alle momentanen und
+getoggelten Layer (auch _MAC). Das gewaehlte Basis-Layout bleibt erhalten,
+weil QMK default_layer_state getrennt fuehrt und jedes Basis-Layout einen
+Index >= 0 hat -- Layer 0 liegt dann nur wirkungslos darunter.
+
+Das gilt NICHT fuer _GAMING: das wird per DF(_GAMING) als *Default*-Layer
+betreten und liegt damit ueber Layer 0. GAMING braucht deshalb D_QWERT
+(bzw. spaeter ein DF_PREV) als Ausstieg, nicht FN_EXIT.
+*/
+#define FN_EXIT      TO(_QWERT)

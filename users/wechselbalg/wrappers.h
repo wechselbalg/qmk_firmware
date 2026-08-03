@@ -98,13 +98,17 @@ NOTE: These are all the same length.  If you do a search/replace
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
 // | F1  | F2  | F3  | F4  | F5  |   | F6  | F7  | F8  | F9  | F10 |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, CTL_ENT, SFT_SPC, NUM_ENT
+// Der Ctrl-Daumen ist bewusst KEIN Mod-Tap mehr (war CTL_ENT): Enter sitzt
+// seit der Thumb-Umstellung auf NUM_ENT, und der Mod-Tap produzierte beim
+// Halten von Ctrl Streu-Enter. Ctrl+Enter / Shift+Enter sind jetzt reine
+// Daumen-Chords auf derselben Hand (uebernommen aus KMK, dort hardware-getestet).
+#define ____________5_THUMBS_L______________  KC_LGUI, KC_LALT, KC_LCTL, SFT_SPC, NUM_ENT
 #define ____________5_THUMBS_R______________  NAV_BSC, RFT_SPC, KC_RCTL, RALT_PR, KC_RGUI
 #define ________________________________________7_THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_SPC, MO__NAV, MO__NUM, KC_RCTL
 
 // Mac-Varianten der Daumenreihen fuer den _MAC-Overlay-Layer:
 // Cmd (GUI) und Opt (Alt) tauschen die Plaetze, Layer-Taps bleiben identisch.
-#define ________5_MAC_THUMBS_L______________  KC_LALT, KC_LGUI, CTL_ENT, SFT_SPC, NUM_ENT
+#define ________5_MAC_THUMBS_L______________  KC_LALT, KC_LGUI, KC_LCTL, SFT_SPC, NUM_ENT
 #define ________5_MAC_THUMBS_R______________  NAV_BSC, RFT_SPC, KC_RCTL, KC_RGUI, RALT_PR
 #define ____________________________________7_THUMBS_MAC_____________________________________  KC_LCTL, KC_LALT, KC_LGUI, NAV_SPC, MO__NAV, MO__NUM, KC_RCTL
 

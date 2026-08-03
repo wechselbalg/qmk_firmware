@@ -62,7 +62,9 @@
 #define CUSTOM_LAYER_READ //if you remove this it causes issues - needs better guarding
 
 // Used for tapping in keymap
-#define TAPPING_FORCE_HOLD
+// (TAPPING_FORCE_HOLD entfernt: existiert seit QMK 2023-02 nicht mehr, war
+//  also ein wirkungsloser Define -- und stand inhaltlich im Widerspruch zum
+//  QUICK_TAP_TERM 80 aus users/wechselbalg/config.h, das es abgeloest hat.)
 #define TAPPING_TOGGLE 3
 #define TAP_CODE_DELAY 10
 

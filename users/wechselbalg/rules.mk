@@ -4,7 +4,11 @@ SRC += wechselbalg.c
 # ENCODER_ENABLE = no
 ENCODER_MAP_ENABLE = no
 EXTRAKEY_ENABLE = yes
-MOUSEKEY_ENABLE = no
+# Mouse Keys wieder an: der Grund fuer die Abschaltung (macOS deaktivierte bei
+# angeschlossener Maus das Touchpad) ist per macOS-Einstellung erledigt. Ohne
+# das waren im _NAV-Layer die komplette rechte Daumenreihe und drei Tasten in
+# Reihe 3 stumm -- ohne Compile-Fehler.
+MOUSEKEY_ENABLE = yes
 NKRO_ENABLE = yes
 CONSOLE_ENABLE = no
 COMMAND_ENABLE = no

@@ -313,7 +313,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 [_GAMING] = LAYOUT_wrapper(
     //,-----------------------------------------------------.     ,-----------------------------------------------------.
-      KC_ESC , _________5_NUMBERS_L______________,                          _______________5_NUMBERS_R________, FN_EXIT,
+      // GAMING wird per DF(_GAMING) als Default-Layer betreten, liegt also
+      // ueber Layer 0 -- FN_EXIT (= TO(_QWERT)) kommt hier nicht raus und war
+      // wirkungslos. D_QWERT setzt das Basis-Layout zurueck. TODO: durch ein
+      // DF_PREV ersetzen, das das *vorherige* Layout wiederherstellt (KMK: KC.DF_PREV).
+      KC_ESC , _________5_NUMBERS_L______________,                          _______________5_NUMBERS_R________, D_QWERT,
       _________________GAMING_L1_________________,                          _________________GAMING_R1_________________,
       _________________GAMING_L2_________________,                          _________________GAMING_R2_________________,
       _________________GAMING_L3_________________, KC_MUTE,        KC_MPLY, _________________GAMING_R3_________________,
@@ -404,7 +408,7 @@ const rgblight_segment_t* const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
 );
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    state = update_tri_layer_state(state, _NAV, _NUM, _ADJUST);
+    state = update_tri_layer_state(state, _NUM, _NAV, _ADJUST);
 	rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULTS)); //  && layer_state_cmp(default_layer_state,_QWERT))
 
 	rgblight_set_layer_state(1, layer_state_cmp(state, _SYM));
@@ -416,14 +420,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
     return state;
 }
-void keyboard_post_init_user(void) {
-    // Enable the LED layers
-    rgblight_layers = my_rgb_layers;
-
-	rgblight_mode(10);// haven't found a way to set this in a more useful way
-
-}
-
 #else
 
 layer_state_t layer_state_set_user(layer_state_t state) {
@@ -431,6 +427,31 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 }
 
 #endif
+
+void keyboard_post_init_user(void) {
+#ifdef CONVERT_TO_LIATRIS
+    /*
+    Liatris: die gruene Power-LED an GP24 ist invertiert (HIGH = aus) und
+    leuchtet undriven auf voller Helligkeit -- also beim Boot aktiv abschalten.
+    Muss auf beiden Haelften passieren, keyboard_post_init_user() laeuft dort.
+
+    Numerisch statt GP24: CONVERT_TO=liatris zieht das Pro-Micro-Pinmapping
+    (promicro_to_rp2040_ce/_pin_defs.h) heran, das die GPxx-Namen des RP2040
+    ersetzt -- GP24 ist dort schlicht nicht definiert. Auf RP2040 ist der
+    Pin-Bezeichner ohnehin die GPIO-Nummer.
+    */
+#    define LIATRIS_POWER_LED_PIN 24U
+    gpio_set_pin_output(LIATRIS_POWER_LED_PIN);
+    gpio_write_pin_high(LIATRIS_POWER_LED_PIN);
+#endif
+
+#ifdef RGBLIGHT_ENABLE
+    // Enable the LED layers
+    rgblight_layers = my_rgb_layers;
+
+    rgblight_mode(10);// haven't found a way to set this in a more useful way
+#endif
+}
 
 #ifdef OLED_ENABLE
 

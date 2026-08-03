@@ -128,8 +128,8 @@ gepflegt werden:
   - `_NAV`-Layer: reine Enter-Taste an der bisher freien Stelle direkt links
     neben der Shift-Position (unterste Reihe, vorletzte rechte Spalte) hinzugefügt.
     (`_NUM`-Layer an der gleichen Stelle bleibt unverändert bei `;`.)
-  - Mouse Keys global deaktiviert (`MOUSEKEY_ENABLE = no` in `users/wechselbalg/rules.mk`)
-    — kollidierten am Mac mit dem Touchpad.
+  - Mouse Keys waren zwischenzeitlich global deaktiviert (Touchpad-Konflikt am Mac);
+    seit 2026-08-04 wieder `MOUSEKEY_ENABLE = yes`, siehe „KMK→QMK-Angleichung" unten.
   - **Wichtig**: die zwei Hälften haben unterschiedliche Controller/Bootloader:
     rechte Hälfte = Elite-C (Atmel-DFU, `make sofle_choc:wechselbalg:dfu`),
     linke Hälfte = Standard-Arduino-Pro-Micro (Caterina/seriell,
@@ -166,6 +166,182 @@ gepflegt werden:
   → hat daher noch **keinen** `_MAC`-Layer. Nächster natürlicher Schritt.
 - K3-Pro-Varianten ansi/jis/white bleiben ungebaut (alte LED-Tabellen-Makros).
 - Idee: Mac-Variante des `_NAV`-Layers (Wort-Sprünge Opt+Pfeil statt Ctrl+Pfeil).
-- Anderen Wrapper-Keymaps (Kyria, GMMK Pro, K3 Pro) fehlt noch der Test, ob die
-  globale Mouse-Keys-Deaktivierung dort Layer-Belegungen (`MS_*` im `_NAV`-Layer)
-  stumm werden lässt (keine Compile-Fehler, aber Tasten tun dann nichts mehr).
+  Wird durch C1 (Ctrl⇄GUI-Swap) **wichtiger**, nicht überflüssig — siehe dort.
+
+---
+
+# KMK→QMK-Angleichung (laufend, Stand 2026-08-04)
+
+Parallel läuft unter `/Users/mike/dev/kmkfw` ein KMK-Port derselben Sofle Choc
+(schwarz/Liatris). Dort sind seit Juli 2026 etliche Funktions- und
+Belegungsänderungen entstanden, die hier nachgezogen werden sollen. Maßgeblich
+ist dort der **Haupt-Worktree `kmkfw`** (`kmkfw-rebuild` ist ein Worktree
+desselben Repos und hängt hinterher). KMKs eigene `CLAUDE.md` ist die
+ausführliche Quelle für die Begründungen.
+
+**Diese Liste bis zur vollständigen Abarbeitung pflegen.**
+
+## Erledigt (2026-08-04, Schritt 1 — Bugfixes + entschiedene Kleinigkeiten)
+
+- **`FN_EXIT` sprang auf `_MINE`.** `#define FN_EXIT TO(QWERT)` benutzte den
+  *Custom-Keycode* `QWERT` aus `enum CustomKeys` (`SAFE_RANGE+3` = `0x7E43`)
+  statt des Layer-Index. `TO()` maskiert mit `& 0x1F` → `TO(3)` = `_MINE`.
+  Betraf die linke obere Ecke von SYM/NUM/NAV/ADJUST auf allen Boards.
+  Jetzt `TO(_QWERT)`.
+  **Merke:** QMK führt `default_layer_state` getrennt von `layer_state`, deshalb
+  räumt `TO(_QWERT)` nur die momentanen/getoggelten Layer weg (auch `_MAC`) und
+  lässt das gewählte Basis-Layout stehen — Layer 0 liegt dann wirkungslos
+  darunter. Das ist nah genug an KMKs `KC.LCLR`, ein eigener Keycode ist nicht nötig.
+- **GAMING-Ausstieg war wirkungslos.** `_GAMING` wird per `DF(_GAMING)` als
+  *Default*-Layer betreten und liegt damit über Layer 0 — `FN_EXIT` kam da nicht
+  raus. Jetzt `D_QWERT` (sofle_choc, sofle/rev1, kyria). Offen: `DF_PREV`, siehe C6.
+- **Linker Ctrl-Daumen: `CTL_ENT` → `KC_LCTL`** (auch in der `_MAC`-Variante).
+  Letzter offener Teil der Thumb-Umstellung; KMK hat das am 2026-07-31 gemacht
+  (Commit `fd73595`), weil der Mod-Tap beim Halten von Ctrl Streu-Enter erzeugte.
+  Enter sitzt auf `NUM_ENT`, Ctrl+Enter/Shift+Enter sind jetzt Daumen-Chords.
+- **`MOUSEKEY_ENABLE = yes`** (war `no`). Grund für die Abschaltung war der
+  macOS-Touchpad-Konflikt, den Michael inzwischen per Systemeinstellung gelöst
+  hat. Vorher waren im `_NAV`-Layer die komplette rechte Daumenreihe
+  (`MS_BTN2/BTN1/LEFT/DOWN/RGHT`) und drei Tasten in Reihe 3 stumm.
+- **Liatris-Power-LED (GP24) wird beim Boot ausgeschaltet.** Invertiert
+  (HIGH = aus), leuchtet undriven auf voller Helligkeit. In
+  `keyboard_post_init_user()` hinter `#ifdef CONVERT_TO_LIATRIS`; **numerisch
+  `24U` statt `GP24`**, weil `CONVERT_TO=liatris` das Pro-Micro-Pinmapping
+  (`promicro_to_rp2040_ce/_pin_defs.h`) einzieht und die `GPxx`-Namen dort
+  nicht existieren. Dafür wanderte `keyboard_post_init_user()` aus dem
+  `#ifdef RGBLIGHT_ENABLE`-Block heraus.
+- **`TAPPING_FORCE_HOLD` entfernt** (sofle_choc keymap config.h): existiert seit
+  QMK 2023-02 nicht mehr, war wirkungslos und widersprach dem `QUICK_TAP_TERM 80`
+  aus `users/wechselbalg/config.h`, das es abgelöst hat.
+- Tri-Layer-Argumentreihenfolge in beiden `#ifdef`-Zweigen vereinheitlicht (kosmetisch).
+- Alle 6 Boards + der Liatris-Build kompilieren. AVR-Flash danach: sofle_choc 96 %,
+  sofle/rev1 96 %, kyria 92 %, lotus58 95 %.
+
+## Schritt 2 — Tippgefühl (Details noch offen, zusammen zu bewerten)
+
+KMK hat `TAP_TIME` von 600 auf **150 ms** gesenkt und das durch zwei Mechanismen
+abgesichert. Die drei Punkte hängen zusammen und ergeben nur gemeinsam Sinn:
+
+- **B1 `TAPPING_TERM` 600 → 150** (`users/wechselbalg/config.h`).
+- **B2 `CHORDAL_HOLD`** + `chordal_hold_layout[][]` im Keymap. Regel: wird
+  innerhalb des Tapping-Terms eine zweite Taste **derselben Hand** gedrückt,
+  gilt der Tap-Hold sofort als *getippt*. Gegenhand → fällt auf das bereits
+  aktive `PERMISSIVE_HOLD` zurück.
+  **Kritisch: die Daumenreihe muss mit `'*'` ausgenommen werden.** KMK hat genau
+  das auf Hardware falsch gehabt: NUM-Daumen halten + linke NUM-Taste drücken
+  ergab Del + Basis-Layer-Buchstabe statt der NUM-Belegung.
+  QMK-Vorteil gegenüber KMK: `chordal_hold_layout` wird mit dem **`LAYOUT`-Makro
+  des Boards** geschrieben, also in *visueller* Reihenfolge — genau der
+  Indexfehler, den KMK dort hatte (KMKs Tabelle ist nach Matrix-Koordinate
+  indiziert), kann hier nicht passieren.
+- **B3 `RETRO_TAPPING`.** KMKs `retro_tap_timeout` (1000 ms für Layer-Taps,
+  500 ms für Mod-Taps) hat QMK **nicht**. Der Grund für das kurze Mod-Tap-Fenster
+  gilt in QMK genauso: ein Klick mit einer *echten* Maus erreicht die Firmware
+  nicht, also zählt er nicht als „Hold benutzt" — Shift+Klick würde beim Loslassen
+  ein Leerzeichen nachschieben, Alt+Klick ein PrintScreen aus `RALT_PR`.
+  Drei Wege, siehe Diskussion:
+  1. `RETRO_TAPPING_PER_KEY` + `get_retro_tapping()` nur für Layer-Taps
+     (`IS_QK_LAYER_TAP`) → Problem verschwindet ganz, aber die Space/Shift-Daumen
+     verlieren den Retro-Tap.
+  2. Zusätzlich ein Zeitfenster für Mod-Taps selbst bauen: `get_retro_tapping()`
+     wird beim **Release** ausgewertet (`quantum/action.c:872`), Press-Zeitpunkt
+     also selbst mitschreiben → ~15 Zeilen, KMK-Parität.
+  3. Gar kein Retro-Tapping (heutiger Zustand).
+  Falls Retro-Tapping auf Mod-Taps bleibt: `DUMMY_MOD_NEUTRALIZER_KEYCODE`
+  einplanen, sonst löst ein Retro-Tap auf GUI/Alt Menüs am Host aus.
+- QMK-eigene Optionen, die es in KMK nicht gibt und die hier evtl. besser passen:
+  `FLOW_TAP_TERM` (Tap-Hold während schnellem Tippen abschalten) und
+  `SPECULATIVE_HOLD` (Modifier sofort beim Keydown setzen — hilft gegen die
+  Trägheit bei Shift+Klick, ändert die Tap/Hold-Entscheidung aber nicht).
+
+## Schritt 3 — Feature-Entscheidungen
+
+- **C1 Mac-Umschaltung: `_MAC`-Layer → Magic-Keycode.** ⚠️ Entscheidung offen.
+  Der heutige `_MAC`-Layer tauscht **GUI⇄Alt** und nur auf der Daumenreihe;
+  er erwischt weder `NX_COPY`/`NX_PAST`/`NX__CUT`/`N3_UNDO` (`LCTL(x)`) noch die
+  Modifier-Homerow im `_NAV`-Layer, und ist nicht persistent.
+  QMK-Core kann das vollständig: `keycode_config()`/`mod_config()` werden in
+  `quantum/keymap_common.c` beim Auflösen jeder Taste angewandt und decken damit
+  **einfache Modifier, Mod-Taps *und* `LCTL(KC_C)`-artige Kombis** ab — genau die
+  drei Fälle, die KMKs `cg_swap.py` nennt. Persistenz im EEPROM inklusive.
+  - `CG_TOGG` (Ctrl⇄GUI) = KMKs Wahl: derselbe Daumen ist auf beiden Hosts
+    „die Befehlstaste", Copy/Paste/Undo im NAV-Layer werden automatisch richtig.
+  - `AG_TOGG` (Alt⇄GUI) = das, was der heutige `_MAC`-Layer tut.
+  - **Empfehlung: `CG_TOGG`.**
+  - **Nicht abgedeckt:** `SEND_STRING(SS_LCTL(...))`, also `FF_WORD`/`RV_WORD` —
+    die laufen am Keymap vorbei. Und Wort-/Zeilennavigation ist am Mac ohnehin
+    ein anderer Modifier (Opt/Cmd+Pfeil) → braucht weiterhin eine Mac-Variante
+    des `_NAV`-Layers, siehe „Offen" oben.
+  - **Blocker/Kosten:** braucht `MAGIC_ENABLE = yes`. **Gemessen 2026-08-04:
+    global in `users/wechselbalg/rules.mk` geht nicht — sofle/rev1 läuft über den
+    AVR-Flash (Build-Abbruch), sofle_choc-AVR landet bei 99 % / 88 Bytes frei.**
+    Also nur board-weise aktivieren (Liatris/RP2040 und die STM32-Boards).
+    Nebeneffekt: `NK_TOGG` im ADJUST-Layer ist ohne `MAGIC_ENABLE` ebenfalls tot.
+- **C2 Caps Word per Shift+Shift** (`COMBO_ENABLE`). KMK: Timeout 150 ms statt 50,
+  weil der Split-Link Latenz addiert und jede Hälfte gegen ihre eigene Sicht timet.
+- **C4 Mouse Jiggler.** `A_MSJIG` ist im ADJUST-Layer verdrahtet, hat aber
+  **nirgends einen Handler** — die Taste tut nichts. KMK: 5 s Takt, 1 px,
+  Richtung alternierend (sonst driftet der Zeiger über den Tag).
+- **C6 `DF_PREV`** — zurück zum *vorherigen* Basis-Layout statt hart QWERT
+  (GAMING-Ausstieg, siehe Schritt 1). In QMK selbst zu bauen.
+- **C7 Encoder auf `_ADJUST` = RGB-Helligkeit.** `encoder_update_user()` hat
+  keinen `_ADJUST`-Fall, fällt auf PgUp/PgDn + Volume zurück. KMK gibt beiden
+  Encodern dort die Helligkeit, weil Seiten/Lautstärke auf jedem anderen Layer
+  erreichbar sind.
+- **C8 Per-Key-RGB-Farbsprache** (eigenes, größeres Paket). KMK leitet alle
+  LED-Farben aus dem Keymap ab: Modifier-Farben (GUI blau / Alt orange /
+  Ctrl magenta / Shift gelb, Mischfarbe bei Shift+Ctrl), jede Taste die einen
+  Layer *erreicht* trägt dessen Farbe dauerhaft, Tri-Layer-Hinweis (NUM-Taste
+  wird rot solange NAV gehalten wird), `KC_NO` → aus, Zustandsfarben für
+  Layer-Lock/Caps-Word/Jiggler/Mac, Maus-Block neutralgrau.
+  QMK-Seite: `keyboards/sofle_choc/keyboard.json` hat eine vollständige
+  `rgb_matrix`-Definition mit 58 Per-Key-LEDs; der Keymap nutzt aber
+  `RGBLIGHT` mit handgepflegten LED-Index-Makros. Umsetzung über
+  `rgb_matrix_indicators_advanced_user()`, Umstellung RGBLIGHT→RGB Matrix nötig.
+  Sinnvoll in Stufen (erst „tote Tasten dunkel" + Modifier-Farben).
+- **C-Status-LED.** Liatris hat eine eigene WS2812 an **GP25** (KMK zeigt dort
+  Layer-Farbe / Caps Word / Jiggler / Mac-Modus). ⚠️ Technische Hürde: QMKs
+  WS2812-Treiber kennt genau **eine** Kette (`WS2812_DI_PIN`), und GP0 ist schon
+  von der Per-Key-Kette belegt. Braucht also entweder eine zweite PIO-Instanz
+  oder einen kleinen eigenen Treiber → eigenes Arbeitspaket, vor der Umsetzung
+  Machbarkeit klären.
+
+## Zuletzt: OLED (bewusst als letzter Punkt)
+
+Die OLEDs sollen auf dem schwarzen Board wieder laufen (`OLED_ENABLE = yes` ist
+gesetzt, die `oled_task_user()`-Anzeige inkl. Layer-Namen existiert schon).
+**Blocker: sobald das OLED aufgesteckt ist, kommt Michael am Liatris nicht mehr
+an den BOOT-Taster** — und ohne BOOT-Taster kein UF2-Flash. Vor dem OLED-Paket
+muss dafür eine Lösung stehen, z. B.:
+- `QK_BOOT` ist im ADJUST-Layer bereits belegt (linke Hälfte, Reihe 3 innen) —
+  reicht, solange die Firmware bootet und der Layer erreichbar ist; hilft aber
+  nicht bei einer kaputt geflashten Firmware.
+- Doppelter Reset-Tap / `RP2040_BOOTLOADER_DOUBLE_TAP_RESET` als zweiter Weg.
+- Reset-/BOOT-Taster nach außen verlängern, oder das OLED steckbar/geklappt montieren.
+
+## Ausdrücklich NICHT übertragen
+
+- Reduktion auf zwei Basis-Layouts (`ACTIVE_CANDIDATE`) — reine KMK-RAM-Not.
+- Split-Link-Arbeit (CRC-8, State-Beacon, 115200 Baud, `LINK_STATS`,
+  4-Byte-Frame-Limit) — löst Probleme, die QMKs Transport nicht hat.
+- USB-Lockdown, `boot.py`, NVM-Bootlog, Dead-Boot-Diagnose — CircuitPython-spezifisch.
+- `.mpy`/Firmware-Freeze/Fragmentierung — CircuitPython-spezifisch.
+- Encoder-Richtung rechts: KMK musste das per Koordinaten-Swap korrigieren,
+  `keyboards/sofle_choc/keyboard.json` dreht `pin_a`/`pin_b` für die rechte
+  Hälfte bereits selbst.
+- `KC.PDF` (persistentes Default-Layout) — QMK hat das Äquivalent
+  (`set_single_persistent_default_layer`) längst im ADJUST-Grid.
+- **KMK hinkt an drei Stellen hinterher**, das ist *kein* Portierungsbedarf:
+  NUM linke Innenspalte (`REDO/UNDO/ENT` statt `CUT/COPY/PASTE`), NAV Zeile 0
+  (drei `KC.NO`) und NAV r1 (`NO` statt `NX__CUT`, `CUT` statt `NX_FIND`).
+  Der KMK-Port übernahm einen Stand von vor QMK-Commit `96cc9e7c31` (2025-01-30).
+  Ggf. umgekehrt nach KMK zurückportieren.
+
+## Aufräum-Reste (klein, unkritisch)
+
+- `enum CustomKeys` enthält Leichen: `RN_STEM`, `RN_CODE`, `KC_D_MUTE` unbenutzt.
+  **Achtung:** Entfernen von `RN_STEM`/`RN_CODE` verschiebt alle folgenden Werte —
+  das war die Ursache des `FN_EXIT`-Bugs. Erst nach dessen Fix aufräumen (erledigt),
+  aber trotzdem prüfen, ob noch irgendwo ein Custom-Keycode als Layer-Index missbraucht wird.
+- `#define SFT_NUM LSFT_T(NUM)` (`wechselbalg.h`) ist derselbe Fehlertyp
+  (Custom-Keycode als Argument), aber unbenutzt.
