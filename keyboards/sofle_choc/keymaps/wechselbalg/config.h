@@ -22,13 +22,40 @@
 ///https://thomasbaart.nl/2018/12/01/reducing-firmware-size-in-qmk/
 
 
-// #define MASTER_LEFT
-#define MASTER_RIGHT
-// #define EE_HANDS
+#ifdef CONVERT_TO_LIATRIS
+    // Liatris-Build (RP2040): beide Haelften koennen Master sein, je nachdem
+    // welche Seite gerade per USB verbunden ist.
+    #define SPLIT_USB_DETECT
 
-// Serial comms between halves. Change if using I2C
-#define USE_SERIAL
-#define SOFT_SERIAL_PIN D2
+    // Haendigkeit MUSS unabhaengig vom Master-Status feststehen, sonst denken
+    // ohne weitere Angabe beide Haelften "ich bin links" (QMK-Default) und die
+    // rechte Haelfte wird mit der falschen (linken) Pin-Belegung gelesen ->
+    // gespiegeltes Verhalten. Fix: Haendigkeit fest im EEPROM ablegen, dafuer
+    // jede Haelfte einmalig mit -bl uf2-split-left / uf2-split-right flashen.
+    #define EE_HANDS
+
+    // Zusaetzlicher Draht (Elite-C-Pin B7 = GP12) ueber den vierten TRRS-Kanal
+    // ermoeglicht echtes Full-Duplex-Serial statt Half-Duplex auf nur D2/GP1.
+    // keyboard.json setzt "split.serial.pin" (D2) global -> SOFT_SERIAL_PIN
+    // wuerde sonst mit unserem SERIAL_USART_TX_PIN kollidieren.
+    #undef SOFT_SERIAL_PIN
+    #define SERIAL_USART_FULL_DUPLEX
+    #define SERIAL_USART_TX_PIN 1U  // D2
+    #define SERIAL_USART_RX_PIN 12U // B7 (Elite-C-Pinname), zusaetzlicher Draht
+    // Verkabelung ist gerade durchverbunden (nicht gekreuzt) -> Master muss
+    // TX/RX intern tauschen, damit beide Seiten zueinander passen.
+    #define SERIAL_USART_PIN_SWAP
+    // WS2812 belegt auf RP2040 typischerweise PIO0 - Serial auf PIO1 ausweichen.
+    #define SERIAL_PIO_USE_PIO1
+#else
+    // #define MASTER_LEFT
+    #define MASTER_RIGHT
+    // #define EE_HANDS
+
+    // Serial comms between halves. Change if using I2C
+    #define USE_SERIAL
+    #define SOFT_SERIAL_PIN D2
+#endif
 
 #define CUSTOM_FONT
 
