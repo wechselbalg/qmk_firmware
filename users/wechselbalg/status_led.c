@@ -7,6 +7,10 @@
    wiederholen (Michael, 2026-08-04). Die Matrix sagt "wo bin ich", die
    Status-LED "was ist gerade an".
 
+   Ist nichts davon an und der Host ein PC, bleibt sie **aus**. Sie leuchtet
+   also nur, wenn es etwas zu sagen gibt -- das macht ihr Leuchten selbst zur
+   ersten Information.
+
    ---------------------------------------------------------------------------
    ## Warum hier ein eigener Treiber steht
 
@@ -73,19 +77,30 @@ auf keiner der beiden Seiten kontrollieren.
 /* ---- Stellschrauben ---------------------------------------------------- */
 
 /*
-Die blanke Platinen-LED hat keine Tastenkappe, die sie streut -- bei gleicher
-nomineller Helligkeit leuchtet sie deutlich greller als eine Per-Key-LED.
-Deshalb liegt sie einen Helligkeitsschritt unter dem Rest (aus KMK
-uebernommen: brightness_offset = -step) und die Ruhefarbe zusaetzlich noch
-einmal deutlich darunter -- sie soll ja nur mitteilen, dass alles normal ist.
+WB_STATUS_VAL_OFFSET -- Helligkeit relativ zur Tastenbeleuchtung, in denselben
+Einheiten wie rgb_matrix_get_val() (0..255). **Vorzeichenbehaftet**: negativ
+dunkler, positiv heller.
 
-Ueberschreibbar per OPT_DEFS in der Keymap-rules.mk.
+Die Platinen-LED ist ohne Abdeckung verbaut und hat damit nichts, was sie
+streut -- bei gleicher nomineller Helligkeit blendet sie, sobald die Tasten
+angenehm eingestellt sind (Hardware-Befund 2026-08-04, deshalb der deutlich
+negative Default). Ein einzelner Helligkeitsschritt, wie ihn KMK abzog, reicht
+dafuer nicht.
+
+Unter Null bleibt eine Reststufe stehen, damit ein dunkel gefahrenes Board die
+Zustandsanzeige nicht stillschweigend verliert. Wer die Matrix dauerhaft sehr
+dunkel faehrt, setzt den Offset entsprechend kleiner.
+
+WB_STATUS_IDLE_DIV -- der Mac-Hinweis zusaetzlich noch einmal geteilt. Er ist
+ein Dauerzustand und soll leiser sein als die Momentzustaende darueber.
+
+Beides ueberschreibbar per OPT_DEFS in der Keymap-rules.mk.
 */
 #    ifndef WB_STATUS_VAL_OFFSET
-#        define WB_STATUS_VAL_OFFSET RGB_MATRIX_VAL_STEP
+#        define WB_STATUS_VAL_OFFSET (-24)
 #    endif
 #    ifndef WB_STATUS_IDLE_DIV
-#        define WB_STATUS_IDLE_DIV 3
+#        define WB_STATUS_IDLE_DIV 2
 #    endif
 
 /*
@@ -113,9 +128,16 @@ typedef struct {
 #    define WB_SC_LAYER_LOCK WB_SC(  0, 255, 255)  // dasselbe Cyan wie die Taste
 #    define WB_SC_JIGGLER    WB_SC(170, 255,   0)
 
-// Ruhe: kein Zustand an -- dann sagt die LED, an welchem Host-Typ du sitzt.
-#    define WB_SC_MAC        WB_SC(  0, 120, 255)
-#    define WB_SC_PC         WB_SC(255, 200, 120)
+/*
+Ruhe: kein Zustand an. Dann leuchtet die LED nur noch, wenn der Mac-Modus an
+ist -- am PC ist sie aus (Michael, 2026-08-04).
+
+Damit ist "sie leuchtet ueberhaupt" schon die halbe Information, und das
+Board ist im Normalfall dunkel statt dauerhaft mit einem Punkt zu leuchten,
+der nichts sagt.
+*/
+#    define WB_SC_MAC WB_SC(0, 120, 255)
+#    define WB_SC_OFF WB_SC(0, 0, 0)
 
 /* ---- Statusflags, einmal fuer beide Haelften --------------------------- */
 
@@ -238,15 +260,21 @@ static wb_status_color_t wb_status_color(uint8_t flags, bool *is_idle) {
     if (flags & WB_STATUS_JIGGLER) return WB_SC_JIGGLER;
 
     *is_idle = true;
-    return (flags & WB_STATUS_MAC) ? WB_SC_MAC : WB_SC_PC;
+    return (flags & WB_STATUS_MAC) ? WB_SC_MAC : WB_SC_OFF;
 }
 
 static uint8_t wb_status_val(void) {
-    const uint8_t val = rgb_matrix_get_val();
     if (!rgb_matrix_is_enabled()) {
         return 0;  // RM_TOGG schaltet die Status-LED mit ab
     }
-    return (val > WB_STATUS_VAL_OFFSET) ? (uint8_t)(val - WB_STATUS_VAL_OFFSET) : 1;
+    const int16_t val = (int16_t)rgb_matrix_get_val() + (WB_STATUS_VAL_OFFSET);
+    if (val < 1) {
+        return 1;  // nie ganz weg, solange die Matrix an ist
+    }
+    if (val > UINT8_MAX) {
+        return UINT8_MAX;
+    }
+    return (uint8_t)val;
 }
 
 void wb_status_led_init(void) {

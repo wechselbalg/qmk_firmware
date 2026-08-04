@@ -741,7 +741,7 @@ Auf dem weißen Board läuft derselbe Code über `rgblight_*_noeeprom()`
 (32 Byte, danach noch 148 frei). sofle/rev1 und Kyria haben den Fall bewusst
 nicht — dort ist kein Platz bzw. kein Bedarf.
 
-### Status-LED (Liatris-NeoPixel GP25) — umgesetzt 2026-08-04, nicht getestet
+### Status-LED (Liatris-NeoPixel GP25) — umgesetzt und geprüft 2026-08-04
 
 Jede Liatris-Hälfte hat eine eigene WS2812 an GP25. Sie soll **die Zustände
 tragen, die nicht auf die Tastenmatrix sollen** (Caps Word, Layer Lock,
@@ -787,16 +787,24 @@ Makro-Namenskonflikt mit dem, was `quantum.h` an ChibiOS/rp2040.h hereinzieht
 | 1 | Caps Word | weiß |
 | 2 | Layer Lock | cyan (wie die Taste) |
 | 3 | Jiggler | gelbgrün |
-| 4 | Ruhe | Mac: azur · PC: schwaches Warmweiß |
+| 4 | Ruhe + Mac-Modus | azur |
+| 5 | Ruhe + PC | **aus** |
 
-Punkt 4 ist die eigentliche Idee: die LED wiederholt nicht den Layer, sondern
-sagt im Normalfall, an welchem Host-Typ man sitzt.
+Punkt 5 ist die eigentliche Idee (angepasst 2026-08-04 nach dem ersten
+Hardware-Eindruck): die LED leuchtet nur, wenn es etwas zu sagen gibt — damit
+ist ihr Leuchten selbst schon die erste Information, statt dass ein Punkt
+dauerhaft brennt und nichts mitteilt.
 
 **Helligkeit** hängt am selben Regler wie die Matrix (`rgb_matrix_get_val()`),
-liegt aber einen `RGB_MATRIX_VAL_STEP` darunter — die blanke Platinen-LED hat
-keine Tastenkappe, die sie streut. Die Ruhefarbe zusätzlich noch einmal auf
-ein Drittel. `RM_TOGG` schaltet sie mit ab. Beide Faktoren per
-`WB_STATUS_VAL_OFFSET` / `WB_STATUS_IDLE_DIV` überschreibbar.
+mit einem **vorzeichenbehafteten** Offset darauf: `WB_STATUS_VAL_OFFSET`,
+negativ = dunkler, positiv = heller, Default **−24**. Die Platinen-LED ist
+ohne Abdeckung verbaut und blendet bei gleicher nomineller Helligkeit, sobald
+die Tasten angenehm eingestellt sind — ein einzelner Helligkeitsschritt, wie
+KMK ihn abzog, reicht dafür nicht (Hardware-Befund 2026-08-04). Unter Null
+bleibt eine Reststufe stehen, damit ein dunkel gefahrenes Board die Anzeige
+nicht stillschweigend verliert. Der Mac-Hinweis zusätzlich geteilt durch
+`WB_STATUS_IDLE_DIV` (Default 2), weil er ein Dauerzustand ist. `RM_TOGG`
+schaltet alles mit ab.
 
 **Split:** eine eigene Transaktion (`SPLIT_TRANSACTION_IDS_USER WB_SYNC_STATUS`,
 in der Keymap-`config.h`) mit **einem Byte Statusflags**. Geht nur bei
@@ -805,10 +813,11 @@ in der Keymap-`config.h`) mit **einem Byte Statusflags**. Geht nur bei
 sich über den `layer_lock_set_user()`-Hook, statt `is_layer_locked()` je Layer
 abzufragen.
 
-**Noch nicht auf Hardware getestet** — das ist der Punkt, an dem sich zeigt,
-ob die zweite PIO-State-Machine wirklich zu haben ist. Leuchtet gar nichts:
-zuerst prüfen, ob `wb_status_sm` negativ bleibt (dann ist keine SM frei),
-danach die Byte-Reihenfolge (GRB) und den Pin.
+**Auf Hardware bestätigt (2026-08-04): die zweite PIO0-State-Machine ist zu
+haben und die LED leuchtet.** Damit ist der einzige Punkt geklärt, der sich
+nicht am Schreibtisch belegen ließ. Falls das nach einem Upstream-Merge je
+kippt: zuerst prüfen, ob `wb_status_sm` negativ bleibt (dann ist keine SM
+frei), danach Byte-Reihenfolge (GRB) und Pin.
 
 ## Zuletzt: OLED (bewusst als letzter Punkt)
 
