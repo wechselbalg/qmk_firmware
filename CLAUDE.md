@@ -551,12 +551,15 @@ Liatris-Build kompilieren.
 
 ## Reihenfolge für die nächste Session (Stand 2026-08-04)
 
-1. **Status-LED auf Hardware prüfen** — der einzige Punkt, der noch nie an
-   einem Board war. Leuchtet sie, ist die KMK-Angleichung inhaltlich durch.
-2. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen; bei
-   versehentlichen Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD`
-   dokumentiert bereit (siehe unten).
-3. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
+**Die KMK→QMK-Angleichung ist inhaltlich durch.** C1–C8, C7 und die Status-LED
+sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
+inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
+
+1. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
+   Punkt, der sich nur über längere Benutzung zeigt. Bei versehentlichen
+   Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD` dokumentiert bereit
+   (siehe unten).
+2. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
 
 Offen als *Entscheidung*, nicht als Arbeit: ob die Shift+Shift-Geste bei
 „beide halten" bleibt oder den Combo-Weg bekommt (siehe oben).
@@ -818,7 +821,7 @@ relativ zur Tastenbeleuchtung aus:
 | positiv | eine Stufe **später** — bleibt an, wenn die Tasten schon dunkel sind |
 
 Mit den Defaults (Step 8, Offset −24) ergibt das: Matrix 40 → 16, 32 → 8,
-24 → 8, 16 → 8, 8 → aus. Der Mac-Hinweis zusätzlich geteilt durch
+24 → 8, 16 → 8, 8 → aus. **Am Board bestätigt (2026-08-04).** Der Mac-Hinweis zusätzlich geteilt durch
 `WB_STATUS_IDLE_DIV` (Default 2), aber ebenfalls nicht unter
 `WB_STATUS_MIN_VAL` — sonst wäre ausgerechnet er als erstes unsichtbar.
 
