@@ -87,17 +87,32 @@ angenehm eingestellt sind (Hardware-Befund 2026-08-04, deshalb der deutlich
 negative Default). Ein einzelner Helligkeitsschritt, wie ihn KMK abzog, reicht
 dafuer nicht.
 
-Unter Null bleibt eine Reststufe stehen, damit ein dunkel gefahrenes Board die
-Zustandsanzeige nicht stillschweigend verliert. Wer die Matrix dauerhaft sehr
-dunkel faehrt, setzt den Offset entsprechend kleiner.
+**Der Offset verschiebt die Helligkeit, nicht den Abschaltpunkt.** Ein reiner
+Abzug hat den Fehler, den auch der KMK-Port hat: bei -24 waere die LED schon
+dunkel, wenn die Matrix noch drei Stufen vor sich hat -- man dimmt die Tasten
+angenehm und die Zustandsanzeige ist unbemerkt weg. Deshalb faellt sie beim
+Dimmen nur bis WB_STATUS_MIN_VAL, bleibt dort stehen und geht erst aus, wenn
+auch die Tastenbeleuchtung so gut wie aus ist:
+
+  negativer Offset  eine Helligkeitsstufe VOR den Tasten
+  Offset 0          gleichzeitig mit den Tasten
+  positiver Offset  eine Stufe SPAETER, bleibt also an, wenn die Tasten
+                    schon dunkel sind
+
+WB_STATUS_MIN_VAL -- die unterste noch sichtbare Stufe, per Default genau ein
+RGB_MATRIX_VAL_STEP.
 
 WB_STATUS_IDLE_DIV -- der Mac-Hinweis zusaetzlich noch einmal geteilt. Er ist
-ein Dauerzustand und soll leiser sein als die Momentzustaende darueber.
+ein Dauerzustand und soll leiser sein als die Momentzustaende darueber; unter
+WB_STATUS_MIN_VAL faellt aber auch er nicht.
 
-Beides ueberschreibbar per OPT_DEFS in der Keymap-rules.mk.
+Alles ueberschreibbar per OPT_DEFS in der Keymap-rules.mk.
 */
 #    ifndef WB_STATUS_VAL_OFFSET
 #        define WB_STATUS_VAL_OFFSET (-24)
+#    endif
+#    ifndef WB_STATUS_MIN_VAL
+#        define WB_STATUS_MIN_VAL RGB_MATRIX_VAL_STEP
 #    endif
 #    ifndef WB_STATUS_IDLE_DIV
 #        define WB_STATUS_IDLE_DIV 2
@@ -263,13 +278,33 @@ static wb_status_color_t wb_status_color(uint8_t flags, bool *is_idle) {
     return (flags & WB_STATUS_MAC) ? WB_SC_MAC : WB_SC_OFF;
 }
 
+/*
+Der Abschaltpunkt, gemessen an der Tastenbeleuchtung: bis zu welchem
+Matrix-Wert einschliesslich die Status-LED aus bleibt. Die Matrix selbst ist
+bei 0 dunkel (rgb_matrix_decrease_val saettigt dort), eine Stufe davor ist
+also RGB_MATRIX_VAL_STEP.
+*/
+#    if (WB_STATUS_VAL_OFFSET) < 0
+#        define WB_STATUS_OFF_AT RGB_MATRIX_VAL_STEP  // eine Stufe vor den Tasten
+#    elif (WB_STATUS_VAL_OFFSET) > 0
+#        define WB_STATUS_OFF_AT -1  // nie -- bleibt an, wenn die Tasten dunkel sind
+#    else
+#        define WB_STATUS_OFF_AT 0  // gleichzeitig mit den Tasten
+#    endif
+
 static uint8_t wb_status_val(void) {
     if (!rgb_matrix_is_enabled()) {
         return 0;  // RM_TOGG schaltet die Status-LED mit ab
     }
-    const int16_t val = (int16_t)rgb_matrix_get_val() + (WB_STATUS_VAL_OFFSET);
-    if (val < 1) {
-        return 1;  // nie ganz weg, solange die Matrix an ist
+
+    const int16_t matrix = (int16_t)rgb_matrix_get_val();
+    if (matrix <= (WB_STATUS_OFF_AT)) {
+        return 0;
+    }
+
+    const int16_t val = matrix + (WB_STATUS_VAL_OFFSET);
+    if (val < (WB_STATUS_MIN_VAL)) {
+        return WB_STATUS_MIN_VAL;  // ab hier mitdimmen, aber nicht verschwinden
     }
     if (val > UINT8_MAX) {
         return UINT8_MAX;
@@ -313,7 +348,13 @@ void wb_status_led_task(void) {
 
     bool                    idle  = false;
     const wb_status_color_t color = wb_status_color(flags, &idle);
-    const uint16_t          scale = idle ? (val / WB_STATUS_IDLE_DIV) : val;
+
+    // Der Ruhe-Divisor darf die Mindeststufe nicht unterlaufen -- sonst waere
+    // ausgerechnet der Mac-Hinweis wieder als erstes unsichtbar.
+    uint16_t scale = val;
+    if (idle && scale > 0) {
+        scale = MAX(scale / (WB_STATUS_IDLE_DIV), (uint16_t)(WB_STATUS_MIN_VAL));
+    }
 
     wb_status_led_write(WB_SC((uint8_t)(color.r * scale / 255), (uint8_t)(color.g * scale / 255), (uint8_t)(color.b * scale / 255)));
 }

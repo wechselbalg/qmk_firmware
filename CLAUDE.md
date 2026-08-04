@@ -800,11 +800,27 @@ mit einem **vorzeichenbehafteten** Offset darauf: `WB_STATUS_VAL_OFFSET`,
 negativ = dunkler, positiv = heller, Default **−24**. Die Platinen-LED ist
 ohne Abdeckung verbaut und blendet bei gleicher nomineller Helligkeit, sobald
 die Tasten angenehm eingestellt sind — ein einzelner Helligkeitsschritt, wie
-KMK ihn abzog, reicht dafür nicht (Hardware-Befund 2026-08-04). Unter Null
-bleibt eine Reststufe stehen, damit ein dunkel gefahrenes Board die Anzeige
-nicht stillschweigend verliert. Der Mac-Hinweis zusätzlich geteilt durch
-`WB_STATUS_IDLE_DIV` (Default 2), weil er ein Dauerzustand ist. `RM_TOGG`
+KMK ihn abzog, reicht dafür nicht (Hardware-Befund 2026-08-04). `RM_TOGG`
 schaltet alles mit ab.
+
+⚠️ **Der Offset verschiebt die Helligkeit, nicht den Abschaltpunkt.** Ein
+reiner Abzug hat den Fehler, den auch der KMK-Port hat: bei −24 wäre die LED
+schon dunkel, während die Matrix noch drei Stufen vor sich hat — man dimmt die
+Tasten angenehm und die Zustandsanzeige ist unbemerkt weg (Hardware-Befund
+2026-08-04). Deshalb fällt sie beim Dimmen nur bis `WB_STATUS_MIN_VAL`
+(Default = ein `RGB_MATRIX_VAL_STEP`), bleibt dort stehen und geht erst
+relativ zur Tastenbeleuchtung aus:
+
+| Offset | Status-LED geht aus |
+|---|---|
+| negativ | eine Helligkeitsstufe **vor** den Tasten |
+| 0 | gleichzeitig mit den Tasten |
+| positiv | eine Stufe **später** — bleibt an, wenn die Tasten schon dunkel sind |
+
+Mit den Defaults (Step 8, Offset −24) ergibt das: Matrix 40 → 16, 32 → 8,
+24 → 8, 16 → 8, 8 → aus. Der Mac-Hinweis zusätzlich geteilt durch
+`WB_STATUS_IDLE_DIV` (Default 2), aber ebenfalls nicht unter
+`WB_STATUS_MIN_VAL` — sonst wäre ausgerechnet er als erstes unsichtbar.
 
 **Split:** eine eigene Transaktion (`SPLIT_TRANSACTION_IDS_USER WB_SYNC_STATUS`,
 in der Keymap-`config.h`) mit **einem Byte Statusflags**. Geht nur bei
