@@ -156,14 +156,34 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
    Ein Tastendruck beendet ihn *nicht* (Michael, 2026-08-04), nur A_MSJIG.
    ------------------------------------------------------------------------ */
 #ifdef WB_JIGGLER
-#define WB_JIGGLE_PERIOD_MS 5000
-#define WB_JIGGLE_STEP      1
+/*
+Die beiden Stellschrauben. Hier aendern gilt fuer alle Boards; ein einzelnes
+Board abweichend: -DWB_JIGGLE_PERIOD_MS=... / -DWB_JIGGLE_STEP=... per
+OPT_DEFS in dessen Keymap-rules.mk.
+
+  WB_JIGGLE_PERIOD_MS  Taktabstand. Hochsetzen, wenn 5 s unnoetig oft ist;
+                       runter, wenn ein Host-Timer schon frueher zuschlaegt.
+  WB_JIGGLE_STEP       Pixel pro Takt. Hochsetzen, wenn ein Host einen
+                       1-px-Stubser ignoriert -- die Richtung wechselt, der
+                       Zeiger kommt also immer wieder an den Ausgangspunkt
+                       zurueck, egal wie gross der Schritt ist.
+*/
+#ifndef WB_JIGGLE_PERIOD_MS
+#    define WB_JIGGLE_PERIOD_MS 5000
+#endif
+#ifndef WB_JIGGLE_STEP
+#    define WB_JIGGLE_STEP 1
+#endif
 
 static bool     wb_jiggling     = false;
 static int8_t   wb_jiggle_dir   = WB_JIGGLE_STEP;
 static uint32_t wb_jiggle_timer = 0;
 
-void housekeeping_task_user(void) {
+bool wb_is_jiggling(void) {
+    return wb_jiggling;
+}
+
+static void wb_jiggle_task(void) {
     if (!wb_jiggling || timer_elapsed32(wb_jiggle_timer) < WB_JIGGLE_PERIOD_MS) {
         return;
     }
@@ -184,6 +204,21 @@ void housekeeping_task_user(void) {
     wb_jiggle_dir = -wb_jiggle_dir;
 }
 #endif  // WB_JIGGLER
+
+/*
+Der gemeinsame Takt. Nur angelegt, wenn es hier wirklich etwas zu tun gibt --
+auf den AVR-Boards ist beides aus, und dort zaehlt jedes Byte.
+*/
+#if defined(WB_JIGGLER) || defined(WB_STATUS_LED)
+void housekeeping_task_user(void) {
+#    ifdef WB_JIGGLER
+    wb_jiggle_task();
+#    endif
+#    ifdef WB_STATUS_LED
+    wb_status_led_task();
+#    endif
+}
+#endif
 
 /* ------------------------------------------------------------------------
    Gemeinsames process_record_user()

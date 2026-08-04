@@ -395,20 +395,37 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
 > Tippgefühl wichtiger ist.
 
 **Offen aus diesem Paket:**
-- **Hardware-Test der schwarzen Sofle Choc steht aus** — beide Hälften sind am
-  2026-08-04 geflasht (je 96768 Byte UF2), aber noch nicht benutzt. Zu prüfen:
-  Tippgefühl bei 150 ms, Daumen-Chords unter Chordal Hold, Retro-Tap-Fenster,
-  `MAC_TOG` inkl. EEPROM-Persistenz, `FN_EXIT` auf einem Nicht-QWERT-Layout,
-  die OLED-Zeile MAC/PC, Power-LED aus, Mouse Keys im `_NAV`-Layer.
-  Dazu seit Schritt 3: Caps Word per beide-Shifts-halten (und ob die beiden
-  Shift-*Daumen* es versehentlich auslösen), der Jiggler auf `A_MSJIG` (5 s,
-  1 px, kein Drift) und `D__PREV` als GAMING-Ausstieg auf einem
-  Nicht-QWERT-Layout.
-  Und seit C8/C7: die LED-Reihenfolge (stimmt die Zuordnung LED→Taste aus
-  keyboard.json?), ob die Palette am Board taugt (besonders NUM-Bernstein
-  neben Alt und die Helligkeit von 40), ob der Encoder auf `_ADJUST` beide
-  Hälften zusammen dimmt, und ob die Peripherie-Hälfte die Layer-Farben
-  richtig zeigt (`SPLIT_LAYER_STATE_ENABLE`).
+- **Hardware-Test erledigt (2026-08-04).** Beide Hälften geflasht und geprüft.
+  Bestanden: LED-Reihenfolge (Nummernblock, Pfeilkreuz, ADJUST-Farben sitzen
+  richtig), Layer-Farben auf der Peripherie-Hälfte, Encoder dimmt beide
+  Hälften, Jiggler, `D__PREV` zurück aufs vorherige Basis-Layout.
+  Zwei Befunde, beide behandelt: `_GAMING` war nicht eingefärbt (siehe C8),
+  und die Shift+Shift-Reihenfolge ist asymmetrisch (siehe unten).
+  **Noch nicht bewertet:** das Tippgefühl bei `TAPPING_TERM 150` im Alltag.
+
+- **⚠️ Caps Word per Shift+Shift ist reihenfolgeabhängig.** Beobachtet
+  2026-08-04: erst rechts halten, dann links *tippen* → es kommt der Tap
+  heraus, kein Caps Word. Andersherum geht es.
+  **Ursache, kein Bug:** auf QWERT/COLEMAKDH ist die rechte Pinky-Shift ein
+  blankes `KC_RSFT` (registriert sofort), die linke aber `SFT_PIP` =
+  `LSFT_T(DE_PIPE)`, ein Mod-Tap. QMKs Feature prüft den Modifier-*Zustand*,
+  also muss der Mod-Tap über den Tapping-Term **gehalten** werden. Wer zuerst
+  links hält, ist beim Drücken der rechten ohnehin darüber — daher die
+  Asymmetrie. **Lösung ohne Codeänderung: beide halten, dann loslassen.**
+  - `SPECULATIVE_HOLD` hilft hier **nicht** (geprüft): es führt die
+    spekulativen Modifier in einer eigenen Variable (`speculative_mods`,
+    `action_tapping.c:65`), die nur in den HID-Report einfließt —
+    `get_mods()` sieht sie nicht, und genau das prüft Caps Word.
+  - Ein eigener Hook in `pre_process_record_user()` sähe zwar die rohen
+    Drücke vor der Tap-Hold-Auflösung, müsste dann aber die Taps selbst
+    unterdrücken — genau die Buchhaltung, für die COMBO seinen Key-Buffer
+    hat. Halbgar gebaut gibt das Streuzeichen.
+  - Bleibt als echte Alternative nur **`COMBO_ENABLE` nur für den
+    Liatris-Build** (1794 Byte, dort belanglos): das ergäbe KMKs Geste
+    (beide drücken, kein Halten). Preis: jeder Shift-Druck wird bis zu
+    `COMBO_TERM` gepuffert, was das Tippgefühl beeinflussen kann. Nur
+    machen, wenn „beide halten" im Alltag nervt.
+
 - **`chordal_hold_layout` — nur die Kyria braucht wirklich eine.**
   (Korrektur einer früheren Notiz hier: QMKs automatische Tabelle ist besser
   als angenommen. `lib/python/qmk/cli/generate/keyboard_c.py` markiert die
@@ -483,6 +500,11 @@ der Handler fehlte.
   Taste loslassen. Deshalb setzt der Jiggler einen Takt aus, wenn
   `mousekey_get_report().buttons != 0`.
 - Ein Tastendruck beendet ihn **nicht** (Michael, 2026-08-04), nur `A_MSJIG`.
+- **Einstellbar:** `WB_JIGGLE_PERIOD_MS` (Takt, Default 5000) und
+  `WB_JIGGLE_STEP` (Pixel pro Takt, Default 1) oben im `#ifdef WB_JIGGLER`-Block
+  von `wechselbalg.c`; ein einzelnes Board abweichend per `OPT_DEFS`.
+  Der Schritt darf beliebig groß sein — die Richtung wechselt, der Zeiger
+  kommt also immer wieder an den Ausgangspunkt zurück.
 - Läuft nur auf dem Master — QMK verarbeitet alle Key-Events dort. Die
   *Anzeige* auf der Peripherie-Hälfte braucht den Zustands-Sync aus C8.
 
@@ -529,11 +551,15 @@ Liatris-Build kompilieren.
 
 ## Reihenfolge für die nächste Session (Stand 2026-08-04)
 
-1. **Hardware-Test** der schwarzen Sofle Choc — inzwischen sind drei Pakete
-   ungetestet aufeinandergestapelt (Tap-Hold, Schritt 3, C8+C7).
-2. **Status-LED** (Liatris-NeoPixel GP25) inkl. der Split-Transaktion für die
-   Zustandsflags — das letzte große Stück.
+1. **Status-LED auf Hardware prüfen** — der einzige Punkt, der noch nie an
+   einem Board war. Leuchtet sie, ist die KMK-Angleichung inhaltlich durch.
+2. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen; bei
+   versehentlichen Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD`
+   dokumentiert bereit (siehe unten).
 3. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
+
+Offen als *Entscheidung*, nicht als Arbeit: ob die Shift+Shift-Geste bei
+„beide halten" bleibt oder den Combo-Weg bekommt (siehe oben).
 
 ## Noch offen — Rest von Schritt 2/3
 
@@ -667,9 +693,20 @@ Beleuchtung nicht ungefragt wechseln sollen.
 | 2 | Einzeltasten: `QK_BOOT` magenta, `CW_TOGG` weiß, `QK_LLCK`/`LR_EXIT`/`DF_PREV` cyan, `A_MSJIG`, `MAC_TOG` |
 | 3 | Modifier-Rolle, Mischfarbe bei Kombination (`SFT_CTL`) |
 | 4 | Layer-Ziel + Tri-Layer-Hinweis |
-| 5 | Semantische Klasse: Numpad, Pfeilkreuz (weiß), Maus (grau) |
-| 6 | Aktiver Overlay-Layer |
+| 5 | Semantische Klasse: Numpad, Pfeilkreuz, GAMINGs WASD (weiß), Maus (grau) |
+| 6 | Aktiver Overlay-Layer — **und `_GAMING`**, siehe unten |
 | 7 | Grundleuchten |
+
+**Zwei Nachbesserungen aus dem Hardware-Test (2026-08-04):**
+- **`_GAMING` färbt sich jetzt selbst.** Es ist ein *Default*-Layer, also galt
+  `layer == base_layer` und Stufe 6 griff nicht — das Board sah in GAMING aus
+  wie ein Basis-Layout. Jetzt zählt `_GAMING` dort ausdrücklich mit: es ist ein
+  Modus, in dem man ist, kein Layout, auf dem man tippt. Die übrigen
+  Basis-Layouts bleiben bewusst farblos.
+- **WASD auf `_GAMING` in Weiß.** Anders als Nummernblock und Pfeilkreuz ist
+  das *keine* layerfreie Keycode-Regel — `KC_W/A/S/D` sind gewöhnliche
+  Buchstaben und stehen auf jedem Basis-Layout. Deshalb an `_GAMING` gebunden;
+  innerhalb des Layers wandern sie trotzdem mit.
 
 **Stufe 6 ist in QMK geschenkt.** „Der Layer färbt, was er belegt" ist
 `layer_switch_get_layer(pos) != get_highest_layer(default_layer_state)` — an
@@ -704,7 +741,7 @@ Auf dem weißen Board läuft derselbe Code über `rgblight_*_noeeprom()`
 (32 Byte, danach noch 148 frei). sofle/rev1 und Kyria haben den Fall bewusst
 nicht — dort ist kein Platz bzw. kein Bedarf.
 
-### Status-LED (Liatris-NeoPixel GP25) — Machbarkeit belegt 2026-08-04
+### Status-LED (Liatris-NeoPixel GP25) — umgesetzt 2026-08-04, nicht getestet
 
 Jede Liatris-Hälfte hat eine eigene WS2812 an GP25. Sie soll **die Zustände
 tragen, die nicht auf die Tastenmatrix sollen** (Caps Word, Layer Lock,
@@ -728,11 +765,50 @@ braucht es weder DMA noch Interrupt — ein `pio_sm_put_blocking()` mit einem
 Eingriff in den QMK-Core. Bit-Bang mit `chSysLock()` wären ~30 µs Interrupts
 aus pro Update — machbar, aber schlechter neben Split-Link und USB.
 
-Erst am Board endgültig zu belegen: dass `pio_claim_unused_sm(pio0, …)` zu
-unserem Init-Zeitpunkt noch eine SM findet und `hal_lld_peripheral_unreset`
-gelaufen ist. Die Reihenfolge spricht dafür — `ws2812_init()` läuft in
-`keyboard_init` vor `keyboard_post_init_user()`. **Mit einem Wegwerf-Prototyp
-anfangen (LED dauerhaft grün), bevor Zustandslogik dazukommt.**
+**Umsetzung:** [users/wechselbalg/status_led.c](users/wechselbalg/status_led.c),
+angeschaltet per `WB_STATUS_LED = yes` in der Keymap-`rules.mk`.
+
+Die Init-Reihenfolge ist belegt: `keyboard_init()` ruft `rgb_matrix_init()`
+(→ `ws2812_init()`, PIO0 aus dem Reset, erste SM belegt) und erst danach
+`keyboard_post_init_quantum()`. `wb_status_led_init()` hängt deshalb in
+`keyboard_post_init_user()` des Boards. Findet `pio_claim_unused_sm(pio0,
+false)` keine SM, tut die Datei schlicht nichts — eine Status-LED ist kein
+Grund, eine Tastatur nicht booten zu lassen.
+
+⚠️ **Include-Reihenfolge:** die pico-sdk-Header müssen **vor** `wechselbalg.h`
+stehen. Andersherum scheitert schon `pico/assert.h` an einem
+Makro-Namenskonflikt mit dem, was `quantum.h` an ChibiOS/rp2040.h hereinzieht
+— derselbe Grund, aus dem `ws2812_vendor.c` seine Reihenfolge kommentiert.
+
+**Was sie zeigt** (Prioritätskette, Momentzustände über Dauerzuständen):
+
+| | Zustand | Farbe |
+|---|---|---|
+| 1 | Caps Word | weiß |
+| 2 | Layer Lock | cyan (wie die Taste) |
+| 3 | Jiggler | gelbgrün |
+| 4 | Ruhe | Mac: azur · PC: schwaches Warmweiß |
+
+Punkt 4 ist die eigentliche Idee: die LED wiederholt nicht den Layer, sondern
+sagt im Normalfall, an welchem Host-Typ man sitzt.
+
+**Helligkeit** hängt am selben Regler wie die Matrix (`rgb_matrix_get_val()`),
+liegt aber einen `RGB_MATRIX_VAL_STEP` darunter — die blanke Platinen-LED hat
+keine Tastenkappe, die sie streut. Die Ruhefarbe zusätzlich noch einmal auf
+ein Drittel. `RM_TOGG` schaltet sie mit ab. Beide Faktoren per
+`WB_STATUS_VAL_OFFSET` / `WB_STATUS_IDLE_DIV` überschreibbar.
+
+**Split:** eine eigene Transaktion (`SPLIT_TRANSACTION_IDS_USER WB_SYNC_STATUS`,
+in der Keymap-`config.h`) mit **einem Byte Statusflags**. Geht nur bei
+Änderung raus, plus ein Auffrischen im Sekundentakt, damit eine verlorene
+Übertragung keine dauerhaft falsche Anzeige hinterlässt. Layer Lock meldet
+sich über den `layer_lock_set_user()`-Hook, statt `is_layer_locked()` je Layer
+abzufragen.
+
+**Noch nicht auf Hardware getestet** — das ist der Punkt, an dem sich zeigt,
+ob die zweite PIO-State-Machine wirklich zu haben ist. Leuchtet gar nichts:
+zuerst prüfen, ob `wb_status_sm` negativ bleibt (dann ist keine SM frei),
+danach die Byte-Reihenfolge (GRB) und den Pin.
 
 ## Zuletzt: OLED (bewusst als letzter Punkt)
 

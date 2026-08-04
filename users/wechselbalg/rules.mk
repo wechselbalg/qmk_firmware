@@ -12,6 +12,14 @@ ifeq ($(strip $(WB_RGB_LANGUAGE)), yes)
     OPT_DEFS += -DWB_RGB_LANGUAGE
 endif
 
+# Die Status-LED (Liatris-NeoPixel an GP25). Eigener kleiner PIO-Treiber, weil
+# QMKs WS2812-Treiber genau eine Kette kennt -- deshalb strikt opt-in und nur
+# fuer RP2040-Boards mit einer solchen LED sinnvoll.
+ifeq ($(strip $(WB_STATUS_LED)), yes)
+    SRC += status_led.c
+    OPT_DEFS += -DWB_STATUS_LED
+endif
+
 # ENCODER_ENABLE = no
 ENCODER_MAP_ENABLE = no
 EXTRAKEY_ENABLE = yes

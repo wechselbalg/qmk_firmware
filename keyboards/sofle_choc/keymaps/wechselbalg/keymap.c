@@ -470,6 +470,16 @@ void keyboard_post_init_user(void) {
     gpio_write_pin_high(LIATRIS_POWER_LED_PIN);
 #endif
 
+#ifdef WB_STATUS_LED
+    /*
+    Muss HIER stehen und nicht frueher: die Status-LED holt sich eine zweite
+    PIO0-State-Machine, und PIO0 wird von QMKs WS2812-Treiber in
+    ws2812_init() aufgesetzt -- das laeuft in keyboard_init(), also vor
+    dieser Funktion.
+    */
+    wb_status_led_init();
+#endif
+
 #ifdef RGBLIGHT_ENABLE
     // Enable the LED layers
     rgblight_layers = my_rgb_layers;

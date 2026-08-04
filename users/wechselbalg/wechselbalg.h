@@ -129,6 +129,21 @@ ruft diesen Hook am Ende auf.
 */
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record);
 
+#ifdef WB_JIGGLER
+// Laeuft der Mouse Jiggler gerade? Fuer die Status-LED.
+bool wb_is_jiggling(void);
+#endif
+
+#ifdef WB_STATUS_LED
+/*
+Status-LED (status_led.c). init() gehoert in keyboard_post_init_user() des
+Boards -- die PIO-State-Machine laesst sich erst holen, wenn der
+Per-Key-Treiber PIO0 initialisiert hat. task() ruft housekeeping_task_user().
+*/
+void wb_status_led_init(void);
+void wb_status_led_task(void);
+#endif
+
 /*
 "Tippe ich gerade an einem Mac?" -- eine Frage, keine zweite Wahrheit: der
 Zustand ist derselbe, den CG_TOGG umschaltet und QMK im EEPROM haelt.

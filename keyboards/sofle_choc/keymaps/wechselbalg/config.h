@@ -47,6 +47,14 @@
     #define SERIAL_USART_PIN_SWAP
     // WS2812 belegt auf RP2040 typischerweise PIO0 - Serial auf PIO1 ausweichen.
     #define SERIAL_PIO_USE_PIO1
+
+    /*
+    Ein Byte Statusflags fuer die Status-LED (Caps Word, Layer Lock, Jiggler,
+    Mac-Modus). QMK synchronisiert layer_state und die RGB-Matrix-Config von
+    sich aus, diese vier aber nicht -- sie entstehen alle auf dem Master.
+    Siehe users/wechselbalg/status_led.c.
+    */
+    #define SPLIT_TRANSACTION_IDS_USER WB_SYNC_STATUS
 #else
     // #define MASTER_LEFT
     #define MASTER_RIGHT

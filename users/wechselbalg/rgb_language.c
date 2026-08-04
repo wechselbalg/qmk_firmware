@@ -234,7 +234,7 @@ zusammenhaengend, N3___UP/LEFT/DOWN/RGHT *sind* KC_UP/LEFT/DOWN/RIGHT und
 liegen als KC_RIGHT..KC_UP zusammenhaengend. Damit wandern die Bloecke mit,
 wenn die Tasten im Keymap umziehen.
 */
-static bool wb_payload_color(uint16_t keycode, wb_color_t *out) {
+static bool wb_payload_color(uint16_t keycode, uint8_t layer, wb_color_t *out) {
     if (IS_MOUSE_KEYCODE(keycode)) {
         *out = WB_C_MOUSE;
         return true;
@@ -243,6 +243,23 @@ static bool wb_payload_color(uint16_t keycode, wb_color_t *out) {
         (keycode >= KC_RIGHT && keycode <= KC_UP)) {   // Pfeilkreuz
         *out = WB_C_PAYLOAD;
         return true;
+    }
+    /*
+    Das Bewegungskreuz auf _GAMING. Anders als Nummernblock und Pfeilkreuz ist
+    das KEINE layerfreie Keycode-Regel: W/A/S/D sind gewoehnliche Buchstaben
+    und stehen auf jedem Basis-Layout, wo sie nichts hervorzuheben haben.
+    Deshalb an _GAMING gebunden -- innerhalb dieses Layers wandern sie
+    trotzdem mit, wenn sie im Keymap umziehen.
+    */
+    if (layer == _GAMING) {
+        switch (keycode) {
+            case KC_W:
+            case KC_A:
+            case KC_S:
+            case KC_D:
+                *out = WB_C_PAYLOAD;
+                return true;
+        }
     }
     return false;
 }
@@ -296,14 +313,19 @@ static wb_color_t wb_color_for(uint16_t keycode, uint8_t layer, uint8_t base_lay
 
     // 5. Der Nutzblock des Layers.
     wb_color_t payload;
-    if (wb_payload_color(keycode, &payload)) {
+    if (wb_payload_color(keycode, layer, &payload)) {
         return payload;
     }
 
     // 6. Der aktive Overlay-Layer, an den Positionen die er wirklich belegt.
     //    Genau das sagt layer_switch_get_layer() bereits -- an einer
     //    durchgereichten Position haette es das Basis-Layout geliefert.
-    if (layer != base_layer) {
+    //
+    //    _GAMING zaehlt hier mit, obwohl es ein *Default*-Layer ist und damit
+    //    `layer == base_layer` gilt: es ist ein Modus, in dem man ist, kein
+    //    Layout, auf dem man tippt -- und genau das soll das Board zeigen.
+    //    Die uebrigen Basis-Layouts bleiben bewusst farblos (siehe oben).
+    if (layer != base_layer || layer == _GAMING) {
         wb_color_t color;
         if (wb_layer_color(layer, &color)) {
             return color;

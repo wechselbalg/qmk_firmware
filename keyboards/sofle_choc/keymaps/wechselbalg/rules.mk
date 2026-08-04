@@ -30,6 +30,8 @@ ifeq ($(strip $(CONVERT_TO)),liatris)
     RGBLIGHT_ENABLE = no
     # Die abgeleitete Farbsprache (users/wechselbalg/rgb_language.c)
     WB_RGB_LANGUAGE = yes
+    # Die Status-LED auf dem Liatris-NeoPixel (users/wechselbalg/status_led.c)
+    WB_STATUS_LED = yes
 else
     RGB_MATRIX_ENABLE = no
     RGBLIGHT_ENABLE = yes
