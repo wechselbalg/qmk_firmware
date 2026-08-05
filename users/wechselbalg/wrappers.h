@@ -159,8 +159,31 @@ NOTE: These are all the same length.  If you do a search/replace
 #define ______________COLEMAKDH_L3_________________  SFT_PIP , DE_Z   , DE_X   , DE_C   , DE_D   , DE_V
 
 #define ______________COLEMAKDH_R1_________________  DE_J    , DE_L   , DE_U   , DE_Y   , DE_SCLN  , MO__NUM
-#define ______________COLEMAKDH_R2_________________  DE_H    , DE_N   , DE_E   , DE_I   , DE_O     , SYM_HSH
+// 2026-08-05: DE_H -> DE_M. Seit dem Anlegen der Datei (bf83436d68, 2023-04-11)
+// stand hier DE_H -- damit war H doppelt (auch in R3) und M gar nicht
+// vorhanden. Colemak Mod-DH hat auf der rechten Home-Row M N E I O.
+#define ______________COLEMAKDH_R2_________________  DE_M    , DE_N   , DE_E   , DE_I   , DE_O     , SYM_HSH
 #define ______________COLEMAKDH_R3_________________  DE_K    , DE_H   , DE_COMM, DE_DOT , DE_MINS  , KC_RSFT
+
+/*
+Die 12/13-breiten Bloecke fuer die grossen ISO-Boards (GMMK Pro, K3 Pro).
+Zwei Abweichungen von den 6er-Haelften oben, beide weil dieses Board an den
+betreffenden Stellen eine *zusaetzliche* Taste hat statt einer Pinky-Doppelrolle:
+
+  - letzte Taste in Reihe 1: die Splits haben dort MO__NUM, weil ihre
+    Pinky-Spalte den Layer-Zugang tragen muss. Auf dem ISO-Board ist das die
+    physische Ue-Taste, und MO__NUM sitzt ohnehin schon auf NUBS und Fn --
+    deshalb NUM__UE (Ue beim Tippen, NUM beim Halten), genau wie in QWERTY_1.
+  - letzte Taste in Reihe 2: die Splits haben dort SYM_HSH. Auf dem ISO-Board
+    ist das die physische Ae-Taste, und die eigene #-Taste liegt eine Position
+    weiter rechts -- SYM_HSH waere dort also doppelt und Ae unerreichbar.
+
+Reihe 3 loest wie bei QWERTY/MINE die Doppelrolle SFT_PIP in KC_LSFT + MO__NUM
+auf, weil das Board die NUBS-Taste dazwischen hat.
+*/
+#define ________________________________________COLMAK_1________________________________________  ______________COLEMAKDH_L1_________________, DE_J, DE_L, DE_U, DE_Y, DE_SCLN, NUM__UE
+#define ________________________________________COLMAK_2________________________________________  ______________COLEMAKDH_L2_________________, DE_M, DE_N, DE_E, DE_I, DE_O   , SYM__AE
+#define ________________________________________COLMAK_3________________________________________  KC_LSFT, MO__NUM, DE_Z, DE_X, DE_C, DE_D, DE_V, ______________COLEMAKDH_R3_________________
 
 // MINE
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,

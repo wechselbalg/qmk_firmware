@@ -74,13 +74,15 @@ fordert nacheinander zum Anschließen jeder Hälfte auf und wartet dann
 selbständig auf das Gerät (nutzt `qmk flash`s eingebaute Wait-Logik).
 Enthält auch den `avrdude`-Workaround (siehe unten) für die weiße Sofle Choc.
 Boards sind dort in einem Dict eingetragen und leicht um weitere Tastaturen
-(Kyria, GMMK Pro, …) erweiterbar. **Claude sollte dieses Skript für alle
-künftigen Flash-Vorgänge dieser Boards nutzen statt manueller `make`/`qmk
-flash`-Aufrufe.**
+(Kyria, GMMK Pro, …) erweiterbar. Nicht-Split-Boards tragen `"sides": None` und
+optional einen eigenen `"prompt"` mit ihrem Bootloader-Weg. **Claude sollte
+dieses Skript für alle künftigen Flash-Vorgänge dieser Boards nutzen statt
+manueller `make`/`qmk flash`-Aufrufe.**
 ```bash
 python3 util/wechselbalg/flash.py --list
 python3 util/wechselbalg/flash.py sofle_choc_black
 python3 util/wechselbalg/flash.py sofle_choc_white --side right
+python3 util/wechselbalg/flash.py k3_pro
 ```
 Kann den Bootloader nicht selbst auslösen (kein generischer QMK-Software-Weg
 dafür) — der physische Taster (oder die `QK_BOOT`-Tastenkombo im Adjust-Layer)
@@ -125,7 +127,7 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-04, Schritt 3 der KMK-Angleichung)
+## Aktueller Stand (Stand: 2026-08-05, K3 Pro geflasht)
 
 **Fertig:**
 - Fork aufgeräumt (nur noch master/develop/mike), auf aktuellen QMK-Stand gemergt.
@@ -171,8 +173,17 @@ gepflegt werden:
     hinter `#ifdef CONVERT_TO_LIATRIS`, damit das weiße (AVR-)Board unangetastet bleibt.
   - Details siehe Claude-Memory `sofle-choc-liatris-rp2040`.
 
+- **Keychron K3 Pro ISO RGB — geflasht 2026-08-05.** Erster Flash dieses Boards
+  aus dem aufgeräumten Repo; vorher lief noch Keychrons Werks-Firmware (sie
+  meldete sich als `Keychron K3 Pro`, `0x3434:0x0231`). Board bootet, meldet
+  sich jetzt als `Dell KB216 Wired Keyboard` (`0x413C:0x2113`, Michaels eigene
+  Änderung von 2023, bewusst beibehalten). Details siehe „K3 Pro: Bootloader
+  und die zwei Aussperr-Fallen" weiter unten.
+  **Noch nicht auf Hardware geprüft:** Polarität des Win/Mac-Schalters und das
+  Tippgefühl bei `TAPPING_TERM 150`.
+
 **Offen / vor dem Flashen prüfen:**
-- **K3 Pro — gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
+- **K3 Pro — Keymap gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
   notierten Bedenken waren gegenstandslos, der Rest ist erledigt:
   - ~~„neu belegte `+`-Taste"~~ — **kein Unterschied**: `DE_PLUS` *ist*
     `KC_RBRC` (`keymap_german.h:61`). MINE-Zeile und QWERT-Zeile sind identisch.
@@ -193,9 +204,155 @@ gepflegt werden:
       `DE_GRV` = `S(DE_ACUT)` ein **Dead Key**.
     - ISO-`#`-Taste: `SYM_ACU` → `SYM_HSH`, sendet also `#` statt `´`.
       Der Akut ist seitdem wieder auf seiner eigenen Taste erreichbar.
+  - ⚠️ Seit 2026-08-05 baut das Board **`_MINE` gar nicht mehr** (Entscheidung
+    Michael: Colemak-DH statt MINE, siehe unten). Der Layer-Block steht
+    weiterhin in der keymap.c hinter `#ifdef WB_LAYOUT_MINE` — die obigen
+    MINE-Punkte gelten also erst wieder, wenn in der Keymap-`rules.mk`
+    `WB_LAYOUT_MINE` statt `WB_LAYOUT_COLEMAKDH` gesetzt wird.
 - K3-Pro-Varianten ansi/jis/white bleiben ungebaut (alte LED-Tabellen-Makros).
 - Idee: Mac-Variante des `_NAV`-Layers (Wort-Sprünge Opt+Pfeil statt Ctrl+Pfeil).
   Wird durch C1 (Ctrl⇄GUI-Swap) **wichtiger**, nicht überflüssig — siehe dort.
+
+---
+
+# K3 Pro: Bootloader und die zwei Aussperr-Fallen (2026-08-05)
+
+## Wie man in den Bootloader kommt
+
+**Der verlässliche Weg: Esc gedrückt halten und dabei USB einstecken.**
+`BOOTMAGIC_ENABLE = yes` steht in
+[keyboards/keychron/k3_pro/rules.mk](keyboards/keychron/k3_pro/rules.mk), die
+Defaults sind Row 0 / Col 0, und Matrix `[0,0]` ist auf diesem Board die
+Esc-Taste (nachprüfbar an Keychrons eigener default-Keymap). `bootmagic()` läuft
+in `quantum_init()` **nach** `matrix_init()` (`quantum/keyboard.c:470-471`), die
+Matrix ist also schon wach. Das Gerät meldet sich danach als `0483:df11`.
+
+Bootmagic ruft dabei `eeconfig_disable()` — das EEPROM wird zurückgesetzt. Genau
+das macht diesen Weg zum **Rettungsanker**: er hängt an keiner Keymap und an
+keinem Layer, sondern nur an der Matrix.
+
+**Zweiter Weg: `QK_BOOT` im `_ADJUST`-Layer**, dort auf drei Tasten — **Esc**,
+**Backspace** und **B**. Nach `_ADJUST` kommt man **nur** über die dedizierte
+`MO__ADJ`-Taste, und die liegt auf der physischen **End**-Taste. Kein Tri-Layer
+auf diesem Board (siehe Korrektur bei C6).
+
+Dritter Weg: Reset-Taster auf der Platine, Gehäuse öffnen. Nicht nötig.
+
+**Im Flash-Skript hinterlegt**: `python3 util/wechselbalg/flash.py k3_pro`
+druckt genau diese Anleitung und wartet dann selbständig auf das DFU-Gerät.
+
+## Falle 1: der Win/Mac-Schiebeschalter machte das Board beim Booten tot
+
+`dip_switch_update_kb()` in
+[keyboards/keychron/k3_pro/k3_pro.c](keyboards/keychron/k3_pro/k3_pro.c) setzte
+unbedingt `default_layer_set(1UL << (active ? 0 : 2))` — Keychrons eigene
+`MAC_BASE`/`WIN_BASE`. In unserem Layer-Enum zeigte die 2 auf `_COLEMAKDH`, und
+das war in dieser Keymap gar nicht definiert: **192 Byte `KC_NO`**. Weil
+`keyboard_post_init_kb()` `dip_switch_read(true)` aufruft, passierte das bei
+**jedem Boot**. Schalter auf Windows ⇒ komplett totes Board, inklusive der
+End-Taste ⇒ kein `QK_BOOT` mehr, nur noch Esc-Bootmagic.
+
+**Fix, zweiteilig:**
+- `dip_switch_update_kb()` fragt jetzt zuerst `dip_switch_update_user()` und
+  bricht bei `false` ab — das Muster, das Keychrons neuere Boards längst
+  verwenden (`keyboards/keychron/v1/v1.c:20`, ebenso v6/v7/v8).
+- Die Keymap definiert `dip_switch_update_user()` und gibt `false` zurück. Der
+  Schalter fasst die Layer damit nicht mehr an, sondern schaltet **den
+  Mac-Modus** — denselben Zustand wie `MAC_TOG`/`CG_TOGG`
+  (`keymap_config.swap_lctl_lgui` + `swap_rctl_rgui`), an dem auch
+  `WB_HOST_IS_MAC()` und die host-abhängigen Wortsprünge hängen. Der beschriftete
+  Schalter tut damit endlich, was draufsteht.
+
+Bewusst **ohne** `eeconfig_update_keymap()`: der Schalter wird bei jedem Boot
+gelesen (und zwar *nach* dem `eeconfig_read_keymap()` in `quantum_init()`),
+stellt den Zustand also von selbst wieder her. Kein Flash-Verschleiß, und
+`MAC_TOG` bleibt als Override für die laufende Sitzung nutzbar.
+
+⚠️ **Polarität noch nicht auf Hardware geprüft.** Angenommen ist Keychrons
+Lesart (`active` = Mac). Falls vertauscht: `WB_DIP_ACTIVE_IS_MAC` in der
+keymap.c umdrehen, eine Zeile.
+
+## Falle 2: sechs Tasten auf `_ADJUST` führten in leere Layer
+
+Das Layer-Enum legt auf Nicht-AVR **alle vier** Alternativ-Layouts an, die
+K3-Pro-Keymap definierte aber nur `_QWERT` und `_MINE`. `_DVORAK`, `_COLEMAKDH`
+und `_VOU` waren also vorhanden und leer — und der Umschaltblock auf `_ADJUST`
+zeigte trotzdem darauf:
+
+| Physische Taste auf `_ADJUST` | war | Wirkung |
+|---|---|---|
+| Q / W / E | `P_DVORK` / `P_COLMK` / `P___VOU` | `set_single_persistent_default_layer()` → **dauerhaft** totes Board, überlebt das Ausstecken |
+| A / S / D | `D_DVORK` / `D_COLMK` / `D___VOU` | tot bis zum nächsten Ausstecken |
+
+**Fix:** `OPT_DEFS += -DWB_LAYOUT_COLEMAKDH` in der Keymap-`rules.mk`. Sobald
+*irgendeines* der vier von außen definiert ist, gilt ausschließlich die äußere
+Wahl — die drei ungenutzten Layer entstehen gar nicht erst, und die Aliase
+fallen über die `#else`-Zweige in `wechselbalg.h` auf `___NO__` zurück. Aus den
+Falltüren werden also tote Tasten statt falscher Ziele.
+
+**Dasselbe Loch hat die GMMK Pro** (`gmmk/pro/rev1/iso`): sie definiert **nur**
+`_QWERT`, dort sind also *vier* Layer leer und entsprechend acht Tasten auf
+`_ADJUST` scharf. Noch nicht angefasst — vor ihrem nächsten Flash erledigen,
+nach demselben Muster.
+
+## Colemak-DH statt MINE — und ein Bugfix im Wrapper
+
+Entscheidung Michael 2026-08-05: dieses Board bekommt QWERTZ + **Colemak-DH**
+statt QWERTZ + MINE. Der `_MINE`-Block bleibt hinter seinem `#ifdef` in der
+keymap.c stehen, Zurückschalten ist eine Zeile in der `rules.mk`.
+
+⚠️ **Dabei ist ein alter Fehler aufgefallen:**
+`______________COLEMAKDH_R2_________________` begann seit dem Anlegen der Datei
+(`bf83436d68`, 2023-04-11) mit `DE_H` statt `DE_M`. Colemak-DH hatte damit
+**kein M** und **H doppelt** (auch in `R3`). Das betrifft nicht nur dieses
+Board: laut AVR-Gating ist Colemak-DH auf **sofle/rev1, sofle_choc (weiß) und
+Kyria das einzige Alternativ-Layout**. Behoben in
+[users/wechselbalg/wrappers.h](users/wechselbalg/wrappers.h).
+
+Neu dort außerdem die 12/13-breiten Blöcke **`COLMAK_1/2/3`** für die großen
+ISO-Boards, analog zu `QWERTY_1/2/3` und `MINE___1/2/3`. Zwei bewusste
+Abweichungen von den 6er-Hälften, beide weil das ISO-Board an der Stelle eine
+*zusätzliche* Taste hat statt einer Pinky-Doppelrolle: letzte Taste in Reihe 1
+`NUM__UE` statt `MO__NUM` (auf dem Split trägt die Pinky-Spalte den
+Layer-Zugang; hier ist es die physische Ü-Taste, und `MO__NUM` sitzt ohnehin auf
+NUBS und Fn) und in Reihe 2 `SYM__AE` statt `SYM_HSH` (sonst wäre `#` doppelt
+und Ä unerreichbar). Begründung steht im Kommentar an der Definition.
+
+## Bluetooth ist weg — und bleibt es vorerst
+
+Der USB-only-Build war schon vorher gesetzt
+(`# OPT_DEFS += -DKC_BLUETOOTH_ENABLE`), aber auf dem Board lief bis 2026-08-05
+noch Keychrons Werks-Firmware **mit** Bluetooth. Nach diesem Flash funktioniert
+nur noch die Kabel-Stellung des Seitenschalters.
+
+Testweise angeschaltet (2026-08-05): das einvendorte Modul unter
+`keyboards/keychron/bluetooth/` **kompiliert nicht** gegen aktuelles QMK —
+`setPinInputHigh` entfernt, `eeconfig_read_keymap()` hat ein Argument bekommen,
+die Host-Driver-Signaturen (`report_nkro_t`/`report_mouse_t`/`report_extra_t`)
+haben sich verschoben. Dieselbe API-Drift, die in `k3_pro.c`/`matrix.c` schon
+nachgezogen wurde, nur in 13 weiteren Dateien — und `bluetooth.c` war erst die
+erste. **TODO (Michael, 2026-08-05): nachziehen oder neu bauen**, aber als
+eigenes Vorhaben, nicht nebenbei.
+
+Nebenbefund für den Fall, dass es angegangen wird: in
+[k3_pro.c](keyboards/keychron/k3_pro/k3_pro.c) steht bei `ENABLE_FACTORY_TEST`
+ein verirrter Schrägstrich (`/#    include "factory_test.h"`). Stört heute
+nicht, weil das `#ifdef` nie greift — beim BT-Build aber sofort ein Syntaxfehler.
+
+## Wie das alles ohne Hardware geprüft wurde
+
+Nicht am Quelltext, sondern am **fertigen Binary**: ein Skript liest das echte
+`keymaps`-Array aus dem ELF (`arm-none-eabi-nm` → Symbol `keymaps`, Offset über
+`objdump -h`) und ordnet es mit der `layout`-Liste aus der `keyboard.json`
+physisch an. Damit sind Wrapper-Breiten, `#ifdef`-Zweige und LTO schon
+aufgelöst — genau die Stellen, an denen Raten schiefgeht. So ist belegt, dass
+Colemak-DH alle 26 Buchstaben hat, dass Ü/Ä/# je auf ihrer eigenen ISO-Taste
+liegen und dass die sechs Falltüren auf `_ADJUST` jetzt `KC_NO` sind.
+Dasselbe Vorgehen wie bei C8 auf der Sofle Choc; bei Zweifeln wieder so machen,
+das ist billiger als flashen.
+
+Ergänzend: ob ein `#define` wirklich im Build ankommt, sagt
+`tr ' ' '\n' < .build/obj_<target>/cflags.txt | grep -x -- -DDIP_SWITCH_ENABLE`.
 
 ---
 
@@ -534,7 +691,16 @@ geht, bringt zweimal Drücken einen zurück (wie KMK).
   `WB_DF_PREV` auf das alte `D_QWERT` zurück.
 - Belegt in sofle_choc, sofle/rev1, kyria (obere rechte Ecke von `_GAMING`).
   GMMK Pro und K3 Pro haben in `_GAMING` gar keine Ausstiegstaste — sie kommen
-  über ADJUST (`MO__NAV`+`MO__NUM` → `D_QWERT`) raus, das bleibt so.
+  über ADJUST → `D_QWERT` raus, das bleibt so.
+  ⚠️ **Korrektur 2026-08-05:** hier stand, ADJUST sei auf diesen beiden Boards
+  per `MO__NAV`+`MO__NUM` erreichbar. **Stimmt nicht** — Tri-Layer ist nur in
+  den Split-Keymaps konfiguriert (`update_tri_layer_state` in sofle_choc,
+  sofle/rev1; `TRI_LAYER_ENABLE` bei der Kyria), GMMK Pro und K3 Pro haben es
+  nicht. Auf dem K3 Pro führt allein die dedizierte **`MO__ADJ`-Taste** dorthin,
+  und die liegt auf der physischen **End**-Taste (`[4,15]`).
+  Dass das auch aus `_GAMING` heraus funktioniert, ist kein Zufall, sondern
+  `layer_switch_get_layer()`: `_GAMING` hat dort `KC_TRNS`, und die Suche fällt
+  am Ende auf Layer 0 zurück — wo `MO(_ADJUST)` steht.
 
 ### AVR-Gating: `WB_JIGGLER` / `WB_DF_PREV`
 
@@ -549,17 +715,23 @@ aus. Ein einzelnes Board abweichend: `-DWB_JIGGLER` / `-DWB_DF_PREV` per
 180 (−14, nur C2), kyria 1212, lotus58 896. Alle sechs Boards + der
 Liatris-Build kompilieren.
 
-## Reihenfolge für die nächste Session (Stand 2026-08-04)
+## Reihenfolge für die nächste Session (Stand 2026-08-05)
 
 **Die KMK→QMK-Angleichung ist inhaltlich durch.** C1–C8, C7 und die Status-LED
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-1. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
+1. **K3 Pro am Board nachprüfen** (2026-08-05 geflasht, siehe eigenes Kapitel):
+   Polarität des Win/Mac-Schalters, und ob Colemak-DH mit dem korrigierten `M`
+   tatsächlich sauber tippt.
+2. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
    Punkt, der sich nur über längere Benutzung zeigt. Bei versehentlichen
    Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD` dokumentiert bereit
    (siehe unten).
-2. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
+3. **GMMK Pro: dieselbe Aussperr-Falle schließen** wie beim K3 Pro — sie
+   definiert nur `_QWERT`, vier Layer sind leer. Vor ihrem nächsten Flash.
+4. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
+5. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
 
 Offen als *Entscheidung*, nicht als Arbeit: ob die Shift+Shift-Geste bei
 „beide halten" bleibt oder den Combo-Weg bekommt (siehe oben).

@@ -74,6 +74,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ________________________________________QWERTY_3________________________________________,          KC_UP,    MO__ADJ,
         ________________________________________7_THUMBS________________________________________, KC_LEFT, KC_DOWN,  KC_RGHT),
 
+#ifdef WB_LAYOUT_COLEMAKDH
+    /*
+    Zeilenweise identisch mit _QWERT -- nur die Buchstabenbloecke unterscheiden
+    sich. Die COLMAK_*-Bloecke sind die 12/13-breiten ISO-Varianten aus
+    wrappers.h; warum die letzte Taste in Reihe 1 und 2 dort von den
+    Split-Haelften abweicht, steht im Kommentar an ihrer Definition.
+    */
+    [_COLEMAKDH] = LAYOUT_wrapper(
+        KC_ESC,  _________________________________________F_KEYS_________________________________________, KC_MAIL,  KC_CALC,  RGB_MOD,
+        KC_GRV, _______________________________NUMBERS________________________________, DE_SS,    DE_ACUT,           KC_BSPC,  KC_DEL,
+        ________________________________________COLMAK_1________________________________________, DE_PLUS, KC_ENT,             KC_HOME,
+        ________________________________________COLMAK_2________________________________________, SYM_HSH,                     KC_END,
+        ________________________________________COLMAK_3________________________________________,          KC_UP,    MO__ADJ,
+        ________________________________________7_THUMBS________________________________________, KC_LEFT, KC_DOWN,  KC_RGHT),
+#endif
+
     [_SYM] = LAYOUT_wrapper(
         KC_ESC,  _________________________________________F_KEYS_________________________________________, _______,  _______,  _______,
         ________________________________________SYMBOL__0_______________________________________, ___NO__,           _______,  _______,
@@ -144,3 +160,45 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t* record) {
 
   return true;
 }
+
+#ifdef DIP_SWITCH_ENABLE
+/*
+Der Win/Mac-Schiebeschalter an der linken Gehaeusekante (DIP_SWITCH_PINS {A8}).
+
+Keychron benutzt ihn, um zwischen zwei Basis-Layern umzuschalten (MAC_BASE=0,
+WIN_BASE=2). Das passt hier nicht: unser Layer-Enum ist ein anderes, und ein
+Layer 2 kann je nach WB_LAYOUT_*-Wahl auf etwas zeigen, das gar nicht
+einkompiliert ist. Wir geben `false` zurueck und lassen Keychrons
+default_layer_set() damit aus (siehe k3_pro.c) -- der Schalter fasst die Layer
+nicht mehr an.
+
+Stattdessen tut er das, was auf ihm steht: er schaltet den Mac-Modus. Das ist
+derselbe Zustand, den MAC_TOG (= CG_TOGG, auf _ADJUST auf der C-Taste)
+umlegt -- Ctrl und GUI tauschen im aufgeloesten Keycode die Rolle, und
+WB_HOST_IS_MAC() haengt ebenfalls daran (host-abhaengige Wortspruenge in
+wechselbalg.c).
+
+Bewusst *ohne* eeconfig_update_keymap(): der Schalter wird bei jedem Boot
+gelesen (keyboard_post_init_kb() -> dip_switch_read(true), und zwar nach dem
+eeconfig_read_keymap() in quantum_init()), stellt den Zustand also von selbst
+wieder her. Kein Flash-Verschleiss, und MAC_TOG bleibt als Override fuer die
+laufende Sitzung nutzbar.
+
+Falls die Polaritaet am Board andersherum ist als hier angenommen (aktiv =
+Mac, so wie Keychrons eigener Code es liest), genuegt das #define unten.
+*/
+#    define WB_DIP_ACTIVE_IS_MAC true
+
+bool dip_switch_update_user(uint8_t index, bool active) {
+    if (index == 0) {
+#    ifdef MAGIC_ENABLE
+        const bool mac = (active == WB_DIP_ACTIVE_IS_MAC);
+        keymap_config.swap_lctl_lgui = mac;
+        keymap_config.swap_rctl_rgui = mac;
+#    endif
+        return false;
+    }
+
+    return true;
+}
+#endif

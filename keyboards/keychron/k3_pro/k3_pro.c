@@ -58,11 +58,27 @@ static void pairing_key_timer_cb(void *arg) {
 }
 #endif
 
+/*
+2026-08-05: der User-Hook kommt jetzt zuerst und darf abbrechen -- vorher lief
+das default_layer_set() unbedingt und der Hook durfte hinterher aufraeumen.
+
+Der Grund ist kein Schoenheitsfehler: Layer 0/2 sind Keychrons eigene
+MAC_BASE/WIN_BASE. In einer Keymap mit anderem Layer-Enum zeigt die 2 irgendwo
+hin -- im wechselbalg-Keymap auf ein Layout, das gar nicht einkompiliert ist
+(lauter KC_NO). Und weil keyboard_post_init_kb() unten dip_switch_read(true)
+aufruft, passierte das bei *jedem* Boot: Schalter auf Windows = totes Board,
+inklusive der Taste, die auf den ADJUST-Layer mit QK_BOOT fuehrt.
+
+Das ist genau das Muster, das Keychrons neuere Boards schon verwenden
+(keyboards/keychron/v1/v1.c:20, ebenso v6/v7/v8).
+*/
 bool dip_switch_update_kb(uint8_t index, bool active) {
+    if (!dip_switch_update_user(index, active)) {
+        return false;
+    }
     if (index == 0) {
         default_layer_set(1UL << (active ? 0 : 2));
     }
-    dip_switch_update_user(index, active);
 
     return true;
 }

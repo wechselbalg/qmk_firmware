@@ -71,6 +71,23 @@ BOARDS = {
             },
         },
     },
+    "k3_pro": {
+        "label": "Keychron K3 Pro ISO RGB (kein Split, ein Board)",
+        "kb": "keychron/k3_pro/iso/rgb",
+        "km": "wechselbalg",
+        "convert_to": None,
+        "sides": None,  # kein Split -> nur ein Flash-Durchlauf
+        "prompt": (
+            "USB abziehen. Dann Esc GEDRUECKT HALTEN und dabei wieder einstecken.\n"
+            "  Das ist Bootmagic: BOOTMAGIC_ENABLE steht in keyboards/keychron/k3_pro/rules.mk,\n"
+            "  und Matrix [0,0] ist auf diesem Board die Esc-Taste. Das Geraet meldet sich\n"
+            "  danach als 'STM32 BOOTLOADER' (DFU, 0483:df11).\n"
+            "  ACHTUNG: Bootmagic setzt dabei das EEPROM zurueck -- das ist gewollt und\n"
+            "  zugleich der Rettungsweg, falls das Board je auf einem toten Layer landet.\n"
+            "  Alternativen: QK_BOOT liegt im _ADJUST-Layer (End halten) auf Esc, Backspace\n"
+            "  und B -- oder der Reset-Taster auf der Platine (Gehaeuse oeffnen)."
+        ),
+    },
     # Weitere Boards hier ergaenzen, z.B.:
     # "kyria": {
     #     "label": "splitkb Kyria",
@@ -122,7 +139,10 @@ def flash_board(board_key, only_side=None):
     sides = board.get("sides")
 
     if sides is None:
-        flash_side(board, "single", {"bootloader": None, "prompt": "Board in den Bootloader-Modus bringen, dann USB einstecken."})
+        flash_side(board, "single", {
+            "bootloader": None,
+            "prompt": board.get("prompt", "Board in den Bootloader-Modus bringen, dann USB einstecken."),
+        })
         return
 
     if only_side:
