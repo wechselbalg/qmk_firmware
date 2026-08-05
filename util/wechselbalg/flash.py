@@ -99,13 +99,24 @@ BOARDS = {
     #         "right": {"bootloader": None, "prompt": "..."},
     #     },
     # },
-    # "gmmk_pro": {
-    #     "label": "Glorious GMMK Pro (kein Split, ein Board)",
-    #     "kb": "gmmk/pro/rev1/iso",
-    #     "km": "wechselbalg",
-    #     "convert_to": None,
-    #     "sides": None,  # kein Split -> nur ein Flash-Durchlauf
-    # },
+    "gmmk_pro": {
+        "label": "Glorious GMMK Pro ISO (kein Split, ein Board)",
+        "kb": "gmmk/pro/rev1/iso",
+        "km": "wechselbalg",
+        "convert_to": None,
+        "sides": None,  # kein Split -> nur ein Flash-Durchlauf
+        "prompt": (
+            "USB abziehen. Dann Esc GEDRUECKT HALTEN und dabei wieder einstecken.\n"
+            "  Das ist Bootmagic: BOOTMAGIC_ENABLE ist an, und die keyboard.json setzt\n"
+            "  BOOTMAGIC_ROW 1 / BOOTMAGIC_COLUMN 3 -- Matrix [1,3] ist der erste Eintrag\n"
+            "  der layout-Liste, also die Esc-Taste. Das Geraet meldet sich danach als\n"
+            "  'STM32 BOOTLOADER' (DFU, 0483:df11).\n"
+            "  ACHTUNG: Bootmagic setzt dabei das EEPROM zurueck -- das ist gewollt und\n"
+            "  zugleich der Rettungsweg, falls das Board je auf einem toten Layer landet.\n"
+            "  Alternativen: QK_BOOT liegt im _ADJUST-Layer (End halten) auf Esc, Backspace\n"
+            "  und B -- oder der Reset-Taster auf der Platine (Gehaeuse oeffnen)."
+        ),
+    },
 }
 
 

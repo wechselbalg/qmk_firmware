@@ -127,7 +127,7 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-05, K3 Pro geflasht)
+## Aktueller Stand (Stand: 2026-08-06, GMMK Pro entschärft)
 
 **Fertig:**
 - Fork aufgeräumt (nur noch master/develop/mike), auf aktuellen QMK-Stand gemergt.
@@ -186,6 +186,12 @@ gepflegt werden:
   **Noch nicht beurteilt:** das Tippgefühl bei `TAPPING_TERM 150`.
 
 **Offen / vor dem Flashen prüfen:**
+- **GMMK Pro ISO — Aussperr-Falle geschlossen 2026-08-06, aber NOCH NICHT
+  GEFLASHT.** Das Board war bei der Sitzung nicht angeschlossen; auf ihm läuft
+  also weiterhin die alte Firmware **mit** den acht scharfen Tasten auf
+  `_ADJUST` (physisch Q/W/E/R und A/S/D/F). Bis zum Flashen dort nichts
+  anfassen. Bekommt mit diesem Stand QWERTZ + **Colemak-DH** (Entscheidung
+  Michael), Details im Abschnitt „GMMK Pro" im K3-Pro-Kapitel.
 - **K3 Pro — Keymap gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
   notierten Bedenken waren gegenstandslos, der Rest ist erledigt:
   - ~~„neu belegte `+`-Taste"~~ — **kein Unterschied**: `DE_PLUS` *ist*
@@ -293,10 +299,8 @@ Wahl — die drei ungenutzten Layer entstehen gar nicht erst, und die Aliase
 fallen über die `#else`-Zweige in `wechselbalg.h` auf `___NO__` zurück. Aus den
 Falltüren werden also tote Tasten statt falscher Ziele.
 
-**Dasselbe Loch hat die GMMK Pro** (`gmmk/pro/rev1/iso`): sie definiert **nur**
-`_QWERT`, dort sind also *vier* Layer leer und entsprechend acht Tasten auf
-`_ADJUST` scharf. Noch nicht angefasst — vor ihrem nächsten Flash erledigen,
-nach demselben Muster.
+**Dasselbe Loch hatte die GMMK Pro** (`gmmk/pro/rev1/iso`) — geschlossen am
+2026-08-06, siehe den Abschnitt „GMMK Pro" unten.
 
 ## Colemak-DH statt MINE — und ein Bugfix im Wrapper
 
@@ -464,6 +468,57 @@ das ist billiger als flashen.
 
 Ergänzend: ob ein `#define` wirklich im Build ankommt, sagt
 `tr ' ' '\n' < .build/obj_<target>/cflags.txt | grep -x -- -DDIP_SWITCH_ENABLE`.
+
+## GMMK Pro: dieselbe Falle, geschlossen 2026-08-06
+
+Die GMMK Pro (`gmmk/pro/rev1/iso`) definierte als Basis-Layout **nur `_QWERT`**.
+Auf Nicht-AVR legt das Enum aber alle vier Alternativ-Layouts an — hier waren
+also **vier** Layer komplett leer (je 176 Byte `KC_NO`; die Matrix ist 11×8, nicht
+6×16 wie beim K3 Pro) und entsprechend **acht** Tasten auf `_ADJUST` scharf:
+
+| Physisch auf `_ADJUST` | war | Wirkung |
+|---|---|---|
+| Q / W / E / R | `P_DVORK` / `P_COLMK` / `P___VOU` / `P__MINE` | `set_single_persistent_default_layer()` → **dauerhaft** totes Board |
+| A / S / D / F | `D_DVORK` / `D_COLMK` / `D___VOU` / `D__MINE` | `DF()`, tot bis zum Ausstecken |
+
+**Fix, wie beim K3 Pro:** `OPT_DEFS += -DWB_LAYOUT_COLEMAKDH` in der
+Keymap-[rules.mk](keyboards/gmmk/pro/rev1/iso/keymaps/wechselbalg/rules.mk).
+Dazu — Entscheidung Michael 2026-08-06 — bekommt das Board **Colemak-DH als
+zweites Basis-Layout**, genau wie der K3 Pro: ein `[_COLEMAKDH]`-Block aus den
+12/13-breiten ISO-Wrappern `COLMAK_1/2/3`, zeilenweise identisch mit `_QWERT`.
+Aus sechs Falltüren werden damit tote Tasten, die anderen zwei (W und S) zeigen
+auf einen **echten** Layer.
+
+**Kein Gegenstück zu Falle 1**: die GMMK Pro hat keinen Dip-Switch, und im
+Board-Code steht kein `default_layer_set` (nachgeprüft per grep über
+`keyboards/gmmk/pro/`). Der Rettungsanker ist derselbe: `BOOTMAGIC_ENABLE` ist
+an, und `BOOTMAGIC_ROW 1` / `BOOTMAGIC_COLUMN 3` ist laut `keyboard.json`
+Layout-Index 0 — also **Esc gedrückt halten und einstecken**.
+
+Nebenbei: der `encoder_map` in der keymap.c hat jetzt auch einen
+`[_COLEMAKDH]`-Eintrag. Er ist heute toter Code (`ENCODER_MAP_ENABLE` ist in der
+rules.mk auskommentiert, per `cflags.txt` bestätigt) — aber wenn er je
+angeschaltet wird, wäre der Encoder auf dem Colemak-Layer sonst stumm.
+
+**Am Binary geprüft** (Methode wie oben), vorher/nachher:
+
+| | vorher | nachher |
+|---|---|---|
+| `keymaps` | 1760 Byte, 10 Layer | 1232 Byte, 7 Layer |
+| leere Layer | `_DVORAK`/`_COLEMAKDH`/`_MINE`/`_VOU`, je 0/88 Tasten | keine |
+| `_ADJUST` belegt | 70/88 | 64/88 (die 6 Falltüren sind `KC_NO`) |
+| Firmware | 44228 Byte | 43676 Byte |
+
+`_COLEMAKDH` hat 84/88 belegte Tasten wie `_QWERT`, alle 26 Buchstaben je einmal
+(inklusive des reparierten `M`), Ü/Ä/# je auf ihrer eigenen ISO-Taste. Ü und Ä
+senden dabei **blank**, ohne Layer-Tap — der neue Layer erbt das über
+`COLMAK_1/2` automatisch mit (Änderung vom 2026-08-05, siehe dort); im gesamten
+`keymaps`-Array kommen `NUM__UE`/`SYM__AE` null mal vor. `QK_BOOT`
+liegt weiterhin auf Esc, Backspace und B; nach `_ADJUST` führt `MO(6)` auf der
+**End**-Taste, und zwar auf `_QWERT` *und* auf `_COLEMAKDH` — der Weg in den
+Bootloader überlebt das Umschalten also.
+
+⚠️ **Noch nicht geflasht** (Board war bei der Sitzung nicht angeschlossen).
 
 ---
 
@@ -838,16 +893,18 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    (`RGB_MATRIX_DEFAULT_VAL 40`, änderbar per `RGB_VAI`/`RGB_VAD` auf `_ADJUST`
    ohne Neuflashen) und ob die Minus-Taste jetzt wirklich leuchtet.
    Der Win/Mac-Schalter ist bestätigt.
-2. **⚠️ GMMK Pro hat ungeflashte Änderungen.** Sie teilt sich `QWERTY_1/2` und
-   `GAMING_2` mit dem K3 Pro und hat am 2026-08-05 das blanke Ü/Ä mitbekommen,
-   lag aber nicht an. Beim nächsten Flash zusammen mit Punkt 4 erledigen.
+2. **⚠️ GMMK Pro hat ungeflashte Änderungen.** Zwei Stück, beide weil das Board
+   nicht anlag: sie teilt sich `QWERTY_1/2` und `GAMING_2` mit dem K3 Pro und
+   hat am 2026-08-05 das blanke Ü/Ä mitbekommen, und am 2026-08-06 kamen die
+   entschärften `_ADJUST`-Tasten plus Colemak-DH dazu (Punkt 4). Bis zum Flash
+   läuft auf ihr weiterhin die alte Firmware **mit** den acht scharfen Tasten.
 3. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
    Punkt, der sich nur über längere Benutzung zeigt. Bei versehentlichen
    Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD` dokumentiert bereit
    (siehe unten). Auf dem K3 Pro sind die Umlaute seit 2026-08-05 aus der
    Tap-Hold-Auflösung heraus, das ändert dort das Bild.
-4. **GMMK Pro: dieselbe Aussperr-Falle schließen** wie beim K3 Pro — sie
-   definiert nur `_QWERT`, vier Layer sind leer. Vor ihrem nächsten Flash.
+4. ~~**GMMK Pro: dieselbe Aussperr-Falle schließen**~~ — **erledigt 2026-08-06**,
+   siehe eigenen Abschnitt im K3-Pro-Kapitel. Noch nicht geflasht.
 5. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
 6. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
 

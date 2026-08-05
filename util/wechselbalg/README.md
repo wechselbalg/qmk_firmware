@@ -36,9 +36,18 @@ Es gibt **keinen Software-Weg**, den Bootloader vom Skript aus fernzustarten
 - **Schwarze Sofle Choc (2× Liatris/RP2040):** BOOTSEL-Taste gedrückt halten,
   dabei USB einstecken. Kein Zeitfenster, Board bleibt im Bootloader bis
   geflasht wird.
-- Alternativ (auf laufender Tastatur, statt Taster): `_NUM`+`_NAV`-
-  Daumentasten gleichzeitig halten (aktiviert `_ADJUST`), dann „B"-Taste
-  (linke Hälfte, unterste Reihe) drücken → `QK_BOOT`.
+- **K3 Pro und GMMK Pro (beide STM32):** **Esc** gedrückt halten, dabei USB
+  einstecken — Bootmagic, hängt an keiner Keymap und an keinem Layer, sondern
+  nur an der Matrix. Meldet sich als `STM32 BOOTLOADER` (0483:df11). Setzt
+  dabei das EEPROM zurück; genau das macht diesen Weg zum Rettungsanker, wenn
+  das Board je auf einem toten Layer landet. Das Skript druckt die Anleitung
+  vor dem Flashen selbst noch einmal aus.
+- Alternativ auf laufender Tastatur, statt Taster:
+  - **Splits (Tri-Layer):** `_NUM`+`_NAV`-Daumentasten gleichzeitig halten
+    (aktiviert `_ADJUST`), dann „B"-Taste (linke Hälfte, unterste Reihe)
+    drücken → `QK_BOOT`.
+  - **K3 Pro / GMMK Pro (kein Tri-Layer):** **End** halten — das ist dort die
+    dedizierte `MO__ADJ`-Taste — dann Esc, Backspace oder B.
 
 ## Neues Board ergänzen
 

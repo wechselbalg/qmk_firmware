@@ -68,6 +68,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ________________________________________7_THUMBS________________________________________, KC_LEFT,  KC_DOWN,  KC_RGHT
     ),
 
+#ifdef WB_LAYOUT_COLEMAKDH
+    /*
+    Zeilenweise identisch mit _QWERT -- nur die Buchstabenbloecke unterscheiden
+    sich. Die COLMAK_*-Bloecke sind die 12/13-breiten ISO-Varianten aus
+    wrappers.h; warum die letzte Taste in Reihe 1 und 2 dort von den
+    Split-Haelften abweicht, steht im Kommentar an ihrer Definition.
+    */
+    [_COLEMAKDH] = LAYOUT_wrapper(
+        KC_ESC,  _________________________________________F_KEYS_________________________________________,  RN_CODE,  KC_MUTE,
+        KC_GRV,  _______________________________NUMBERS________________________________, KC_MINS, KC_EQL ,  KC_BSPC,  KC_DEL,
+        ________________________________________COLMAK_1________________________________________, KC_RBRC,            KC_HOME,
+        ________________________________________COLMAK_2________________________________________, SYM_HSH,  KC_ENT,   KC_END,
+        ________________________________________COLMAK_3________________________________________,           KC_UP,    MO__ADJ,
+        ________________________________________7_THUMBS________________________________________, KC_LEFT,  KC_DOWN,  KC_RGHT
+    ),
+#endif
+
     [_SYM] = LAYOUT_wrapper(
         KC_ESC,  _________________________________________F_KEYS_________________________________________, _______,  _______,
         ________________________________________SYMBOL__0_______________________________________, ___NO__, _______,  _______,
@@ -149,6 +166,9 @@ const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT_wrappe
 #if defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_QWERT] =    { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
+#ifdef WB_LAYOUT_COLEMAKDH
+    [_COLEMAKDH] ={ ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
+#endif
     [_SYM] =      { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
     [_NUM] =      { ENCODER_CCW_CW(KC_MPRV, KC_MNXT) },
     [_NAV] =      { ENCODER_CCW_CW(MS_WHLD, MS_WHLU) },
