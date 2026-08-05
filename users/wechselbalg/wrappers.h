@@ -126,8 +126,32 @@ NOTE: These are all the same length.  If you do a search/replace
 #define _________________QWERTY_R2_________________  DE_H    , DE_J   , DE_K   , DE_L   , DE___OE, SYM__AE
 #define _________________QWERTY_R3_________________  DE_N    , DE_M   , DE_COMM, DE_DOT , DE_MINS, KC_RSFT
 
-#define ________________________________________QWERTY_1________________________________________  _________________QWERTY_L1_________________, _________________QWERTY_R1_________________
-#define ________________________________________QWERTY_2________________________________________  _________________QWERTY_L2_________________, _________________QWERTY_R2_________________
+/*
+Die 12/13-breiten Bloecke fuer die grossen ISO-Boards (GMMK Pro, K3 Pro).
+Sie existieren, weil diese Boards an drei Stellen eine *zusaetzliche* Taste
+haben, wo die Splits eine Doppelrolle brauchen -- und diese Doppelrollen
+deshalb hier nicht nur unnoetig, sondern schaedlich sind:
+
+  - Reihe 1, letzte Taste: die Splits haben NUM__UE (Ue tippen, NUM halten),
+    weil ihre Pinky-Spalte den Layer-Zugang tragen muss. Hier ist es die
+    physische Ue-Taste, und MO__NUM sitzt schon doppelt auf NUBS und Fn.
+  - Reihe 2, letzte Taste: dasselbe mit SYM__AE; MO__SYM sitzt auf Caps.
+  - Reihe 3: die Splits fassen Shift und Pipe auf einem Pinky zusammen
+    (SFT_PIP), hier gibt es die NUBS-Taste dazwischen.
+
+⚠️ 2026-08-05: Reihe 1 und 2 senden jetzt **blankes Ue und Ae** statt der
+Layer-Taps. Jeder Umlaut kostete sonst die Tap-Hold-Aufloesung ueber
+TAPPING_TERM (150 ms) fuer einen Layer, der ohnehin auf einer eigenen Taste
+liegt -- auf einem deutschen Layout ist das der falsche Handel (Michael,
+2026-08-05). Deshalb sind die R1/R2-Haelften hier ausgeschrieben statt
+eingesetzt: die Splits brauchen ihre Doppelrolle weiterhin und bleiben
+unangetastet.
+
+Die #-Taste behaelt ihren SYM-Hold; sie steht nicht in diesen Bloecken,
+sondern direkt in den Board-Keymaps (SYM_HSH).
+*/
+#define ________________________________________QWERTY_1________________________________________  _________________QWERTY_L1_________________, DE_Z, DE_U, DE_I, DE_O, DE_P    , DE___UE
+#define ________________________________________QWERTY_2________________________________________  _________________QWERTY_L2_________________, DE_H, DE_J, DE_K, DE_L, DE___OE, DE___AE
 #define ________________________________________QWERTY_3________________________________________  KC_LSFT, MO__NUM, DE_Y, DE_X, DE_C, DE_V, DE_B, _________________QWERTY_R3_________________
 
 // DVORAK
@@ -166,14 +190,13 @@ NOTE: These are all the same length.  If you do a search/replace
 #define ______________COLEMAKDH_R3_________________  DE_K    , DE_H   , DE_COMM, DE_DOT , DE_MINS  , KC_RSFT
 
 /*
-Die 12/13-breiten Bloecke fuer die grossen ISO-Boards (GMMK Pro, K3 Pro).
-Zwei Abweichungen von den 6er-Haelften oben, beide weil dieses Board an den
-betreffenden Stellen eine *zusaetzliche* Taste hat statt einer Pinky-Doppelrolle:
+Die 12/13-breiten Bloecke fuer die grossen ISO-Boards -- ausfuehrliche
+Begruendung siehe bei QWERTY_1 oben, hier nur die Unterschiede zu den
+6er-Haelften:
 
   - letzte Taste in Reihe 1: die Splits haben dort MO__NUM, weil ihre
     Pinky-Spalte den Layer-Zugang tragen muss. Auf dem ISO-Board ist das die
-    physische Ue-Taste, und MO__NUM sitzt ohnehin schon auf NUBS und Fn --
-    deshalb NUM__UE (Ue beim Tippen, NUM beim Halten), genau wie in QWERTY_1.
+    physische Ue-Taste -- und die sendet hier blankes Ue, ohne Hold.
   - letzte Taste in Reihe 2: die Splits haben dort SYM_HSH. Auf dem ISO-Board
     ist das die physische Ae-Taste, und die eigene #-Taste liegt eine Position
     weiter rechts -- SYM_HSH waere dort also doppelt und Ae unerreichbar.
@@ -181,8 +204,8 @@ betreffenden Stellen eine *zusaetzliche* Taste hat statt einer Pinky-Doppelrolle
 Reihe 3 loest wie bei QWERTY/MINE die Doppelrolle SFT_PIP in KC_LSFT + MO__NUM
 auf, weil das Board die NUBS-Taste dazwischen hat.
 */
-#define ________________________________________COLMAK_1________________________________________  ______________COLEMAKDH_L1_________________, DE_J, DE_L, DE_U, DE_Y, DE_SCLN, NUM__UE
-#define ________________________________________COLMAK_2________________________________________  ______________COLEMAKDH_L2_________________, DE_M, DE_N, DE_E, DE_I, DE_O   , SYM__AE
+#define ________________________________________COLMAK_1________________________________________  ______________COLEMAKDH_L1_________________, DE_J, DE_L, DE_U, DE_Y, DE_SCLN, DE___UE
+#define ________________________________________COLMAK_2________________________________________  ______________COLEMAKDH_L2_________________, DE_M, DE_N, DE_E, DE_I, DE_O   , DE___AE
 #define ________________________________________COLMAK_3________________________________________  KC_LSFT, MO__NUM, DE_Z, DE_X, DE_C, DE_D, DE_V, ______________COLEMAKDH_R3_________________
 
 // MINE
@@ -238,7 +261,10 @@ auf, weil das Board die NUBS-Taste dazwischen hat.
 #define _________________GAMING_R2_________________  DE_H    , DE_J   , DE_K   , DE_L   , DE___OE, SYM__AE
 #define _________________GAMING_R3_________________  DE_N    , DE_M   , DE_COMM, DE_DOT , DE_MINS, KC_RSFT
 
-#define ________________________________________GAMING_2________________________________________  KC_ENT, DE_A, DE_S, DE_D, DE_F, DE_G,  _________________QWERTY_R2_________________
+// Rechte Haelfte ausgeschrieben statt QWERTY_R2 eingesetzt, aus demselben Grund
+// wie bei QWERTY_2 oben: blankes Ae statt SYM__AE. Sonst haette _GAMING auf den
+// grossen Boards blankes Ue (kommt aus QWERTY_1) neben einem Ae mit Layer-Tap.
+#define ________________________________________GAMING_2________________________________________  KC_ENT, DE_A, DE_S, DE_D, DE_F, DE_G, DE_H, DE_J, DE_K, DE_L, DE___OE, DE___AE
 #define ________________________________________GAMING_3________________________________________  KC_LSFT, DE_LABK, DE_Y, DE_X, DE_C, DE_V, DE_B,  _________________QWERTY_R3_________________
 
 #define _________5_GAMING_THUMBS_L__________  KC_LCTL , KC_LALT, KC_LCTL, KC_SPC , KC_ENT

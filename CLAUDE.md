@@ -389,6 +389,48 @@ ANSI/ISO-Vergleich zeigt das Verschiebemuster.
 schlicht dunkel geblieben. Wer eine LED-Tabelle vom Nachbar-Layout ableitet,
 sollte sie gegen die `layout`-Liste prüfen; das sind zehn Zeilen Python.
 
+### Ü und Ä sind keine Layer-Taps mehr (2026-08-05)
+
+Auf den Splits muss die Pinky-Spalte den Layer-Zugang mittragen, deshalb sind
+dort `NUM__UE` (Ü tippen, NUM halten) und `SYM__AE`. Auf den großen ISO-Boards
+ist das eine **Dublette mit Kosten**: jeder Umlaut läuft durch die
+Tap-Hold-Auflösung über `TAPPING_TERM` (150 ms) — für einen Layer, der ohnehin
+auf einer eigenen Taste liegt. Hier hat jedes Overlay einen dedizierten Zugang:
+
+| Layer | dedizierte Taste auf dem K3 Pro |
+|---|---|
+| `_SYM` | Caps (`MO__SYM`) |
+| `_NAV` | RAlt (`MO__NAV`) |
+| `_NUM` | NUBS `<` **und** Fn — doppelt |
+| `_ADJUST` | End (`MO__ADJ`) |
+
+Deshalb senden `QWERTY_1`/`QWERTY_2`, `COLMAK_1`/`COLMAK_2` und `GAMING_2` jetzt
+blankes `DE___UE`/`DE___AE`. **Die Splits bleiben unangetastet**, weil das reine
+Großboard-Blöcke sind — die Splits setzen direkt die 6er-Hälften
+`QWERTY_R1`/`QWERTY_R2` ein, und die tragen weiterhin die Doppelrolle.
+Belegt: alle vier AVR-Binaries blieben nach der Änderung bytegleich
+(22 / 148 / 1212 / 896 Byte frei).
+
+Dass die R1/R2-Hälften in diesen Blöcken jetzt **ausgeschrieben** statt
+eingesetzt sind, ist genau der Preis dafür — und der Grund steht als Kommentar
+an `QWERTY_1`.
+
+- **`GAMING_2` musste mit** (Michael, 2026-08-05): es zog sich `QWERTY_R2`
+  herein, also hätte `_GAMING` blankes Ü aus `QWERTY_1` neben einem Ä mit
+  Layer-Tap gehabt.
+- **Bewusst geblieben:** `SYM_HSH` auf der ISO-#-Taste (steht direkt in den
+  Board-Keymaps, nicht in den Blöcken), `NAV_TAB` und `NAV_SPC` — keine
+  Buchstaben und der klassische Griff; das `'*'` der `chordal_hold_layout`
+  sitzt auf der Leertaste.
+- **`MINE___1`/`MINE___2` nicht angefasst.** Dort stehen an denselben Stellen
+  `NUM__SS` (ß) und `SYM___Z` (z) — dasselbe Muster, aber `_MINE` ist auf
+  diesem Board nicht einkompiliert. Beim Zurückschalten auf `WB_LAYOUT_MINE`
+  mitziehen.
+- **GMMK Pro zieht mit**, weil sie sich `QWERTY_1/2` und `GAMING_2` teilt.
+  Geprüft am ELF: `NUM__UE`/`SYM__AE` kommen dort im gesamten `keymaps`-Array
+  **nicht mehr vor**. ⚠️ Die GMMK Pro ist damit geändert, aber **nicht
+  geflasht** — sie lag nicht an.
+
 ### Kein Tri-Layer-Hinweis auf diesem Board
 
 `-DWB_NO_TRI_LAYER_HINT`, siehe C8 weiter unten. Ohne das würde die NUM-Taste
@@ -790,20 +832,24 @@ Liatris-Build kompilieren.
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-1. **K3 Pro am Board nachprüfen** (2026-08-05 zweimal geflasht, siehe eigenes
+1. **K3 Pro am Board nachprüfen** (2026-08-05 dreimal geflasht, siehe eigenes
    Kapitel): ob Colemak-DH mit dem korrigierten `M` sauber tippt, und ob die
    Farbsprache in der Praxis trägt — besonders die Helligkeit
    (`RGB_MATRIX_DEFAULT_VAL 40`, änderbar per `RGB_VAI`/`RGB_VAD` auf `_ADJUST`
    ohne Neuflashen) und ob die Minus-Taste jetzt wirklich leuchtet.
    Der Win/Mac-Schalter ist bestätigt.
-2. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
+2. **⚠️ GMMK Pro hat ungeflashte Änderungen.** Sie teilt sich `QWERTY_1/2` und
+   `GAMING_2` mit dem K3 Pro und hat am 2026-08-05 das blanke Ü/Ä mitbekommen,
+   lag aber nicht an. Beim nächsten Flash zusammen mit Punkt 4 erledigen.
+3. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
    Punkt, der sich nur über längere Benutzung zeigt. Bei versehentlichen
    Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD` dokumentiert bereit
-   (siehe unten).
-3. **GMMK Pro: dieselbe Aussperr-Falle schließen** wie beim K3 Pro — sie
+   (siehe unten). Auf dem K3 Pro sind die Umlaute seit 2026-08-05 aus der
+   Tap-Hold-Auflösung heraus, das ändert dort das Bild.
+4. **GMMK Pro: dieselbe Aussperr-Falle schließen** wie beim K3 Pro — sie
    definiert nur `_QWERT`, vier Layer sind leer. Vor ihrem nächsten Flash.
-4. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
-5. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
+5. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
+6. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
 
 Offen als *Entscheidung*, nicht als Arbeit: ob die Shift+Shift-Geste bei
 „beide halten" bleibt oder den Combo-Weg bekommt (siehe oben).
