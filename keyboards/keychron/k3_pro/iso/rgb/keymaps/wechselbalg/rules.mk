@@ -17,3 +17,15 @@ MAGIC_ENABLE = yes
 # Umstellen ist eine Zeile: WB_LAYOUT_MINE statt WB_LAYOUT_COLEMAKDH (der
 # _MINE-Layer steht weiterhin in der keymap.c, nur hinter seinem #ifdef).
 OPT_DEFS += -DWB_LAYOUT_COLEMAKDH
+
+# Die abgeleitete Per-Key-Farbsprache (C8) -- bis 2026-08-05 lief dieses Board
+# noch auf Keychrons Standard-Animationen. Die Farbsprache war ausdruecklich
+# opt-in, damit sie GMMK Pro und K3 Pro nicht ungefragt umfaerbt; hier ist sie
+# jetzt gefragt (Michael, 2026-08-05).
+WB_RGB_LANGUAGE = yes
+
+# Kein Tri-Layer auf diesem Board: nach _ADJUST fuehrt allein die MO__ADJ-Taste
+# (physisch End). Ohne das wuerde die _NUM-Taste rot leuchten, solange _NAV
+# gehalten wird -- und damit einen Weg nach _ADJUST behaupten, den es hier
+# nicht gibt.
+OPT_DEFS += -DWB_NO_TRI_LAYER_HINT

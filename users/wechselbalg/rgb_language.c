@@ -214,12 +214,23 @@ nur die auf dem jeweils anderen Layer nicht ueberschrieben werden -- ohne dass
 das hier irgendwo steht.
 */
 static uint8_t wb_tri_layer_hint(uint8_t target) {
+#ifdef WB_NO_TRI_LAYER_HINT
+    /*
+    Nicht jedes Board hat Tri-Layer: GMMK Pro und K3 Pro kommen ueber eine
+    eigene MO__ADJ-Taste nach _ADJUST, halten von _NAV+_NUM tut dort nichts.
+    Der Hinweis waere dann keine Hilfe, sondern eine Falschaussage -- eine
+    Taste rot faerben heisst "die fuehrt nach ADJUST".
+    Gesetzt per -DWB_NO_TRI_LAYER_HINT in der Keymap-rules.mk des Boards.
+    */
+    return target;
+#else
     if (layer_state_is(_ADJUST)) {
         return target;
     }
     if (target == _NUM && layer_state_is(_NAV)) return _ADJUST;
     if (target == _NAV && layer_state_is(_NUM)) return _ADJUST;
     return target;
+#endif
 }
 
 /*

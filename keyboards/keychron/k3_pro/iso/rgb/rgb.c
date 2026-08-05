@@ -124,7 +124,15 @@ led_config_t g_led_config = {
         { 16,     17,     18,     19,     20,     21,     22,     23,     24,     25,     26,     27,     28,     29,     NO_LED, 30 },
         { 31,     32,     33,     34,     35,     36,     37,     38,     39,     40,     41,     42,     43,     44,     NO_LED, 45 },
         { 46,     47,     48,     49,     50,     51,     52,     53,     54,     55,     56,     57,     NO_LED, 58,     NO_LED, 59 },
-        { 60,     61,     62,     63,     64,     65,     66,     67,     68,     69,     70,     NO_LED, 71,     72,     73,     74 },
+        /* 2026-08-05: NO_LED stand eine Spalte zu weit links. Diese Reihe ist
+           erkennbar aus der ANSI-Variante abgeleitet (dort korrekt: dort hat
+           Reihe 4 wegen der 2.25u-LShift keine Spalte 1), beim Einfuegen der
+           ISO-NUBS-Taste wurde die Luecke aber nicht mitgeschoben. Folge:
+           [4,11] -- die Minus-Taste -- war ohne LED, und LED 71 haeng an
+           Spalte 12, wo gar keine Taste sitzt. Die Position von LED 71 im
+           Array unten ({168,51}) entspricht genau x=11.25 aus der
+           keyboard.json, also [4,11]. */
+        { 60,     61,     62,     63,     64,     65,     66,     67,     68,     69,     70,     71,     NO_LED, 72,     73,     74 },
         { 75,     76,     77,     NO_LED, NO_LED, NO_LED, 78,     NO_LED, NO_LED, NO_LED, 79,     80,     81,     82,     83,     84 }
     },
     {

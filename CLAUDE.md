@@ -179,8 +179,11 @@ gepflegt werden:
   sich jetzt als `Dell KB216 Wired Keyboard` (`0x413C:0x2113`, Michaels eigene
   Änderung von 2023, bewusst beibehalten). Details siehe „K3 Pro: Bootloader
   und die zwei Aussperr-Fallen" weiter unten.
-  **Noch nicht auf Hardware geprüft:** Polarität des Win/Mac-Schalters und das
-  Tippgefühl bei `TAPPING_TERM 150`.
+  **Win/Mac-Schalter am Board bestätigt (2026-08-05)** — die angenommene
+  Polarität (`active` = Mac) stimmt.
+  Zweiter Flash am selben Tag: die Farbsprache (C8) ist jetzt auch hier an,
+  siehe „Die Beleuchtung" im K3-Pro-Kapitel.
+  **Noch nicht beurteilt:** das Tippgefühl bei `TAPPING_TERM 150`.
 
 **Offen / vor dem Flashen prüfen:**
 - **K3 Pro — Keymap gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
@@ -338,6 +341,72 @@ Nebenbefund für den Fall, dass es angegangen wird: in
 [k3_pro.c](keyboards/keychron/k3_pro/k3_pro.c) steht bei `ENABLE_FACTORY_TEST`
 ein verirrter Schrägstrich (`/#    include "factory_test.h"`). Stört heute
 nicht, weil das `#ifdef` nie greift — beim BT-Build aber sofort ein Syntaxfehler.
+
+## Die Beleuchtung: Farbsprache angeschaltet (zweiter Flash, 2026-08-05)
+
+Bis hierhin lief auf dem Board noch Keychrons Standard-Animation — die
+Farbsprache aus C8 war nie eingeschaltet, weil sie ausdrücklich opt-in ist.
+Michael hat sie angefordert; `WB_RGB_LANGUAGE = yes` steht jetzt in der
+Keymap-`rules.mk`. Beim Portieren auf das zweite Board kamen drei Dinge dazu:
+
+### ⚠️ Ohne eigene `RGB_MATRIX_DEFAULT_*` kollidiert die Palette mit sich selbst
+
+Das Grundleuchten kommt aus der laufenden Hue/Sat-Konfiguration. Die Sofle Choc
+setzt die Startwerte ausdrücklich (`SOLID_COLOR`, Hue 25 / Sat 135 / Val 40 —
+das warme Cremeweiß); dem K3 Pro fehlte das. QMKs Vorgaben sind **Hue 0 +
+Sat 255** und `DEFAULT_VAL = RGB_MATRIX_MAXIMUM_BRIGHTNESS`, also **knallrot bei
+voller Helligkeit** — ausgerechnet die Farbe, die in der Palette `_ADJUST`
+bedeutet. Steht jetzt in der neuen
+[keymaps/wechselbalg/config.h](keyboards/keychron/k3_pro/iso/rgb/keymaps/wechselbalg/config.h).
+
+**Merkregel für jedes weitere Board:** die Farbsprache bringt ihr Grundleuchten
+*nicht* mit, sie liest es. Wer `WB_RGB_LANGUAGE` anschaltet, muss die vier
+`RGB_MATRIX_DEFAULT_*`-Zeilen mitliefern.
+
+Dort werden auch die 21 Animationen aus
+`keyboards/keychron/k3_pro/iso/rgb/config.h` per `#undef` abgeräumt (die
+Board-`config.h` bleibt unangetastet — `default` und `via` teilen sie sich mit
+uns). Sie wären ohnehin unsichtbar, weil die Farbsprache jeden Frame über alle
+85 Tasten-LEDs schreibt; übrig blieben nur `RGB_MOD`/`RGB_RMOD` auf `_ADJUST`,
+die zwischen Modi umschalten, die man nicht sieht. **Gemessen:** 42724 → 37036
+Byte, und im ELF ist kein Animations-Symbol mehr übrig.
+
+### ⚠️ Bugfix: die ISO-LED-Tabelle war in Reihe 4 um eine Spalte verschoben
+
+In `g_led_config.matrix_co` ([rgb.c](keyboards/keychron/k3_pro/iso/rgb/rgb.c))
+stand `NO_LED` eine Spalte zu weit links: **`[4,11]` — die Minus-Taste — hatte
+gar keine LED**, und LED 71 hing an Spalte 12, wo keine Taste sitzt.
+
+Die Reihe ist erkennbar aus der ANSI-Variante abgeleitet (dort korrekt: deren
+Reihe 4 hat wegen der 2.25u-LShift keine Spalte 1), beim Einfügen der
+ISO-NUBS-Taste wurde die Lücke nicht mitgeschoben. Zwei unabhängige Belege:
+LED 71 steht im Positions-Array auf `{168,51}`, was bei 224/15 px pro Einheit
+genau `x=11.25` aus der `keyboard.json` ist — also `[4,11]`; und der direkte
+ANSI/ISO-Vergleich zeigt das Verschiebemuster.
+
+**Warum das nie auffiel:** Animationen rechnen nach x/y und ignorieren
+`matrix_co`. Erst die Farbsprache liest die Zuordnung — dort wäre die Taste
+schlicht dunkel geblieben. Wer eine LED-Tabelle vom Nachbar-Layout ableitet,
+sollte sie gegen die `layout`-Liste prüfen; das sind zehn Zeilen Python.
+
+### Kein Tri-Layer-Hinweis auf diesem Board
+
+`-DWB_NO_TRI_LAYER_HINT`, siehe C8 weiter unten. Ohne das würde die NUM-Taste
+rot leuchten, solange `_NAV` gehalten wird, und damit einen Weg nach `_ADJUST`
+behaupten, den es hier nicht gibt.
+
+**Offen als Entscheidung:** dem Board Tri-Layer *geben* statt den Hinweis
+abzuschalten. Das brächte einen zweiten Weg nach `_ADJUST` (Redundanz gegen
+genau die Aussperr-Fallen von oben) — ändert aber, was `MO__NAV`+`MO__NUM`
+zusammengehalten tun. Nicht ungefragt gemacht.
+
+### Nebenbefund
+
+`CAPS_LOCK_INDEX`, `DIM_CAPS_LOCK` und `RGB_MATRIX_BRIGHTNESS_TURN_OFF_VAL` in
+der Board-`config.h` sind in diesem Build **tote Namen** — sie werden nur vom
+nicht kompilierten Bluetooth-`indicator.c` gelesen. Dieselbe Sorte Fund wie die
+`RGB_DISABLE_AFTER_TIMEOUT`-Zeilen bei der Sofle Choc. Caps Lock hat trotzdem
+eine Anzeige: die eigene LED an `LED_CAPS_LOCK_PIN` (A0).
 
 ## Wie das alles ohne Hardware geprüft wurde
 
@@ -721,9 +790,12 @@ Liatris-Build kompilieren.
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-1. **K3 Pro am Board nachprüfen** (2026-08-05 geflasht, siehe eigenes Kapitel):
-   Polarität des Win/Mac-Schalters, und ob Colemak-DH mit dem korrigierten `M`
-   tatsächlich sauber tippt.
+1. **K3 Pro am Board nachprüfen** (2026-08-05 zweimal geflasht, siehe eigenes
+   Kapitel): ob Colemak-DH mit dem korrigierten `M` sauber tippt, und ob die
+   Farbsprache in der Praxis trägt — besonders die Helligkeit
+   (`RGB_MATRIX_DEFAULT_VAL 40`, änderbar per `RGB_VAI`/`RGB_VAD` auf `_ADJUST`
+   ohne Neuflashen) und ob die Minus-Taste jetzt wirklich leuchtet.
+   Der Win/Mac-Schalter ist bestätigt.
 2. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
    Punkt, der sich nur über längere Benutzung zeigt. Bei versehentlichen
    Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD` dokumentiert bereit
@@ -858,6 +930,15 @@ rund 350 Zeilen mit Kommentar. Angeschaltet per `WB_RGB_LANGUAGE = yes` in der
 Keymap-`rules.mk` — **ausdrücklich opt-in und nicht an `RGB_MATRIX_ENABLE`
 gehängt**, weil GMMK Pro und K3 Pro RGB Matrix ebenfalls anhaben und ihre
 Beleuchtung nicht ungefragt wechseln sollen.
+Seit 2026-08-05 ist sie auch auf dem **K3 Pro** an (Michael hat sie dort
+angefordert); **GMMK Pro bleibt vorerst bei ihren Animationen.** Was beim
+Portieren auf ein zweites Board nötig war, steht im K3-Pro-Kapitel weiter oben.
+
+**Neuer Schalter `WB_NO_TRI_LAYER_HINT`** (per `OPT_DEFS` in der
+Keymap-`rules.mk`): schaltet den Tri-Layer-Hinweis ab. Nötig auf Boards ohne
+Tri-Layer — dort führt allein eine eigene `MO__ADJ`-Taste nach `_ADJUST`, und
+der Hinweis würde einen Weg behaupten, den es nicht gibt. Gesetzt für den
+K3 Pro; bei der GMMK Pro mitzusetzen, falls sie die Farbsprache je bekommt.
 
 **Die Prioritätskette** (pro LED einmal `layer_switch_get_layer` +
 `keymap_key_to_keycode`, dann von oben):
