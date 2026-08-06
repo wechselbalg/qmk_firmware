@@ -441,10 +441,22 @@ an `QWERTY_1`.
 rot leuchten, solange `_NAV` gehalten wird, und damit einen Weg nach `_ADJUST`
 behaupten, den es hier nicht gibt.
 
-**Offen als Entscheidung:** dem Board Tri-Layer *geben* statt den Hinweis
-abzuschalten. Das brächte einen zweiten Weg nach `_ADJUST` (Redundanz gegen
-genau die Aussperr-Fallen von oben) — ändert aber, was `MO__NAV`+`MO__NUM`
-zusammengehalten tun. Nicht ungefragt gemacht.
+**Entschieden 2026-08-06 (Michael): die großen ISO-Boards bekommen kein
+Tri-Layer.** Zur Wahl stand, ihnen `update_tri_layer_state` zu geben statt den
+Hinweis abzuschalten — das hätte einen zweiten Weg nach `_ADJUST` gebracht, also
+Redundanz gegen genau die Aussperr-Fallen von oben. Dagegen sprach, dass es
+ändert, was `MO__NAV`+`MO__NUM` zusammengehalten tun; die Redundanz war den
+Eingriff in einen eingespielten Griff nicht wert.
+
+Damit steht fest, und zwar für **K3 Pro und GMMK Pro gleichermaßen**:
+
+- Nach `_ADJUST` führt auf beiden Boards **allein die `MO__ADJ`-Taste** (physisch
+  End). Sie liegt auf jedem Basis-Layout, der Weg überlebt also das Umschalten
+  zwischen QWERTZ und Colemak-DH — am Binary beider Boards geprüft.
+- Der Rettungsanker bleibt Esc-Bootmagic, unabhängig von jeder Keymap.
+- **`WB_NO_TRI_LAYER_HINT` ist damit Pflicht, nicht Geschmackssache**, sobald
+  eines der beiden die Farbsprache bekommt. Beim K3 Pro gesetzt; bei der GMMK
+  Pro mitzusetzen, falls sie je von ihren Animationen wegwechselt.
 
 ### Nebenbefund
 
@@ -1041,7 +1053,9 @@ Portieren auf ein zweites Board nötig war, steht im K3-Pro-Kapitel weiter oben.
 Keymap-`rules.mk`): schaltet den Tri-Layer-Hinweis ab. Nötig auf Boards ohne
 Tri-Layer — dort führt allein eine eigene `MO__ADJ`-Taste nach `_ADJUST`, und
 der Hinweis würde einen Weg behaupten, den es nicht gibt. Gesetzt für den
-K3 Pro; bei der GMMK Pro mitzusetzen, falls sie die Farbsprache je bekommt.
+K3 Pro; bei der GMMK Pro **zwingend mitzusetzen**, falls sie die Farbsprache je
+bekommt — dass beide Boards kein Tri-Layer haben, ist seit 2026-08-06 eine
+Entscheidung und kein Zufall mehr (siehe K3-Pro-Kapitel).
 
 **Die Prioritätskette** (pro LED einmal `layer_switch_get_layer` +
 `keymap_key_to_keycode`, dann von oben):
