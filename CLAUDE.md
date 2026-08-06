@@ -1145,7 +1145,27 @@ aus. Ein einzelnes Board abweichend: `-DWB_JIGGLER` / `-DWB_DF_PREV` per
 180 (−14, nur C2), kyria 1212, lotus58 896. Alle sechs Boards + der
 Liatris-Build kompilieren.
 
-## Reihenfolge für die nächste Session (Stand 2026-08-05)
+## Was ist auf welchem Gerät? (Stand 2026-08-06)
+
+Der Repo-Stand ist nicht der Geräte-Stand. Diese Tabelle sagt, was auf der
+Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
+
+| Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
+|---|---|---|
+| K3 Pro ISO | ✅ `b873674fd1` | — |
+| GMMK Pro ISO | ❌ | Beleuchtung: Farbsprache + Lichtbalken (`7490808bb5`) |
+| Sofle Choc weiß (AVR) | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
+| Sofle Choc schwarz (Liatris) | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
+| Sofle rev1 | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
+| Kyria | ❌ | ⚠️ vor dem nächsten Flash erst `chordal_hold_layout` nachtragen |
+| Lotus58 | — | stillgelegt |
+
+Wichtig dabei: **die `_ADJUST`-Falltüren sind auf beiden ISO-Boards erledigt und
+auch geflasht.** Am Binary geprüft — auf `_ADJUST` stehen nur noch `DF()` auf
+Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
+`KC_NO`. Da ist nichts mehr offen.
+
+## Reihenfolge für die nächste Session (Stand 2026-08-06)
 
 **Die KMK→QMK-Angleichung ist inhaltlich durch.** C1–C8, C7 und die Status-LED
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
