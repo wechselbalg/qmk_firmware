@@ -236,8 +236,14 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         case _ADJUST:
             wb_brightness(clockwise);
             break;
+        /*
+        Im Uhrzeigersinn = nach unten. Festgelegt 2026-08-06 nach dem
+        Hardware-Test auf der Sofle Choc, dieselbe Konvention wie dort:
+        vertikale Bewegung folgt der Drehung, Lautstaerke und Helligkeit
+        bleiben bei "im Uhrzeigersinn = mehr".
+        */
         case _GAMING:
-            tap_code(clockwise ? KC_UP : KC_DOWN);
+            tap_code(clockwise ? KC_DOWN : KC_UP);
             break;
         case _SYM:
         case _NAV:

@@ -1215,15 +1215,18 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ✅ `b873674fd1` | — |
-| GMMK Pro ISO | ✅ 2026-08-06 | — (Beleuchtung mitgeflasht) |
-| Sofle Choc schwarz (Liatris) | ✅ 2026-08-06, beide Hälften | — |
+| K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
+| GMMK Pro ISO | ❌ | Encoder-Drehrichtung (`_GAMING`) |
+| Sofle Choc schwarz (Liatris) | ❌ | Encoder-Drehrichtung (beide Hälften) |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Damit ist kein Flash mehr offen.** Alle drei benutzten Boards — K3 Pro,
-GMMK Pro und die schwarze Sofle Choc — laufen auf Repo-Stand.
+⚠️ **Seit der Drehrichtungs-Änderung vom 2026-08-06 stehen wieder zwei Flashes
+aus**: GMMK Pro und die schwarze Sofle Choc (dort **beide** Hälften — welche
+Hälfte Master ist, entscheidet `SPLIT_USB_DETECT` zur Laufzeit, und der
+Encoder-Callback läuft auf dem Master). Der K3 Pro hat keinen Encoder und ist
+nicht betroffen.
 
 Die schwarze Sofle Choc wurde je Hälfte über `--side left` / `--side right`
 geflasht, also mit `-bl uf2-split-left` bzw. `-uf2-split-right`. Das ist nicht
@@ -1464,6 +1467,34 @@ synchronisiert, beide Hälften dimmen zusammen.
 Auf dem weißen Board läuft derselbe Code über `rgblight_*_noeeprom()`
 (32 Byte, danach noch 148 frei). sofle/rev1 und Kyria haben den Fall bewusst
 nicht — dort ist kein Platz bzw. kein Bedarf.
+
+### Drehrichtung der Encoder — festgelegt 2026-08-06
+
+**Im Uhrzeigersinn = nach unten / vorwärts / mehr.**
+
+Am Board aufgefallen (Michael), nachdem der `_GAMING`-Fix unten geflasht war:
+die *vertikalen* Fälle liefen genau andersherum — im Uhrzeigersinn kam PgUp
+bzw. Pfeil hoch. Beim Scrollen fühlt sich das falsch an.
+
+Gedreht wurden deshalb genau drei Stellen:
+
+| Board / Encoder | Layer | vorher (im Uhrzeigersinn) | jetzt |
+|---|---|---|---|
+| Sofle Choc, links | `_GAMING` + Basis | PgUp | **PgDn** |
+| Sofle Choc, rechts | `_GAMING` | Pfeil hoch | **Pfeil runter** |
+| GMMK Pro | `_GAMING` | Pfeil hoch | **Pfeil runter** |
+
+**Bewusst nicht gedreht:** Lautstärke, RGB-Helligkeit, Tab/Shift+Tab und
+Redo/Undo. Dort heißt „im Uhrzeigersinn" *mehr* bzw. *vorwärts*, nicht
+*abwärts* — die lagen schon richtig.
+
+⚠️ **Nicht über ein invertiertes `clockwise` lösen.** Das würde Lautstärke und
+Helligkeit mitdrehen. Die Richtung gehört pro Fall entschieden; deshalb steht
+sie ausgeschrieben in den beiden `encoder_update_user()`.
+
+Am GMMK-Pro-Binary nachgesehen, weil LTO den Handler in `main` inlinet und er
+kein eigenes Symbol hat: `cmp r7,#0` / `ite eq` / `moveq #0x52` (UP bei
+gegen den Uhrzeigersinn) / `movne #0x51` (DOWN bei im Uhrzeigersinn).
 
 ### ⚠️ Encoder + `_GAMING`: `layer_state` ≠ `default_layer_state` — behoben 2026-08-06
 

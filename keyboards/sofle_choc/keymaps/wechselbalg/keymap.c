@@ -633,6 +633,19 @@ Default-Layer -- das ist zugleich fuer die Basis-Layouts richtig, weil deren
 Index dort ebenso steht. Einmal oben berechnet, beide Encoder teilen sich das.
 Gleicher Fix in sofle/rev1; Messwerte und Begruendung in der CLAUDE.md.
 */
+/*
+Drehrichtung, festgelegt 2026-08-06 nach dem Hardware-Test (Michael):
+
+  **Im Uhrzeigersinn = nach unten / vorwaerts / mehr.**
+
+Vorher liefen die *vertikalen* Faelle genau andersherum (im Uhrzeigersinn
+PgUp bzw. Pfeil hoch), was sich beim Scrollen falsch anfuehlt. Betroffen waren
+nur diese: Lautstaerke, Helligkeit, Tab und Redo lagen schon richtig, weil dort
+"im Uhrzeigersinn = mehr/vorwaerts" gilt und nicht "= abwaerts".
+
+Nicht mit einem invertierten `clockwise` loesen -- das wuerde Lautstaerke und
+Helligkeit mitdrehen. Die Richtung gehoert pro Fall entschieden.
+*/
 bool encoder_update_user(uint8_t index, bool clockwise) {
     const uint8_t layer = layer_state ? get_highest_layer(layer_state)
                                       : get_highest_layer(default_layer_state);
@@ -644,9 +657,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 break;
             case _GAMING:
                 if (clockwise) {
-                    tap_code(KC_PGUP);
-                } else {
                     tap_code(KC_PGDN);
+                } else {
+                    tap_code(KC_PGUP);
                 }
             break;
             case _NUM:
@@ -660,9 +673,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 break;
             default:
                     if (clockwise) {
-                        tap_code(KC_PGUP);
-                    } else {
                         tap_code(KC_PGDN);
+                    } else {
+                        tap_code(KC_PGUP);
                     }
                 break;
 		}
@@ -673,9 +686,9 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 break;
             case _GAMING:
                 if (clockwise) {
-                    tap_code(KC_UP);
-                } else {
                     tap_code(KC_DOWN);
+                } else {
+                    tap_code(KC_UP);
                 }
             break;
         case _NUM:
