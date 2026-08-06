@@ -1217,18 +1217,19 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
 | GMMK Pro ISO | ✅ 2026-08-06 | — |
-| Sofle Choc schwarz (Liatris) | ❌ | Encoder-Drehrichtung (beide Hälften) |
+| Sofle Choc schwarz (Liatris) | ✅ 2026-08-06, beide Hälften | — |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-⚠️ **Offen ist noch ein Flash:** die schwarze Sofle Choc braucht die
-Drehrichtungs-Änderung vom 2026-08-06, und zwar auf **beiden** Hälften — welche
-Hälfte Master ist, entscheidet `SPLIT_USB_DETECT` zur Laufzeit, und der
-Encoder-Callback läuft immer auf dem Master. Eine Hälfte allein hieße, dass die
-Drehrichtung davon abhängt, welches Kabel gerade steckt.
-Der K3 Pro hat keinen Encoder und ist nicht betroffen; die GMMK Pro ist am
-2026-08-06 geflasht.
+**Kein Flash mehr offen.** Alle drei benutzten Boards laufen auf Repo-Stand.
+
+Die schwarze Sofle Choc wurde je Hälfte über `--side left` / `--side right`
+geflasht, also mit `-bl uf2-split-left` bzw. `-right`. Das ist nicht kosmetisch:
+die Händigkeit steckt im EEPROM (`EE_HANDS`), und ohne sie fallen bei
+`SPLIT_USB_DETECT` **beide** Hälften auf „ich bin links" zurück. Beide Hälften
+brauchen den Stand ohnehin, weil der Encoder-Callback auf dem jeweiligen Master
+läuft und `SPLIT_USB_DETECT` den zur Laufzeit bestimmt.
 
 Die schwarze Sofle Choc wurde je Hälfte über `--side left` / `--side right`
 geflasht, also mit `-bl uf2-split-left` bzw. `-uf2-split-right`. Das ist nicht
