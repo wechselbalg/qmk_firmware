@@ -60,7 +60,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Press Fn+N to toggle between 6KRO and NKRO. This setting is persisted to the EEPROM and thus persists between restarts.
 
     [_QWERT] = LAYOUT_wrapper(
-        KC_ESC,  _________________________________________F_KEYS_________________________________________,  RN_CODE,  KC_MUTE,
+        KC_ESC,  _________________________________________F_KEYS_________________________________________,  KC_PSCR,  KC_MUTE,
         KC_GRV,  _______________________________NUMBERS________________________________, KC_MINS, KC_EQL ,  KC_BSPC,  KC_DEL,
         ________________________________________QWERTY_1________________________________________, KC_RBRC,            KC_HOME,
         ________________________________________QWERTY_2________________________________________, SYM_HSH,  KC_ENT,   KC_END,
@@ -76,7 +76,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     Split-Haelften abweicht, steht im Kommentar an ihrer Definition.
     */
     [_COLEMAKDH] = LAYOUT_wrapper(
-        KC_ESC,  _________________________________________F_KEYS_________________________________________,  RN_CODE,  KC_MUTE,
+        KC_ESC,  _________________________________________F_KEYS_________________________________________,  KC_PSCR,  KC_MUTE,
         KC_GRV,  _______________________________NUMBERS________________________________, KC_MINS, KC_EQL ,  KC_BSPC,  KC_DEL,
         ________________________________________COLMAK_1________________________________________, KC_RBRC,            KC_HOME,
         ________________________________________COLMAK_2________________________________________, SYM_HSH,  KC_ENT,   KC_END,
@@ -122,7 +122,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ADJUST] = LAYOUT_wrapper(
-        QK_BOOT, ________________________________________FN_KEYS_________________________________________,  _______,  _______,
+        // Encoder-Druck (letzte Spalte): auf _ADJUST schaltet er die Beleuchtung
+        // ganz aus/an -- passend dazu, dass die Drehung hier die Helligkeit
+        // regelt. Auf allen anderen Layern bleibt er _______ und faellt damit
+        // auf das KC_MUTE der Basis-Layer durch.
+        QK_BOOT, ________________________________________FN_KEYS_________________________________________,  _______,  RGB_TOG,
         ________________________________________ADJUST__0_______________________________________, _______,  QK_BOOT,  _______,
         ________________________________________ADJUST__1_______________________________________, _______,            _______,
         ________________________________________ADJUST__2_______________________________________, FN_EXIT,  _______,  _______,
@@ -163,19 +167,89 @@ const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT_wrappe
 
 // clang-format on
 
-#if defined(ENCODER_MAP_ENABLE)
-const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
-    [_QWERT] =    { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-#ifdef WB_LAYOUT_COLEMAKDH
-    [_COLEMAKDH] ={ ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
+/*
+Der Drehencoder oben rechts.
+
+Bis 2026-08-06 stand hier ein `encoder_map` hinter `#if ENCODER_MAP_ENABLE` --
+und das war in der rules.mk auskommentiert. `ENCODER_ENABLE` ist aber ueber
+keyboard.json an: die Drehung wurde also eingelesen und dann verworfen, der
+Knopf drehte ins Leere. Nur sein *Druck* tat etwas (KC_MUTE aus Reihe 0).
+
+Jetzt derselbe Aufbau wie beim **rechten** Sofle-Encoder
+(keyboards/sofle_choc/keymaps/wechselbalg/keymap.c), damit zwischen den Boards
+nicht noch eine Variante entsteht -- mit der Lautstaerke im Basis-Layer
+(Michael, 2026-08-06):
+
+  Basis-Layouts (_QWERT/_COLEMAKDH) -> Lautstaerke
+  _SYM / _NAV / _NUM                -> Tab / Shift+Tab (Fenster-/Tabwechsel)
+  _GAMING                           -> Pfeil hoch/runter
+  _ADJUST                           -> RGB-Helligkeit
+
+Bewusst `encoder_update_user()` statt `ENCODER_MAP_ENABLE`: die Helligkeit
+muss ueber die *_noeeprom-Varianten laufen, sonst schreibt jede einzelne
+Rastung ins EEPROM. Ein encoder_map koennte nur RGB_VAI/RGB_VAD eintragen --
+also genau die EEPROM-schreibende Variante. Dieselbe Ueberlegung wie bei C7
+auf der Sofle Choc.
+*/
+static void wb_brightness(bool up) {
+#if defined(RGB_MATRIX_ENABLE)
+    if (up) {
+        rgb_matrix_increase_val_noeeprom();
+    } else {
+        rgb_matrix_decrease_val_noeeprom();
+    }
+#elif defined(RGBLIGHT_ENABLE)
+    if (up) {
+        rgblight_increase_val_noeeprom();
+    } else {
+        rgblight_decrease_val_noeeprom();
+    }
 #endif
-    [_SYM] =      { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
-    [_NUM] =      { ENCODER_CCW_CW(KC_MPRV, KC_MNXT) },
-    [_NAV] =      { ENCODER_CCW_CW(MS_WHLD, MS_WHLU) },
-    [_GAMING] =   { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [_ADJUST] =   { ENCODER_CCW_CW(KC_MSEL, KC_MPRV) }
-};
-#endif
+}
+
+bool encoder_update_user(uint8_t index, bool clockwise) {
+    if (index != 0) {
+        return true;
+    }
+
+    /*
+    ⚠️ _GAMING wird per DF() betreten und liegt damit in `default_layer_state`,
+    nicht in `layer_state` -- die beiden sind in QMK getrennte Variablen
+    (quantum/action_layer.c:12 und :101), und `get_highest_layer(layer_state)`
+    liefert bei nur gesetztem Default-Layer schlicht 0. Ein blosses
+    `switch (get_highest_layer(layer_state))` haette den _GAMING-Zweig also nie
+    erreicht und dort die Lautstaerke geregelt.
+
+    Deshalb: ein gehaltener/getoggelter Layer gewinnt, sonst zaehlt das
+    Default-Layer -- das ist zugleich fuer die Basis-Layouts richtig, weil
+    deren Index dort ebenso steht.
+    */
+    const uint8_t layer = layer_state ? get_highest_layer(layer_state)
+                                      : get_highest_layer(default_layer_state);
+
+    switch (layer) {
+        case _ADJUST:
+            wb_brightness(clockwise);
+            break;
+        case _GAMING:
+            tap_code(clockwise ? KC_UP : KC_DOWN);
+            break;
+        case _SYM:
+        case _NAV:
+        case _NUM:
+            if (clockwise) {
+                tap_code(KC_TAB);
+            } else {
+                tap_code16(NX_UTAB);
+            }
+            break;
+        default:
+            tap_code(clockwise ? KC_VOLU : KC_VOLD);
+            break;
+    }
+
+    return false;
+}
 
 // const custom_shift_key_t custom_shift_keys[] = {
 //   {DE_CIRC, N2_HCEK},  // Shift 2 is §
@@ -283,10 +357,10 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
 //     NULL // Null terminate the array of overrides!
 // };
 
-void keyboard_post_init_user(void) {
-  // Customise these values to desired behaviour
-  debug_enable=true;
-  debug_matrix=true;
-  debug_keyboard=true;
-  //debug_mouse=true;
-}
+/*
+2026-08-06 entfallen: ein keyboard_post_init_user(), das debug_enable /
+debug_matrix / debug_keyboard auf true setzte. Der Build hat CONSOLE_ENABLE aus
+und definiert -DNO_DEBUG -- die Ausgaben sind also gar nicht einkompiliert, die
+Zuweisungen liefen ins Leere. Zum Debuggen: CONSOLE_ENABLE = yes in der
+rules.mk, dann tut es der uprintf-Block in process_record_keymap() oben.
+*/

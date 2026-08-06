@@ -186,12 +186,14 @@ gepflegt werden:
   **Noch nicht beurteilt:** das Tippgefühl bei `TAPPING_TERM 150`.
 
 **Offen / vor dem Flashen prüfen:**
-- **GMMK Pro ISO — Aussperr-Falle geschlossen 2026-08-06, aber NOCH NICHT
-  GEFLASHT.** Das Board war bei der Sitzung nicht angeschlossen; auf ihm läuft
-  also weiterhin die alte Firmware **mit** den acht scharfen Tasten auf
-  `_ADJUST` (physisch Q/W/E/R und A/S/D/F). Bis zum Flashen dort nichts
-  anfassen. Bekommt mit diesem Stand QWERTZ + **Colemak-DH** (Entscheidung
-  Michael), Details im Abschnitt „GMMK Pro" im K3-Pro-Kapitel.
+- **GMMK Pro ISO — flashbereit seit 2026-08-06, aber NOCH NICHT GEFLASHT.**
+  Zweiter Daily Driver, deshalb vollständig gegen den K3 Pro durchgeprüft;
+  Details in den beiden Abschnitten „GMMK Pro" im K3-Pro-Kapitel. Stand:
+  Aussperr-Falle geschlossen, QWERTZ + **Colemak-DH**, Drehencoder belegt
+  (Lautstärke im Basis-Layer), Print-Taste sendet wieder `KC_PSCR`.
+  ⚠️ Bis zum Flashen läuft auf dem Board weiterhin die **alte** Firmware mit
+  den acht scharfen Tasten auf `_ADJUST` (physisch Q/W/E/R und A/S/D/F) — dort
+  also nichts anfassen.
 - **K3 Pro — Keymap gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
   notierten Bedenken waren gegenstandslos, der Rest ist erledigt:
   - ~~„neu belegte `+`-Taste"~~ — **kein Unterschied**: `DE_PLUS` *ist*
@@ -529,6 +531,102 @@ senden dabei **blank**, ohne Layer-Tap — der neue Layer erbt das über
 liegt weiterhin auf Esc, Backspace und B; nach `_ADJUST` führt `MO(6)` auf der
 **End**-Taste, und zwar auf `_QWERT` *und* auf `_COLEMAKDH` — der Weg in den
 Bootloader überlebt das Umschalten also.
+
+## GMMK Pro: Flash-Vorbereitung als Daily Driver (2026-08-06)
+
+Michael benutzt das Board als zweiten Daily Driver und wollte es vor dem Flashen
+vollständig durchgeprüft haben. Der Vergleich lief wieder am Binary, aber diesmal
+**gegen den K3 Pro**: beide ELFs auslesen, physisch anordnen, Reihe für Reihe
+diffen (Skript im Scratchpad, nicht eingecheckt).
+
+**Befund: alle sieben Layer sind auf den Reihen 1–5 zeichengleich mit dem
+K3 Pro.** Die beiden ISO-Boards sind also bereits vollständig aneinander
+ausgerichtet — die gemeinsamen Wrapper leisten genau das. Unterschiede gibt es
+nur in **Reihe 0**, und die sind baulich: der K3 Pro hat dort 16 Tasten
+(`KC_MAIL`/`KC_CALC`/`RGB_MOD` rechts), die GMMK Pro 15, weil ihre rechte obere
+Ecke der **Drehencoder** ist.
+
+Scheinbare Unterschiede, die keine sind (nachgeprüft in `keymap_german.h`):
+`DE_SS` **ist** `KC_MINS`, `DE_ACUT` **ist** `KC_EQL`, `DE_PLUS` **ist**
+`KC_RBRC`. Die Zahlenreihe und die `+`-Taste sind auf beiden Boards derselbe
+Keycode, nur unterschiedlich geschrieben.
+
+### Der Drehencoder drehte ins Leere
+
+`ENCODER_ENABLE` ist über `keyboard.json` an, aber `ENCODER_MAP_ENABLE` stand in
+der Keymap-`rules.mk` auskommentiert — und der `encoder_map` in der keymap.c
+hing hinter `#if defined(ENCODER_MAP_ENABLE)`. Die Drehung wurde also eingelesen
+und verworfen; **nur der Druck tat etwas** (`KC_MUTE` aus Reihe 0).
+
+Jetzt ein `encoder_update_user()` nach dem Vorbild des **rechten** Sofle-Encoders
+(Entscheidung Michael: Lautstärke gehört ins Basis-Layer):
+
+| Layer | Drehung | Druck |
+|---|---|---|
+| `_QWERT` / `_COLEMAKDH` | **Lautstärke** | Mute |
+| `_SYM` / `_NAV` / `_NUM` | Tab / Shift+Tab | Mute |
+| `_GAMING` | Pfeil hoch/runter | Mute |
+| `_ADJUST` | RGB-Helligkeit | **RGB an/aus** |
+
+**Bewusst `encoder_update_user()` statt `ENCODER_MAP_ENABLE`:** die Helligkeit
+muss über die `*_noeeprom`-Varianten laufen, sonst schreibt jede einzelne
+Rastung ins EEPROM. Ein `encoder_map` könnte nur `RGB_VAI`/`RGB_VAD` eintragen —
+also genau die EEPROM-schreibende Variante. Dieselbe Überlegung wie bei C7 auf
+der Sofle Choc. Der tote `encoder_map` ist entfallen, damit es nicht zwei
+Quellen der Wahrheit gibt.
+
+⚠️ **Dabei ein Fallstrick, der auch die Sofle betrifft:** `_GAMING` wird per
+`DF()` betreten und liegt damit in `default_layer_state`, **nicht** in
+`layer_state` — zwei getrennte Variablen (`quantum/action_layer.c:12` und
+`:101`). Ein `switch (get_highest_layer(layer_state))` erreicht den
+`_GAMING`-Zweig also **nie**. Hier gelöst mit
+
+```c
+const uint8_t layer = layer_state ? get_highest_layer(layer_state)
+                                  : get_highest_layer(default_layer_state);
+```
+
+Die Sofle-Choc-Keymap hat denselben toten Zweig — auf ihrem linken Encoder
+folgenlos (beide Zweige machen PgUp/PgDn), auf dem **rechten** nicht: gedacht
+ist hoch/runter, es kommt Lautstärke. **Noch offen**, siehe Liste unten.
+
+### Print-Taste war tot
+
+Die Taste links neben dem Encoder trug `RN_CODE` — einen Custom-Keycode, dessen
+einziger Handler in dieser keymap.c unter `#ifdef CONSOLE_ENABLE` steht. Der
+Build hat `CONSOLE_ENABLE` aus und setzt `-DNO_DEBUG`; die Taste tat also
+**nichts**. Jetzt `KC_PSCR` — sie sendet, was auf ihr steht (Entscheidung
+Michael, dieselbe Regel wie bei den ISO-Extratasten des K3 Pro). `RN_CODE` kommt
+damit in keiner Keymap mehr vor; der Enum-Eintrag bleibt trotzdem stehen, weil
+Entfernen alle folgenden Werte verschiebt (das war die Ursache des
+`FN_EXIT`-Bugs).
+
+Ebenfalls entfallen: ein `keyboard_post_init_user()`, das `debug_enable`,
+`debug_matrix` und `debug_keyboard` auf `true` setzte. Mit `-DNO_DEBUG` sind die
+Ausgaben nicht einkompiliert, die Zuweisungen liefen ins Leere.
+
+### Mac-Modus ohne Schiebeschalter
+
+Die GMMK Pro hat kein Gegenstück zum Win/Mac-Schalter des K3 Pro — der Modus
+läuft hier **allein** über `MAC_TOG` (= `CG_TOGG`) auf `_ADJUST`, physisch auf
+der **C**-Taste („C wie Cmd"). Das ist kein Nachteil, sondern eher der sauberere
+Weg: `CG_TOGG` schreibt ins EEPROM und **überlebt damit den Neustart**, während
+der K3-Pro-Schalter bei jedem Boot neu gelesen wird und `MAC_TOG` dort nur für
+die laufende Sitzung überschreibt.
+
+⚠️ Zwei Folgen davon: die GMMK Pro hat **keine Anzeige** des Modus (kein OLED,
+und die Farbsprache ist hier nicht an) — der Zustand ist nur am Verhalten von
+Ctrl/Cmd erkennbar. Und **Esc-Bootmagic setzt das EEPROM zurück**, der Mac-Modus
+steht nach jedem Flash-Vorgang über diesen Weg wieder auf PC.
+
+### Am Binary geprüft
+
+Zusätzlich zur Layer-Tabelle wurde der Encoder-Handler **im Maschinencode**
+nachgesehen, weil LTO ihn in `main` inlinet und er deshalb kein eigenes Symbol
+hat. Alle fünf Zweige sitzen richtig: `rgb_matrix_*_val_helper` mit Argument `0`
+(= kein EEPROM-Schreiben), `0x51`/`0x52` für Down/Up, `0x2b`/`0x22b` für
+Tab/Shift+Tab, `0xaa`/`0xa9` für die Lautstärke — und die `tbb`-Sprungtabelle
+deckt genau die Layer 2–6 ab. Firmware 43676 → **43808 Byte**.
 
 ⚠️ **Noch nicht geflasht** (Board war bei der Sitzung nicht angeschlossen).
 
@@ -917,8 +1015,14 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    Tap-Hold-Auflösung heraus, das ändert dort das Bild.
 4. ~~**GMMK Pro: dieselbe Aussperr-Falle schließen**~~ — **erledigt 2026-08-06**,
    siehe eigenen Abschnitt im K3-Pro-Kapitel. Noch nicht geflasht.
-5. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
-6. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
+5. **⚠️ Sofle Choc: toter `_GAMING`-Zweig im Encoder-Handler.** Derselbe
+   Fallstrick wie bei der GMMK Pro (siehe dort): `_GAMING` liegt in
+   `default_layer_state`, `get_highest_layer(layer_state)` sieht es nie. Auf dem
+   linken Encoder folgenlos, auf dem **rechten** kommt Lautstärke statt
+   hoch/runter. Fix ist die Ternär-Zeile aus dem GMMK-Pro-Handler.
+   ⚠️ Vorher Flash-Größe prüfen — sofle/rev1 hat nur 22 Byte frei.
+6. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
+7. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
 
 Offen als *Entscheidung*, nicht als Arbeit: ob die Shift+Shift-Geste bei
 „beide halten" bleibt oder den Combo-Weg bekommt (siehe oben).

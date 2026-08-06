@@ -1,4 +1,6 @@
-#ENCODER_MAP_ENABLE = yes
+# Kein ENCODER_MAP_ENABLE: der Encoder laeuft ueber encoder_update_user() in der
+# keymap.c, weil die Helligkeit auf _ADJUST die *_noeeprom-Varianten braucht.
+# Begruendung steht dort am Handler.
 STARTUP_NUMLOCK_ON = yes
 
 # MAC_TOG (CG_TOGG) und NK_TOGG brauchen MAGIC_ENABLE; auf STM32 ist Platz.
