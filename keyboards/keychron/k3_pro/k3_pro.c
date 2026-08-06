@@ -93,6 +93,27 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     static uint8_t host_idx = 0;
 #endif
 
+#ifndef KC_BLUETOOTH_ENABLE
+    /*
+    2026-08-06: process_record_user() war auf diesem Board tot.
+
+    QMK ruft process_record_user() an genau einer Stelle auf -- im *schwachen*
+    process_record_kb() (quantum/quantum.c:185). Wer das ueberschreibt, muss die
+    Kette selbst weiterreichen; sonst ist jeder Custom-Keycode wirkungslos.
+    Betroffen war der komplette Userspace: A_MSJIG (Jiggler), die persistenten
+    Layout-Umschalter P_QWERT/P_COLMK, LR_EXIT, DBRACES, FF_WORD, RV_WORD --
+    und der process_record_keymap()-Hook der Board-Keymap gleich mit.
+
+    Nur im USB-only-Zweig noetig: im Bluetooth-Build heisst diese Funktion
+    process_record_kb_bt(), und Keychrons bluetooth.c:461 ruft
+    process_record_user() dort bereits selbst auf, bevor es hierher delegiert.
+    Ein Aufruf an dieser Stelle waere dann der zweite.
+    */
+    if (!process_record_user(keycode, record)) {
+        return false;
+    }
+#endif
+
     switch (keycode) {
         case KC_LOPTN:
         case KC_ROPTN:

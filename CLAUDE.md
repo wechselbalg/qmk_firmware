@@ -181,6 +181,9 @@ gepflegt werden:
   und die zwei Aussperr-Fallen" weiter unten.
   **Win/Mac-Schalter am Board bestätigt (2026-08-05)** — die angenommene
   Polarität (`active` = Mac) stimmt.
+  ⚠️ **2026-08-06: `process_record_user()` war auf diesem Board tot** — der
+  gesamte Userspace (Jiggler, persistente Layout-Umschalter, LR_EXIT, DBRACES,
+  Wortsprünge) lief ins Leere. Siehe „Falle 3" im K3-Pro-Kapitel.
   Zweiter Flash am selben Tag: die Farbsprache (C8) ist jetzt auch hier an,
   siehe „Die Beleuchtung" im K3-Pro-Kapitel.
   **Noch nicht beurteilt:** das Tippgefühl bei `TAPPING_TERM 150`.
@@ -291,6 +294,54 @@ stellt den Zustand also von selbst wieder her. Kein Flash-Verschleiß, und
 ⚠️ **Polarität noch nicht auf Hardware geprüft.** Angenommen ist Keychrons
 Lesart (`active` = Mac). Falls vertauscht: `WB_DIP_ACTIVE_IS_MAC` in der
 keymap.c umdrehen, eine Zeile.
+
+## Falle 3 (gefunden 2026-08-06): `process_record_user()` war auf diesem Board tot
+
+Symptom war harmlos: „der Mouse Jiggler lässt sich nicht aktivieren". Die
+Ursache betraf **den kompletten Userspace**.
+
+QMK ruft `process_record_user()` an genau einer Stelle auf — im **schwachen**
+`process_record_kb()` (`quantum/quantum.c:185`). Wer das überschreibt, muss die
+Kette selbst weiterreichen. [k3_pro.c](keyboards/keychron/k3_pro/k3_pro.c)
+definierte ein eigenes `process_record_kb()` für seine Mac-Sondertasten
+(`KC_MCTL`, `KC_LNPD`, `KC_SIRI` …) und gab am Ende schlicht `true` zurück.
+
+Damit war **jeder Custom-Keycode wirkungslos**:
+
+| Keycode | wo | tat |
+|---|---|---|
+| `A_MSJIG` | `_ADJUST`, physisch Ü | nichts |
+| `P_QWERT` / `P_COLMK` | `_ADJUST`, Tab / W | nichts (die `D_*`-Reihe darunter lief, `DF()` ist ein Core-Keycode) |
+| `LR_EXIT` | obere linke Ecke jedes Overlays | nichts |
+| `DBRACES`, `FF_WORD`, `RV_WORD` | `_SYM` / `_NAV` | nichts |
+| `process_record_keymap()` | Board-Hook | wurde nie gerufen |
+
+**Fix:** `if (!process_record_user(keycode, record)) return false;` am Anfang,
+**nur im USB-only-Zweig**. Im Bluetooth-Build heißt die Funktion
+`process_record_kb_bt()`, und Keychrons `bluetooth.c:461` ruft
+`process_record_user()` dort bereits selbst auf, bevor es hierher delegiert —
+ein Aufruf an dieser Stelle wäre dann der zweite. Der BT-Pfad war also von
+Anfang an richtig, nur der USB-Pfad hat es nie nachgezogen.
+
+**Am Binary belegt**, und zwar über die `SEND_STRING`-Literale von `DBRACES`:
+`{}`, `<>` und `[]` kamen im Binary **gar nicht vor** — LTO hatte den ganzen
+`process_record_user()`-Rumpf als unerreichbar weggeworfen. Nach dem Fix sind
+sie da, und die Firmware wächst von 37036 auf **38168 Byte**. Das ist zugleich
+die Messmethode für so etwas: fehlt ein Stringliteral aus einem Zweig, ist der
+Zweig nicht verlinkt.
+
+⚠️ **Rückwirkende Korrektur zu Falle 2:** dort steht, die `P_*`-Reihe hätte das
+Board *dauerhaft* totgelegt. Für den **K3 Pro** stimmte das nie — die Keycodes
+liefen ins Leere, genau wegen dieses Fehlers. Real war dort nur die
+`D_*`-Reihe (`DF()`, tot bis zum Ausstecken). Für die **GMMK Pro** stimmt die
+Aussage dagegen unverändert: sie hat kein eigenes `process_record_kb()`, ihr
+Userspace lief immer. Und seit diesem Fix gilt sie auch für den K3 Pro — das
+Layout-Gating aus Falle 2 ist damit nicht weniger, sondern **mehr** nötig
+geworden.
+
+**Merkregel:** ein Board-`process_record_kb()` im Fremd-Code ist immer verdächtig.
+Prüfen mit `grep -n process_record_user <board>.c` — findet sich nichts, ist der
+Userspace stumm.
 
 ## Falle 2: sechs Tasten auf `_ADJUST` führten in leere Layer
 
