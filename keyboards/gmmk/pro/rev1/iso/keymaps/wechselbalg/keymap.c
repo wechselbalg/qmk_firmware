@@ -18,6 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 #include "tap_dance_actions.h"  // Zentrale Definition
+#ifdef WB_SIDEBAR_STATUS
+#    include "status_state.h"
+#endif
 
 // Einfacher Include statt direkter Definition
 tap_dance_action_t tap_dance_actions[] = {
@@ -122,11 +125,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ADJUST] = LAYOUT_wrapper(
-        // Encoder-Druck (letzte Spalte): auf _ADJUST schaltet er die Beleuchtung
-        // ganz aus/an -- passend dazu, dass die Drehung hier die Helligkeit
-        // regelt. Auf allen anderen Layern bleibt er _______ und faellt damit
-        // auf das KC_MUTE der Basis-Layer durch.
-        QK_BOOT, ________________________________________FN_KEYS_________________________________________,  _______,  RGB_TOG,
+        // Die obere rechte Ecke ist auf _ADJUST komplett "Beleuchtung":
+        //   Print-Position -> SIDEBAR (Lichtbalken: Animation <-> Status)
+        //   Encoder-Druck  -> RGB_TOG (Beleuchtung ganz aus/an)
+        // passend dazu, dass die Encoder-Drehung hier die Helligkeit regelt.
+        // Auf allen anderen Layern bleiben beide _______ und fallen damit auf
+        // KC_PSCR bzw. KC_MUTE der Basis-Layer durch.
+        QK_BOOT, ________________________________________FN_KEYS_________________________________________,  A_SIDEBR, RGB_TOG,
         ________________________________________ADJUST__0_______________________________________, _______,  QK_BOOT,  _______,
         ________________________________________ADJUST__1_______________________________________, _______,            _______,
         ________________________________________ADJUST__2_______________________________________, FN_EXIT,  _______,  _______,
@@ -278,6 +283,77 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 //     sizeof(custom_shift_keys) / sizeof(custom_shift_key_t);
 
 
+#ifdef WB_SIDEBAR_STATUS
+/* ---- Der seitliche Lichtbalken ----------------------------------------- */
+/*
+Die GMMK Pro hat 99 LEDs: 83 unter Tasten und 16 im Lichtbalken ringsum, die
+keiner Matrixposition zugeordnet sind (`flags: 2`, LED_FLAG_UNDERGLOW). Die
+Farbsprache laeuft ueber die Matrix und erreicht sie deshalb nie -- sie zeigen
+also, was der laufende Effekt malt.
+
+Zwei Betriebsarten, umschaltbar mit der SIDEBAR-Taste auf _ADJUST (physisch
+Print, direkt neben dem Encoder -- die ganze obere rechte Ecke ist auf _ADJUST
+"Beleuchtung"):
+
+  Animation (Vorgabe) -- wir fassen den Balken nicht an, der Effekt laeuft.
+                         RGB_MOD/RGB_RMOD wechseln ihn sichtbar.
+  Status              -- der Balken zeigt dieselben Zustaende wie die Status-LED
+                         der Liatris-Sofle, aus derselben Palette
+                         (users/wechselbalg/status_state.h):
+                         Caps Word weiss > Layer Lock cyan > Jiggler gelbgruen
+                         > Mac-Modus azur (gedaempft) > sonst aus.
+
+Michaels Vorgabe war "grundsaetzlich Animation, im Zweifel aber Funktion vor
+Optik" -- deshalb ist die Umschaltung persistent (EEPROM) statt nur fuer die
+Sitzung, und der Balken faellt im Status-Modus bei Ruhe auf *aus* zurueck. Damit
+ist sein Leuchten selbst schon die Information, genau wie auf der Sofle.
+
+⚠️ Auf diesem Board ist der Status-Modus die einzige Anzeige des Mac-Modus --
+die GMMK Pro hat weder OLED noch Win/Mac-Schalter.
+*/
+
+// Ruhezustaende (nur der Mac-Hinweis) zusaetzlich daempfen, wie auf der Sofle.
+#    ifndef WB_SIDEBAR_IDLE_DIV
+#        define WB_SIDEBAR_IDLE_DIV 2
+#    endif
+
+static bool wb_sidebar_status = false;  // false = Animation
+
+// Frisches EEPROM: Vorgabe ist die Animation.
+void eeconfig_init_user(void) {
+    eeconfig_update_user(0);
+}
+
+void keyboard_post_init_user(void) {
+    wb_sidebar_status = (eeconfig_read_user() & 1u) != 0u;
+}
+
+void wb_rgb_extra_leds(uint8_t led_min, uint8_t led_max, uint8_t val) {
+    if (!wb_sidebar_status) {
+        return;  // Animation stehen lassen
+    }
+
+    bool                    idle  = false;
+    const wb_status_color_t color = wb_status_color(wb_status_flags_local(), &idle);
+
+    uint16_t scale = val;
+    if (idle) {
+        scale /= WB_SIDEBAR_IDLE_DIV;
+    }
+
+    const uint8_t r = (uint8_t)(((uint16_t)color.r * scale) / 255);
+    const uint8_t g = (uint8_t)(((uint16_t)color.g * scale) / 255);
+    const uint8_t b = (uint8_t)(((uint16_t)color.b * scale) / 255);
+
+    for (uint8_t i = led_min; i < led_max; i++) {
+        if (!HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
+            continue;  // Tasten-LEDs gehoeren der Farbsprache
+        }
+        rgb_matrix_set_color(i, r, g, b);
+    }
+}
+#endif  // WB_SIDEBAR_STATUS
+
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
 
     #ifdef CONSOLE_ENABLE
@@ -307,6 +383,16 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
 
     // if (!process_custom_shift_keys(keycode, record)) { return false; }
 
+#ifdef WB_SIDEBAR_STATUS
+    if (keycode == SIDEBAR) {
+        if (record->event.pressed) {
+            wb_sidebar_status = !wb_sidebar_status;
+            eeconfig_update_user(wb_sidebar_status ? 1u : 0u);
+        }
+        return false;
+    }
+#endif
+
     return true;
 }
 
@@ -330,8 +416,6 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
 // const key_override_t mdsh_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_SLSH, N3_MDSH);
 
 // const key_override_t delete_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
-
-
 
 // // This globally defines all key overrides to be used
 // const key_override_t **key_overrides = (const key_override_t *[]){
@@ -364,3 +448,5 @@ und definiert -DNO_DEBUG -- die Ausgaben sind also gar nicht einkompiliert, die
 Zuweisungen liefen ins Leere. Zum Debuggen: CONSOLE_ENABLE = yes in der
 rules.mk, dann tut es der uprintf-Block in process_record_keymap() oben.
 */
+
+

@@ -18,6 +18,20 @@ endif
 ifeq ($(strip $(WB_STATUS_LED)), yes)
     SRC += status_led.c
     OPT_DEFS += -DWB_STATUS_LED
+    WB_NEEDS_STATUS_STATE = yes
+endif
+
+# Der seitliche Lichtbalken der GMMK Pro als Statusanzeige (umschaltbar gegen
+# die Animation, Taste auf _ADJUST). Braucht nur die Zustandslogik, keine
+# eigene Hardware -- die 16 LEDs haengen an der normalen RGB-Matrix.
+ifeq ($(strip $(WB_SIDEBAR_STATUS)), yes)
+    OPT_DEFS += -DWB_SIDEBAR_STATUS
+    WB_NEEDS_STATUS_STATE = yes
+endif
+
+# Palette und Zustandsabfrage, geteilt von beiden Anzeigen (2026-08-06).
+ifeq ($(strip $(WB_NEEDS_STATUS_STATE)), yes)
+    SRC += status_state.c
 endif
 
 # ENCODER_ENABLE = no

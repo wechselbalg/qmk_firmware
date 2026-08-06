@@ -119,8 +119,16 @@ enum CustomKeys {
   FF_WORD,
   RV_WORD,
   LR_EXIT,  // raeumt momentane Layer + Layer Lock ab, laesst das Basis-Layout stehen
-  DF_PREV   // zurueck auf das Basis-Layout, das vor dem aktuellen aktiv war
+  DF_PREV,  // zurueck auf das Basis-Layout, das vor dem aktuellen aktiv war
+  SIDEBAR   // GMMK Pro: Lichtbalken zwischen Animation und Statusanzeige umschalten
 };
+
+/*
+Haken fuer LEDs ohne Matrixposition, gerufen am Ende der Farbsprache.
+Schwache Vorgabe in rgb_language.c tut nichts; die GMMK Pro ueberschreibt sie
+fuer ihren seitlichen Lichtbalken.
+*/
+void wb_rgb_extra_leds(uint8_t led_min, uint8_t led_max, uint8_t val);
 
 /*
 Board-Keymaps haengen sich hier ein statt process_record_user() selbst zu
@@ -184,6 +192,18 @@ Layout, von dem aus GAMING betreten wurde.
 #    define D__PREV  DF_PREV
 #else
 #    define D__PREV  D_QWERT
+#endif
+
+/*
+Rasterplatz fuer die Lichtbalken-Umschaltung der GMMK Pro -- dasselbe Muster
+wie D__PREV oben: `A_SIDEBR` steht in der Keymap, `SIDEBAR` ist der
+Custom-Keycode. Ohne WB_SIDEBAR_STATUS (also auf jedem anderen Board) faellt
+die Taste auf ___NO__ zurueck, ist also wirkungslos statt falsch.
+*/
+#ifdef WB_SIDEBAR_STATUS
+#    define A_SIDEBR SIDEBAR
+#else
+#    define A_SIDEBR ___NO__
 #endif
 
 #ifdef WB_LAYOUT_DVORAK

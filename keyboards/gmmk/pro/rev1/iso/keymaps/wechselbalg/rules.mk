@@ -22,3 +22,22 @@ MAGIC_ENABLE = yes
 # muss aber auch der Layer-Block in der keymap.c mitgezogen werden, dort steht
 # bisher nur _QWERT und _COLEMAKDH.
 OPT_DEFS += -DWB_LAYOUT_COLEMAKDH
+
+# Die abgeleitete Per-Key-Farbsprache (C8) -- bis 2026-08-06 lief dieses Board
+# noch auf QMKs Standard-Animationen. Die Farbsprache ist ausdruecklich opt-in,
+# damit sie kein Board ungefragt umfaerbt; hier ist sie jetzt gefragt (Michael,
+# 2026-08-06). Anders als beim K3 Pro bleiben die Animationen einkompiliert --
+# Begruendung in der config.h daneben (Lichtbalken).
+WB_RGB_LANGUAGE = yes
+
+# Der seitliche Lichtbalken (16 LEDs ohne Matrixposition) als umschaltbare
+# Statusanzeige -- Taste A_SIDEBR auf _ADJUST, persistent im EEPROM.
+# Vorgabe bleibt die Animation (Michael, 2026-08-06).
+WB_SIDEBAR_STATUS = yes
+
+# Kein Tri-Layer auf diesem Board: nach _ADJUST fuehrt allein die MO__ADJ-Taste
+# (physisch End). Ohne das wuerde die _NUM-Taste rot leuchten, solange _NAV
+# gehalten wird -- und damit einen Weg nach _ADJUST behaupten, den es hier
+# nicht gibt. Dass es keinen Tri-Layer gibt, ist entschieden (Michael,
+# 2026-08-06), nicht versehentlich.
+OPT_DEFS += -DWB_NO_TRI_LAYER_HINT

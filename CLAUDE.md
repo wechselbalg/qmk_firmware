@@ -194,14 +194,15 @@ gepflegt werden:
   Abschnitt „Encoder + `_GAMING`" weiter unten. **Noch nicht geflasht.**
 
 **Offen / vor dem Flashen prüfen:**
-- **GMMK Pro ISO — flashbereit seit 2026-08-06, aber NOCH NICHT GEFLASHT.**
-  Zweiter Daily Driver, deshalb vollständig gegen den K3 Pro durchgeprüft;
-  Details in den beiden Abschnitten „GMMK Pro" im K3-Pro-Kapitel. Stand:
-  Aussperr-Falle geschlossen, QWERTZ + **Colemak-DH**, Drehencoder belegt
-  (Lautstärke im Basis-Layer), Print-Taste sendet wieder `KC_PSCR`.
-  ⚠️ Bis zum Flashen läuft auf dem Board weiterhin die **alte** Firmware mit
-  den acht scharfen Tasten auf `_ADJUST` (physisch Q/W/E/R und A/S/D/F) — dort
-  also nichts anfassen.
+- **GMMK Pro ISO — geflasht 2026-08-06.** Zweiter Daily Driver, deshalb vorher
+  vollständig gegen den K3 Pro durchgeprüft; Details in den drei Abschnitten
+  „GMMK Pro" im K3-Pro-Kapitel. Geflasht wurde: Aussperr-Falle geschlossen,
+  QWERTZ + **Colemak-DH**, Drehencoder belegt (Lautstärke im Basis-Layer),
+  Print-Taste sendet wieder `KC_PSCR`. Die acht scharfen `_ADJUST`-Tasten sind
+  damit vom Board verschwunden.
+  ⚠️ **Noch nicht auf dem Board**: die Beleuchtungs-Umstellung vom selben Tag
+  (Farbsprache + umschaltbarer Lichtbalken) — sie entstand erst nach dem Flash,
+  weil Michael das alte Schema bemerkte. Ein weiterer Flash steht also aus.
 - **K3 Pro — Keymap gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
   notierten Bedenken waren gegenstandslos, der Rest ist erledigt:
   - ~~„neu belegte `+`-Taste"~~ — **kein Unterschied**: `DE_PLUS` *ist*
@@ -442,8 +443,7 @@ an `QWERTY_1`.
   mitziehen.
 - **GMMK Pro zieht mit**, weil sie sich `QWERTY_1/2` und `GAMING_2` teilt.
   Geprüft am ELF: `NUM__UE`/`SYM__AE` kommen dort im gesamten `keymaps`-Array
-  **nicht mehr vor**. ⚠️ Die GMMK Pro ist damit geändert, aber **nicht
-  geflasht** — sie lag nicht an.
+  **nicht mehr vor**. Auf dem Board ist das seit dem Flash vom 2026-08-06.
 
 ### Kein Tri-Layer-Hinweis auf diesem Board
 
@@ -638,7 +638,99 @@ hat. Alle fünf Zweige sitzen richtig: `rgb_matrix_*_val_helper` mit Argument `0
 Tab/Shift+Tab, `0xaa`/`0xa9` für die Lautstärke — und die `tbb`-Sprungtabelle
 deckt genau die Layer 2–6 ab. Firmware 43676 → **43808 Byte**.
 
-⚠️ **Noch nicht geflasht** (Board war bei der Sitzung nicht angeschlossen).
+## GMMK Pro: Farbsprache + Lichtbalken als Statusanzeige (2026-08-06)
+
+Nach dem ersten Flash fiel Michael auf, dass die Beleuchtung „nach dem alten
+Schema" aussah — zu Recht: die Farbsprache (C8) ist **opt-in pro Board**, und
+für die GMMK Pro war sie nie eingeschaltet. Das Board lief auf QMKs
+Standard-Satz von **43 Animationen** (die `keyboard.json` gibt keine Liste vor,
+also aktiviert QMK seine Vorgaben). Genau dieselbe Lage wie beim K3 Pro vor dem
+2026-08-05.
+
+**Die LED-Tabelle ist hier sauber** — kein Versatz wie beim K3 Pro. Geprüft
+gegen die `layout`-Liste: 84 Tasten, 83 Tasten-LEDs, keine Dublette, keine LED
+auf einer Nicht-Taste. Genau eine Taste hat keine LED: Matrix `(0,1)`, der
+Encoder-Knopf — und der hat physisch keine.
+
+### Der Lichtbalken: was dieses Board kann und die anderen nicht
+
+Die GMMK Pro hat **99 LEDs**: 83 unter Tasten und **16 im seitlichen
+Lichtbalken**, die keiner Matrixposition zugeordnet sind (`flags: 2`,
+`LED_FLAG_UNDERGLOW`). `rgb_language.c` läuft über die **Matrix** und schreibt
+darum ausschließlich die 83 Tasten-LEDs — der Balken bleibt so, wie ihn der
+laufende Effekt gemalt hat.
+
+Daraus ergibt sich etwas, das Sofle und K3 Pro nicht können: **die Tasten
+sprechen die Farbsprache, während der Balken weiterläuft.** Deshalb bleiben hier
+alle Animationen einkompiliert (kein einziges `#undef`, anders als beim K3 Pro);
+`RGB_MOD`/`RGB_RMOD` auf `_ADJUST` wechseln dann sichtbar die Balken-Animation,
+statt zwischen unsichtbaren Modi umzuschalten. Die rund 6 KB sind bei 256 KB
+Flash belanglos.
+
+Das **Grundleuchten der Tasten** hängt trotzdem nicht am Effekt: `rgb_language.c`
+baut es aus `rgb_matrix_get_hue()/get_sat()`, also aus der *Konfiguration*. Eine
+laufende Animation färbt darum den Balken, nicht die Tasten.
+
+⚠️ Die `RGB_MATRIX_DEFAULT_*`-Zeilen sind trotzdem Pflicht (neue
+[config.h](keyboards/gmmk/pro/rev1/iso/keymaps/wechselbalg/config.h), Hue 25 /
+Sat 135 / Val 40 wie die anderen Boards) — ohne sie gilt QMKs Vorgabe Hue 0 /
+Sat 255 / volle Helligkeit, also knallrot. Dieselbe Lehre wie beim K3 Pro.
+
+### Umschaltbar: Animation ↔ Statusanzeige
+
+Michaels Vorgabe: „grundsätzlich Animation, im Zweifel aber Funktion vor Optik."
+Deshalb trägt der Balken wahlweise **dieselben Zustände wie die Status-LED der
+Liatris-Sofle**, aus derselben Palette:
+
+| | Balken |
+|---|---|
+| Caps Word | weiß |
+| Layer Lock | cyan |
+| Jiggler | gelbgrün |
+| Mac-Modus | azur (gedämpft) |
+| sonst | **aus** |
+
+Umschalten mit `A_SIDEBR` auf `_ADJUST`, physisch die **Print**-Taste direkt
+neben dem Encoder — die ganze obere rechte Ecke ist dort „Beleuchtung": Print
+schaltet den Balken um, der Encoder-Druck die Beleuchtung ganz aus/an, die
+Encoder-Drehung regelt die Helligkeit. Der Zustand ist **persistent im EEPROM**
+(`eeconfig_read_user()`), Vorgabe ist die Animation.
+
+⚠️ Auf diesem Board ist der Status-Modus die **einzige** Anzeige des Mac-Modus —
+weder OLED noch Win/Mac-Schalter vorhanden.
+
+### Zwei Umbauten im Userspace
+
+1. **`status_state.{h,c}`** (neu): Palette, Flags, `layer_lock_set_user()` und
+   `wb_status_flags_local()` sind aus `status_led.c` herausgezogen. Es gibt jetzt
+   zwei Anzeigen derselben Zustände, und die Palette gehört an eine Stelle.
+   Eingeschaltet über `WB_STATUS_LED` **oder** `WB_SIDEBAR_STATUS`.
+2. **`wb_rgb_extra_leds()`** (neu, schwach in `rgb_language.c`): Haken für LEDs
+   ohne Matrixposition, gerufen am Ende der Farbsprache. Die schwache Vorgabe
+   tut bewusst nichts — ohne Board-Code animiert der Balken einfach weiter.
+
+⚠️ **Byte-Gleichheit war nicht zu halten, Größengleichheit schon.** Der
+`status_state`-Umbau verschiebt Code zwischen Übersetzungseinheiten, und das
+ordnet unter LTO neu: der Liatris-Build unterscheidet sich in 217 von 49708
+Bytes. Belegt wurde die Folgenlosigkeit stattdessen über **identische Größe**
+(49708 → 49708), **identische Instruktionszahl** (19320) und einen normalisierten
+Disassembly-Vergleich: von 196 abweichenden Zeilen sind 148 Sprungziele
+(Linker-Veneers), der Rest ist ein verschobener Block. `wb_status_color()` wurde
+dafür **zeichengleich** übernommen, inklusive der frühen `return`s — ein
+Umschreiben auf if/else kostete prompt 8 Byte Differenz.
+
+**Alle sechs Boards nachgemessen, keines hat sich durch diese Änderung
+gewandelt.** Stand nach dem Zusammenführen mit dem `_GAMING`-Encoder-Fix
+(3c5032d689, der die AVRs je 4 Byte kostet): sofle/rev1 **18 Byte frei**,
+sofle_choc 144, kyria 1212, lotus58 896, K3 Pro 37036, Liatris 49716. Die
+Userspace-Umbauten hier kosten davon **null** — der schwache Haken verschwindet
+per LTO, und `status_state.c` ersetzt nur, was vorher in `status_led.c` stand.
+Nur die GMMK Pro wächst: 43808 → **44936 Byte**.
+
+⚠️ **Diese Beleuchtungs-Umstellung ist noch NICHT auf dem Board.** Alles davor
+(Aussperr-Falle, Colemak-DH, Encoder, Print-Taste) wurde am 2026-08-06 geflasht;
+die Farbsprache entstand erst danach, weil Michael am frisch geflashten Board
+das alte Animationsschema bemerkte. Ein weiterer Flash steht aus.
 
 ---
 
@@ -1014,18 +1106,19 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    (`RGB_MATRIX_DEFAULT_VAL 40`, änderbar per `RGB_VAI`/`RGB_VAD` auf `_ADJUST`
    ohne Neuflashen) und ob die Minus-Taste jetzt wirklich leuchtet.
    Der Win/Mac-Schalter ist bestätigt.
-2. **⚠️ GMMK Pro hat ungeflashte Änderungen.** Zwei Stück, beide weil das Board
-   nicht anlag: sie teilt sich `QWERTY_1/2` und `GAMING_2` mit dem K3 Pro und
-   hat am 2026-08-05 das blanke Ü/Ä mitbekommen, und am 2026-08-06 kamen die
-   entschärften `_ADJUST`-Tasten plus Colemak-DH dazu (Punkt 4). Bis zum Flash
-   läuft auf ihr weiterhin die alte Firmware **mit** den acht scharfen Tasten.
+2. **GMMK Pro am 2026-08-06 geflasht** — blankes Ü/Ä, entschärfte
+   `_ADJUST`-Tasten, Colemak-DH, Encoder und `KC_PSCR` sind auf dem Board.
+   ⚠️ **Ein weiterer Flash steht aus**: die Beleuchtungs-Umstellung desselben
+   Tages (Farbsprache + umschaltbarer Lichtbalken) entstand erst danach.
+   Am Board zu beurteilen: Grundhelligkeit (`RGB_MATRIX_DEFAULT_VAL 40`) und ob
+   der Statusbalken im Alltag trägt.
 3. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
    Punkt, der sich nur über längere Benutzung zeigt. Bei versehentlichen
    Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD` dokumentiert bereit
    (siehe unten). Auf dem K3 Pro sind die Umlaute seit 2026-08-05 aus der
    Tap-Hold-Auflösung heraus, das ändert dort das Bild.
 4. ~~**GMMK Pro: dieselbe Aussperr-Falle schließen**~~ — **erledigt 2026-08-06**,
-   siehe eigenen Abschnitt im K3-Pro-Kapitel. Noch nicht geflasht.
+   siehe eigenen Abschnitt im K3-Pro-Kapitel. Am 2026-08-06 geflasht.
 5. ~~**Sofle Choc: toter `_GAMING`-Zweig im Encoder-Handler**~~ — **erledigt
    2026-08-06** in sofle_choc **und** sofle/rev1 (dieselbe Stelle, gleicher
    Fehler), siehe „Encoder + `_GAMING`" unten. Kostet je 4 Byte;

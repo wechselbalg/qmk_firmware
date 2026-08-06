@@ -391,7 +391,29 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         }
     }
 
+    wb_rgb_extra_leds(led_min, led_max, val);
     return false;
+}
+
+/*
+Haken fuer LEDs, die an *keiner* Matrixposition haengen.
+
+Die Schleife oben laeuft ueber die Matrix, erreicht also nur LEDs, die zu einer
+Taste gehoeren. Auf Sofle Choc und K3 Pro ist das jede einzelne; die GMMK Pro
+hat daneben 16 im seitlichen Lichtbalken, die keiner Taste zugeordnet sind.
+
+Wer nichts ueberschreibt, laesst dort stehen, was der laufende Effekt gemalt
+hat -- deshalb tut die schwache Vorgabe hier bewusst nichts: ohne Board-Code
+animiert der Balken einfach weiter. Das Board kann die Funktion ueberschreiben,
+um ihn stattdessen zu belegen (GMMK Pro: Statusanzeige, umschaltbar).
+
+`val` ist bereits die laufende Helligkeit -- wer hier faerbt, skaliert selbst,
+genau wie die Schleife oben.
+*/
+__attribute__((weak)) void wb_rgb_extra_leds(uint8_t led_min, uint8_t led_max, uint8_t val) {
+    (void)led_min;
+    (void)led_max;
+    (void)val;
 }
 
 #endif  // WB_RGB_LANGUAGE

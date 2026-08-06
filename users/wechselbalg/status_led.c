@@ -67,6 +67,7 @@ auf keiner der beiden Seiten kontrollieren.
 #include "hardware/pio.h"
 
 #include "wechselbalg.h"
+#include "status_state.h"
 #include "util.h"
 #include "caps_word.h"
 #include "layer_lock.h"
@@ -127,67 +128,16 @@ GPxx-Namen nicht existieren -- derselbe Fall wie die Power-LED an 24U.
 #        define WB_STATUS_LED_PIN 25U
 #    endif
 
-/* ---- Palette ----------------------------------------------------------- */
-
-typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-} wb_status_color_t;
-
-#    define WB_SC(r_, g_, b_) ((wb_status_color_t){(r_), (g_), (b_)})
-
-// Momentzustaende, absteigend nach Dringlichkeit -- Caps Word dauert einen
-// Augenblick und muss jetzt gesehen werden, der Jiggler laeuft stundenlang.
-#    define WB_SC_CAPS_WORD  WB_SC(255, 255, 255)
-#    define WB_SC_LAYER_LOCK WB_SC(  0, 255, 255)  // dasselbe Cyan wie die Taste
-#    define WB_SC_JIGGLER    WB_SC(170, 255,   0)
+/* ---- Palette und Zustand ----------------------------------------------- */
 
 /*
-Ruhe: kein Zustand an. Dann leuchtet die LED nur noch, wenn der Mac-Modus an
-ist -- am PC ist sie aus (Michael, 2026-08-04).
-
-Damit ist "sie leuchtet ueberhaupt" schon die halbe Information, und das
-Board ist im Normalfall dunkel statt dauerhaft mit einem Punkt zu leuchten,
-der nichts sagt.
+Beides steht seit 2026-08-06 in status_state.{h,c}, weil die GMMK Pro mit ihrem
+seitlichen Lichtbalken eine zweite Anzeige derselben Zustaende hat. Die Palette
+gehoert an eine Stelle.
 */
-#    define WB_SC_MAC WB_SC(0, 120, 255)
-#    define WB_SC_OFF WB_SC(0, 0, 0)
-
-/* ---- Statusflags, einmal fuer beide Haelften --------------------------- */
-
-enum wb_status_flag {
-    WB_STATUS_CAPS_WORD  = 1 << 0,
-    WB_STATUS_LAYER_LOCK = 1 << 1,
-    WB_STATUS_JIGGLER    = 1 << 2,
-    WB_STATUS_MAC        = 1 << 3,
-};
 
 // Auf der Peripherie das zuletzt Empfangene, auf dem Master ungenutzt.
 static uint8_t wb_status_received = 0;
-
-/*
-Layer Lock meldet sich hier, statt dass wir is_layer_locked() fuer jeden Layer
-einzeln abfragen: der Hook bekommt die komplette Bitmaske und wird genau dann
-gerufen, wenn sich etwas aendert.
-*/
-static bool wb_layer_locked = false;
-
-bool layer_lock_set_user(layer_state_t locked_layers) {
-    wb_layer_locked = (locked_layers != 0);
-    return true;
-}
-
-static uint8_t wb_status_flags_local(void) {
-    uint8_t flags = 0;
-    if (is_caps_word_on()) flags |= WB_STATUS_CAPS_WORD;
-    if (wb_layer_locked) flags |= WB_STATUS_LAYER_LOCK;
-#    ifdef WB_JIGGLER
-    if (wb_is_jiggling()) flags |= WB_STATUS_JIGGLER;
-#    endif
-    if (WB_HOST_IS_MAC()) flags |= WB_STATUS_MAC;
-    return flags;
-}
 
 static void wb_status_sync_handler(uint8_t in_len, const void *in_data, uint8_t out_len, void *out_data) {
     if (in_len == sizeof(uint8_t)) {
@@ -268,15 +218,8 @@ static void wb_status_led_write(wb_status_color_t color) {
 
 /* ---- Was angezeigt wird ------------------------------------------------ */
 
-static wb_status_color_t wb_status_color(uint8_t flags, bool *is_idle) {
-    *is_idle = false;
-    if (flags & WB_STATUS_CAPS_WORD) return WB_SC_CAPS_WORD;
-    if (flags & WB_STATUS_LAYER_LOCK) return WB_SC_LAYER_LOCK;
-    if (flags & WB_STATUS_JIGGLER) return WB_SC_JIGGLER;
+// wb_status_color() steht in status_state.c.
 
-    *is_idle = true;
-    return (flags & WB_STATUS_MAC) ? WB_SC_MAC : WB_SC_OFF;
-}
 
 /*
 Der Abschaltpunkt, gemessen an der Tastenbeleuchtung: bis zu welchem
