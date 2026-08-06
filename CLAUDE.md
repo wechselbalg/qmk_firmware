@@ -1216,17 +1216,19 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
-| GMMK Pro ISO | ❌ | Encoder-Drehrichtung (`_GAMING`) |
+| GMMK Pro ISO | ✅ 2026-08-06 | — |
 | Sofle Choc schwarz (Liatris) | ❌ | Encoder-Drehrichtung (beide Hälften) |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-⚠️ **Seit der Drehrichtungs-Änderung vom 2026-08-06 stehen wieder zwei Flashes
-aus**: GMMK Pro und die schwarze Sofle Choc (dort **beide** Hälften — welche
+⚠️ **Offen ist noch ein Flash:** die schwarze Sofle Choc braucht die
+Drehrichtungs-Änderung vom 2026-08-06, und zwar auf **beiden** Hälften — welche
 Hälfte Master ist, entscheidet `SPLIT_USB_DETECT` zur Laufzeit, und der
-Encoder-Callback läuft auf dem Master). Der K3 Pro hat keinen Encoder und ist
-nicht betroffen.
+Encoder-Callback läuft immer auf dem Master. Eine Hälfte allein hieße, dass die
+Drehrichtung davon abhängt, welches Kabel gerade steckt.
+Der K3 Pro hat keinen Encoder und ist nicht betroffen; die GMMK Pro ist am
+2026-08-06 geflasht.
 
 Die schwarze Sofle Choc wurde je Hälfte über `--side left` / `--side right`
 geflasht, also mit `-bl uf2-split-left` bzw. `-uf2-split-right`. Das ist nicht
