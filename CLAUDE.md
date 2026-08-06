@@ -1217,14 +1217,18 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — |
 | GMMK Pro ISO | ✅ 2026-08-06 | — (Beleuchtung mitgeflasht) |
-| Sofle Choc schwarz (Liatris) | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
+| Sofle Choc schwarz (Liatris) | ✅ 2026-08-06, beide Hälften | — |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-Offen ist damit nur noch **ein** Flash: die **schwarze** Sofle Choc (beide
-Hälften) hat den Encoder-`_GAMING`-Fix noch nicht. Ohne ihn macht der rechte
-Encoder im Gaming-Layout Lautstärke statt Pfeil hoch/runter.
+**Damit ist kein Flash mehr offen.** Alle drei benutzten Boards — K3 Pro,
+GMMK Pro und die schwarze Sofle Choc — laufen auf Repo-Stand.
+
+Die schwarze Sofle Choc wurde je Hälfte über `--side left` / `--side right`
+geflasht, also mit `-bl uf2-split-left` bzw. `-uf2-split-right`. Das ist nicht
+kosmetisch: die Händigkeit steckt im EEPROM (`EE_HANDS`), und ohne sie fallen
+bei `SPLIT_USB_DETECT` **beide** Hälften auf „ich bin links" zurück.
 
 Wichtig dabei: **die `_ADJUST`-Falltüren sind auf beiden ISO-Boards erledigt und
 auch geflasht.** Am Binary geprüft — auf `_ADJUST` stehen nur noch `DF()` auf
@@ -1256,9 +1260,9 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    Tap-Hold-Auflösung heraus, das ändert dort das Bild.
 4. ~~**GMMK Pro: dieselbe Aussperr-Falle schließen**~~ — **erledigt 2026-08-06**,
    siehe eigenen Abschnitt im K3-Pro-Kapitel. Am 2026-08-06 geflasht.
-5. **Schwarze Sofle Choc flashen** (beide Hälften, `-e CONVERT_TO=liatris`) —
-   der Encoder-`_GAMING`-Fix (`3c5032d689`) ist dort noch nicht auf der
-   Hardware. Der einzige offene Flash.
+5. ~~**Schwarze Sofle Choc flashen**~~ — **erledigt 2026-08-06**, beide Hälften.
+   Damit ist der Encoder-`_GAMING`-Fix auf der Hardware und **kein Flash mehr
+   offen**.
 6. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
 7. Ganz zuletzt das OLED der schwarzen Sofle Choc — blockiert, weil der
    BOOT-Taster mit aufgestecktem OLED nicht mehr erreichbar ist.
