@@ -127,7 +127,7 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-06, GMMK Pro entschärft)
+## Aktueller Stand (Stand: 2026-08-06, GMMK Pro entschärft, Encoder-`_GAMING`-Fix überall)
 
 **Fertig:**
 - Fork aufgeräumt (nur noch master/develop/mike), auf aktuellen QMK-Stand gemergt.
@@ -184,6 +184,14 @@ gepflegt werden:
   Zweiter Flash am selben Tag: die Farbsprache (C8) ist jetzt auch hier an,
   siehe „Die Beleuchtung" im K3-Pro-Kapitel.
   **Noch nicht beurteilt:** das Tippgefühl bei `TAPPING_TERM 150`.
+
+- **Encoder-`_GAMING`-Bug in sofle_choc und sofle/rev1 behoben (2026-08-06).**
+  Der `case _GAMING:` in `encoder_update_user()` war unerreichbar (`DF()` setzt
+  `default_layer_state`, der Switch las `layer_state`) — auf dem **rechten**
+  Encoder kam im Gaming-Layout deshalb Lautstärke statt Pfeil hoch/runter.
+  Beide Boards kompilieren, Kosten je **+4 Byte**; sofle/rev1 hat damit nur
+  noch **18 Byte** frei. Details, Messwerte und die Boards ohne Befund im
+  Abschnitt „Encoder + `_GAMING`" weiter unten. **Noch nicht geflasht.**
 
 **Offen / vor dem Flashen prüfen:**
 - **GMMK Pro ISO — flashbereit seit 2026-08-06, aber NOCH NICHT GEFLASHT.**
@@ -586,9 +594,11 @@ const uint8_t layer = layer_state ? get_highest_layer(layer_state)
                                   : get_highest_layer(default_layer_state);
 ```
 
-Die Sofle-Choc-Keymap hat denselben toten Zweig — auf ihrem linken Encoder
+Die Sofle-Choc-Keymap hatte denselben toten Zweig — auf ihrem linken Encoder
 folgenlos (beide Zweige machen PgUp/PgDn), auf dem **rechten** nicht: gedacht
-ist hoch/runter, es kommt Lautstärke. **Noch offen**, siehe Liste unten.
+ist hoch/runter, es kam Lautstärke. **Nachgezogen am 2026-08-06** in sofle_choc
+und sofle/rev1, mit Messwerten und den geprüft nicht betroffenen Boards im
+Abschnitt „Encoder + `_GAMING`" weiter unten.
 
 ### Print-Taste war tot
 
@@ -818,7 +828,8 @@ diese Zweige ersatzlos weg** — `WB_LAYOUT_*` auf „alle" und
 Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
 194 Bytes, kyria 95 % / 1230 Bytes, lotus58 96 % / 912 Bytes.
 
-> ⚠️ **sofle/rev1 hat 22 Bytes Luft.** Das baut heute, aber der nächste
+> ⚠️ **sofle/rev1 hat 22 Bytes Luft** (Stand 2026-08-04; seit dem Encoder-Fix
+> vom 2026-08-06 sind es **18**). Das baut heute, aber der nächste
 > Upstream-Merge kippt es mit hoher Wahrscheinlichkeit. Der Notausgang liegt
 > **auskommentiert bereit** am Ende von
 > [keyboards/sofle/keymaps/wechselbalg/rules.mk](keyboards/sofle/keymaps/wechselbalg/rules.mk):
@@ -1015,12 +1026,10 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    Tap-Hold-Auflösung heraus, das ändert dort das Bild.
 4. ~~**GMMK Pro: dieselbe Aussperr-Falle schließen**~~ — **erledigt 2026-08-06**,
    siehe eigenen Abschnitt im K3-Pro-Kapitel. Noch nicht geflasht.
-5. **⚠️ Sofle Choc: toter `_GAMING`-Zweig im Encoder-Handler.** Derselbe
-   Fallstrick wie bei der GMMK Pro (siehe dort): `_GAMING` liegt in
-   `default_layer_state`, `get_highest_layer(layer_state)` sieht es nie. Auf dem
-   linken Encoder folgenlos, auf dem **rechten** kommt Lautstärke statt
-   hoch/runter. Fix ist die Ternär-Zeile aus dem GMMK-Pro-Handler.
-   ⚠️ Vorher Flash-Größe prüfen — sofle/rev1 hat nur 22 Byte frei.
+5. ~~**Sofle Choc: toter `_GAMING`-Zweig im Encoder-Handler**~~ — **erledigt
+   2026-08-06** in sofle_choc **und** sofle/rev1 (dieselbe Stelle, gleicher
+   Fehler), siehe „Encoder + `_GAMING`" unten. Kostet je 4 Byte;
+   ⚠️ **sofle/rev1 hat danach nur noch 18 Byte frei.** Noch nicht geflasht.
 6. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
 7. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
 
@@ -1217,6 +1226,63 @@ synchronisiert, beide Hälften dimmen zusammen.
 Auf dem weißen Board läuft derselbe Code über `rgblight_*_noeeprom()`
 (32 Byte, danach noch 148 frei). sofle/rev1 und Kyria haben den Fall bewusst
 nicht — dort ist kein Platz bzw. kein Bedarf.
+
+### ⚠️ Encoder + `_GAMING`: `layer_state` ≠ `default_layer_state` — behoben 2026-08-06
+
+`encoder_update_user()` schaltete in **sofle_choc** und **sofle/rev1** per
+`switch (get_highest_layer(layer_state))`. Der `case _GAMING:` darin war
+**unerreichbar**: `_GAMING` wird per `DF()` betreten und steht damit in
+`default_layer_state`, nicht in `layer_state` — zwei getrennte Variablen
+(`quantum/action_layer.c:12` bzw. `:101`). Ist nur das Default-Layer gesetzt,
+ist `layer_state` schlicht `0` und `get_highest_layer()` liefert `0`, der
+Switch landete also immer im `default:`-Zweig.
+
+- **Linker Encoder:** folgenlos, `_GAMING` und `default` machen beide PgUp/PgDn.
+- **Rechter Encoder:** gedacht war Pfeil hoch/runter, tatsächlich kam
+  **Lautstärke** — der eigentliche Fehler, den man am Board merkt.
+
+**Der Fix** (identisch in beiden Keymaps, dasselbe Muster wie im
+GMMK-Pro-Handler):
+
+```c
+const uint8_t layer = layer_state ? get_highest_layer(layer_state)
+                                  : get_highest_layer(default_layer_state);
+```
+
+Einmal oben in der Funktion, beide Encoder teilen sich den Wert. Ein
+gehaltener/getoggelter Layer gewinnt, sonst zählt das Default-Layer — das ist
+zugleich für die Basis-Layouts richtig, weil deren Index dort ebenso steht.
+
+⚠️ **Nicht** `layer_state | default_layer_state` nehmen (was die OLED-`case`s
+tun): im Layer-Enum steht `_GAMING` **hinter** `_SYM`/`_NAV`/`_NUM`
+([wechselbalg.h](users/wechselbalg/wechselbalg.h)), das ODER würde also bei
+gehaltenem `_NAV` auf Gaming-Default trotzdem `_GAMING` liefern. Für die OLEDs
+ist das nur kosmetisch (sie zeigen dann „GAME" statt „NAV"), für die Encoder
+wäre es falsches Verhalten. Falls die OLED-Anzeige eines Tages stört: dort
+dasselbe Ternary einsetzen — auf AVR kostet es aber wieder Bytes.
+
+**Flash-Kosten, sauber vorher/nachher gemessen (2026-08-06):**
+
+| Board | vorher | nachher | Δ |
+|---|---|---|---|
+| sofle/rev1 | 28650 / 22 Byte frei | 28654 / **18 Byte frei** ⚠️ | +4 |
+| sofle_choc (weiß, AVR) | 28524 / 148 frei | 28528 / 144 frei | +4 |
+| sofle_choc (schwarz, Liatris) | — | baut (UF2) | irrelevant |
+
+Nachgemessen und **nichts zu holen**: den auf dem linken Encoder jetzt
+redundanten `case _GAMING:` zu streichen ergibt exakt dieselben 28654 Byte —
+LTO faltet die identischen Zweige ohnehin zusammen. Der Zweig bleibt deshalb
+stehen, das hält beide Encoder und beide Boards symmetrisch lesbar.
+
+**Nicht betroffen:**
+- **Kyria** — `ENCODER_ENABLE = no` in ihrer Keymap-`rules.mk`, kein
+  `encoder_update_user()` in der keymap.c. Nichts zu tun.
+- **Lotus58** (stillgelegt) — ihr Handler schaltet per `IS_LAYER_ON(_NUMB)`,
+  und `_NUMB` ist ein Momentary-Layer, steht also korrekt in `layer_state`.
+- **K3 Pro** — hat gar keinen Encoder.
+- **GMMK Pro** — dort ist dasselbe Ternary schon drin, es kam von dort
+  (Commit `bd8ff1ee28`, „Der Drehencoder drehte ins Leere" weiter oben). Diese
+  Änderung hier ist das Nachziehen auf den beiden Sofles.
 
 ### Status-LED (Liatris-NeoPixel GP25) — umgesetzt und geprüft 2026-08-04
 

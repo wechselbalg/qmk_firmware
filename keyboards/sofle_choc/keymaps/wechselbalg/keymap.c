@@ -619,9 +619,26 @@ static void wb_brightness(bool up) {
 #endif
 }
 
+/*
+⚠️ _GAMING wird per DF() betreten und liegt damit in `default_layer_state`,
+nicht in `layer_state` -- die beiden sind in QMK getrennte Variablen
+(quantum/action_layer.c:12 und :101), und `get_highest_layer(layer_state)`
+liefert bei nur gesetztem Default-Layer schlicht 0. Das blosse
+`switch (get_highest_layer(layer_state))` hat den _GAMING-Zweig also nie
+erreicht: links folgenlos (Default macht dasselbe PgUp/PgDn), rechts kam statt
+Pfeil hoch/runter die Lautstaerke.
+
+Deshalb: ein gehaltener/getoggelter Layer gewinnt, sonst zaehlt das
+Default-Layer -- das ist zugleich fuer die Basis-Layouts richtig, weil deren
+Index dort ebenso steht. Einmal oben berechnet, beide Encoder teilen sich das.
+Gleicher Fix in sofle/rev1; Messwerte und Begruendung in der CLAUDE.md.
+*/
 bool encoder_update_user(uint8_t index, bool clockwise) {
+    const uint8_t layer = layer_state ? get_highest_layer(layer_state)
+                                      : get_highest_layer(default_layer_state);
+
     if (index == 0) {
-        switch (get_highest_layer(layer_state)) {
+        switch (layer) {
             case _ADJUST:
                 wb_brightness(clockwise);
                 break;
@@ -650,7 +667,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 break;
 		}
     } else if (index == 1) {
-        switch (get_highest_layer(layer_state)) {
+        switch (layer) {
             case _ADJUST:
                 wb_brightness(clockwise);
                 break;
