@@ -224,8 +224,12 @@ auf, weil das Board die NUBS-Taste dazwischen hat.
 #define __________________MINE__R2_________________  DE_M    , DE_N   , DE_T   , DE_S   , DE_H   , SYM___Z
 #define __________________MINE__R3_________________  DE_P    , DE_F   , DE_COMM, DE_DOT , DE_K   , RFT_MIN
 
-#define ________________________________________MINE___1________________________________________  __________________MINE__L1_________________, __________________MINE__R1_________________
-#define ________________________________________MINE___2________________________________________  __________________MINE__L2_________________, __________________MINE__R2_________________
+// Grossboard-Bloecke, rechte Haelfte ausgeschrieben -- Begruendung an QWERTY_1:
+// blankes ss und z statt NUM__SS/SYM___Z. Auf diesen Boards liegt der
+// Layer-Zugang auf eigenen Tasten, der Tap-Hold waere nur eine Dublette, die
+// jedes Zeichen 150 ms kostet. Die Splits behalten ihre Doppelrolle (MINE__R1/R2).
+#define ________________________________________MINE___1________________________________________  __________________MINE__L1_________________, DE_W, DE_B, DE_D, DE_G, DE_Y, DE_SS
+#define ________________________________________MINE___2________________________________________  __________________MINE__L2_________________, DE_M, DE_N, DE_T, DE_S, DE_H, DE_Z
 #define ________________________________________MINE___3________________________________________  KC_LSFT, MO__NUM, DE_V, DE_X, DE___UE, DE___AE, DE___OE, __________________MINE__R3_________________
 
 

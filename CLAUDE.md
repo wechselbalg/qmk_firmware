@@ -52,13 +52,55 @@ oder `make <KB>:wechselbalg`:
 
 | Tastatur | Build-Target (`<KB>`) | MCU |
 |---|---|---|
-| Sofle RGB | `sofle/rev1` | AVR (voll, ~95 %) |
+| ~~Sofle RGB („die weiße Sofle")~~ | `sofle/rev1` | AVR — **zurückgestellt, siehe unten** |
 | Sofle Choc (weiß) | `sofle_choc` | AVR — Atmel/atmega32u4 (rechts Elite-C, links Pro Micro) |
 | Sofle Choc (schwarz) | `sofle_choc` + `-e CONVERT_TO=liatris` | RP2040 (2× splitkb Liatris) |
-| splitkb Kyria | `splitkb/kyria/rev1` | AVR (voll, ~92 %) |
+| ~~splitkb Kyria~~ | `splitkb/kyria/rev1` | AVR — **zurückgestellt, siehe unten** |
 | GMMK Pro ISO | `gmmk/pro/rev1/iso` | STM32 |
 | ~~Lotus58~~ | `tweetydabird/lotus58` | AVR — **stillgelegt, siehe unten** |
 | Keychron K3 Pro ISO RGB | `keychron/k3_pro/iso/rgb` | STM32 |
+
+## Kleine Aufräumarbeiten, erledigt 2026-08-06
+
+- **`MINE___1`/`MINE___2` nachgezogen.** Sie trugen an den ISO-Extrastellen noch
+  `NUM__SS` (ß) und `SYM___Z` (z) als Layer-Taps — dieselbe Dublette, die bei
+  Ü und Ä am 2026-08-05 gefallen ist. Jetzt blankes `DE_SS`/`DE_Z`. Betrifft
+  nur die großen ISO-Boards; `MINE__R1`/`R2` für die Splits bleiben unangetastet.
+  Wirkt sich heute auf kein Binary aus, weil `_MINE` auf keinem Board
+  einkompiliert ist — greift, sobald jemand auf `WB_LAYOUT_MINE` zurückstellt.
+- **Verirrter Schrägstrich in [k3_pro.c](keyboards/keychron/k3_pro/k3_pro.c)
+  entfernt** (`/#    include "factory_test.h"`). Stört heute nicht, weil das
+  `#ifdef ENABLE_FACTORY_TEST` nie greift — wäre beim Bluetooth-/Factory-Build
+  aber sofort ein Syntaxfehler gewesen.
+
+**Bewusst *nicht* aufgeräumt:** die Leichen `RN_STEM`, `RN_CODE` und
+`KC_D_MUTE` in `enum CustomKeys`. Sie zu entfernen verschiebt alle folgenden
+Werte — genau das war die Ursache des `FN_EXIT`-Bugs. Der Gewinn wäre null
+(ein Enum-Eintrag kostet kein Flash), das Risiko real.
+
+## ⛔ Zurückgestellt: Sofle RGB (`sofle/rev1`) und Kyria
+
+**Entscheidung Michael, mehrfach bestätigt, zuletzt 2026-08-06: diese beiden
+Boards werden vorerst ignoriert.** Er will dort langfristig **andere Controller
+einbauen**; jede Optimierung am AVR-Flash wäre Arbeit, die der Umbau wegwirft.
+
+Konkret heißt das für jede Session:
+- **Nicht flashen, nicht optimieren, nicht als Blocker behandeln.** Sie müssen
+  weiterhin *kompilieren* — mehr nicht.
+- Die berühmten **18 Byte Rest auf `sofle/rev1`** sind damit kein Alarm mehr.
+  Kippt der nächste Upstream-Merge sie, ist der Notausgang die auskommentierte
+  `OPT_DEFS`-Zeile am Ende ihrer Keymap-`rules.mk` (fällt auf TAPPING_TERM 600
+  ohne Chordal Hold zurück). Kein Grund, Features zurückzubauen.
+- Die fehlende **`chordal_hold_layout` der Kyria** bleibt offen und ist
+  ungefährlich, solange das Board nicht benutzt wird. Vor einem etwaigen Flash
+  nachtragen — aber der kommt erst nach dem Controller-Umbau.
+- Beim Controller-Umbau fallen die AVR-Sonderzweige für diese Boards ersatzlos
+  weg: `WB_LAYOUT_*`-Reduktion, `WB_NO_BOTH_SHIFTS_CW`, das `#ifndef __AVR__`
+  um `WB_JIGGLER`/`WB_DF_PREV`, `MAGIC_ENABLE ?= no`.
+
+⚠️ **Namensfalle:** „die weiße Sofle" ist `sofle/rev1`, **nicht** die
+Sofle Choc (weiß) — das sind zwei verschiedene Boards, und die Sofle Choc
+(weiß) ist **aktiv in Benutzung**.
 
 **Zwei physische Sofle-Choc-Boards, farblich unterschieden:**
 - **Weiß** = Original-Bestückung mit Atmel-Chips (rechts Elite-C/Atmel-DFU,
@@ -127,7 +169,7 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-06, GMMK Pro entschärft, Encoder-`_GAMING`-Fix überall)
+## Aktueller Stand (Stand: 2026-08-06, K3 Pro und GMMK Pro geflasht)
 
 **Fertig:**
 - Fork aufgeräumt (nur noch master/develop/mike), auf aktuellen QMK-Stand gemergt.
@@ -205,7 +247,8 @@ gepflegt werden:
   damit vom Board verschwunden.
   ⚠️ **Noch nicht auf dem Board**: die Beleuchtungs-Umstellung vom selben Tag
   (Farbsprache + umschaltbarer Lichtbalken) — sie entstand erst nach dem Flash,
-  weil Michael das alte Schema bemerkte. Ein weiterer Flash steht also aus.
+  weil Michael das alte Schema bemerkte. **Am 2026-08-06 nachgeflasht** — das
+  Board ist damit auf Repo-Stand.
 - **K3 Pro — Keymap gesichtet und bereinigt 2026-08-04.** Zwei der früher hier
   notierten Bedenken waren gegenstandslos, der Rest ist erledigt:
   - ~~„neu belegte `+`-Taste"~~ — **kein Unterschied**: `DE_PLUS` *ist*
@@ -778,10 +821,11 @@ Userspace-Umbauten hier kosten davon **null** — der schwache Haken verschwinde
 per LTO, und `status_state.c` ersetzt nur, was vorher in `status_led.c` stand.
 Nur die GMMK Pro wächst: 43808 → **44936 Byte**.
 
-⚠️ **Diese Beleuchtungs-Umstellung ist noch NICHT auf dem Board.** Alles davor
+✅ **Am 2026-08-06 geflasht** (44936 Byte), damit ist die GMMK Pro komplett auf
+Repo-Stand. Bis dahin galt: alles davor
 (Aussperr-Falle, Colemak-DH, Encoder, Print-Taste) wurde am 2026-08-06 geflasht;
 die Farbsprache entstand erst danach, weil Michael am frisch geflashten Board
-das alte Animationsschema bemerkte. Ein weiterer Flash steht aus.
+das alte Animationsschema bemerkte.
 
 ---
 
@@ -971,6 +1015,11 @@ diese Zweige ersatzlos weg** — `WB_LAYOUT_*` auf „alle" und
 Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
 194 Bytes, kyria 95 % / 1230 Bytes, lotus58 96 % / 912 Bytes.
 
+> ⛔ **Seit 2026-08-06 kein Alarm mehr:** `sofle/rev1` ist zurückgestellt
+> (Controller-Umbau geplant, siehe Kapitel oben). Der Rest hier bleibt als
+> Bedienungsanleitung stehen, falls der nächste Upstream-Merge den Build kippt —
+> aber es ist kein Grund, Features zurückzubauen.
+>
 > ⚠️ **sofle/rev1 hat 22 Bytes Luft** (Stand 2026-08-04; seit dem Encoder-Fix
 > vom 2026-08-06 sind es **18**). Das baut heute, aber der nächste
 > Upstream-Merge kippt es mit hoher Wahrscheinlichkeit. Der Notausgang liegt
@@ -1023,7 +1072,8 @@ Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
     aber sichtbar und änderbar statt von einer Heuristik abhängig. Der einzige
     Tap-Hold ihrer Daumenreihe ist `NAV_SPC` auf der Leertaste (`'*'`); die
     übrigen (`NAV_TAB`, `NUM__UE`, `SYM__AE`) liegen auf den Außenspalten.
-  - **Kyria: echtes Problem, noch offen** (Board wird derzeit nicht benutzt).
+  - **Kyria: echtes Problem, aber ⛔ zurückgestellt** (Controller-Umbau geplant,
+    siehe Kapitel oben — erst vor einem etwaigen Flash nachtragen).
      Als symmetrischer Split bekommt sie
     `'L','L','L','L','L','R','R','R','R','R'` für die Daumenreihe — **kein
     `'*'`**. Damit ist exakt der KMK-Hardware-Bug reproduzierbar: `NUM_ENT`
@@ -1153,12 +1203,15 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — |
-| GMMK Pro ISO | ❌ | Beleuchtung: Farbsprache + Lichtbalken (`7490808bb5`) |
+| GMMK Pro ISO | ✅ 2026-08-06 | — (Beleuchtung mitgeflasht) |
 | Sofle Choc weiß (AVR) | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
 | Sofle Choc schwarz (Liatris) | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
-| Sofle rev1 | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
-| Kyria | ❌ | ⚠️ vor dem nächsten Flash erst `chordal_hold_layout` nachtragen |
+| ~~Sofle RGB (`sofle/rev1`)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
+| ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
+
+Offen ist damit nur noch **ein** Flash: die beiden Sofle-Choc-Hälften (weiß und
+schwarz) haben den Encoder-`_GAMING`-Fix noch nicht.
 
 Wichtig dabei: **die `_ADJUST`-Falltüren sind auf beiden ISO-Boards erledigt und
 auch geflasht.** Am Binary geprüft — auf `_ADJUST` stehen nur noch `DF()` auf
@@ -1179,10 +1232,10 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    Der Win/Mac-Schalter ist bestätigt.
 2. **GMMK Pro am 2026-08-06 geflasht** — blankes Ü/Ä, entschärfte
    `_ADJUST`-Tasten, Colemak-DH, Encoder und `KC_PSCR` sind auf dem Board.
-   ⚠️ **Ein weiterer Flash steht aus**: die Beleuchtungs-Umstellung desselben
-   Tages (Farbsprache + umschaltbarer Lichtbalken) entstand erst danach.
-   Am Board zu beurteilen: Grundhelligkeit (`RGB_MATRIX_DEFAULT_VAL 40`) und ob
-   der Statusbalken im Alltag trägt.
+   ✅ **Am 2026-08-06 ein zweites Mal geflasht**, damit ist auch die
+   Beleuchtungs-Umstellung (Farbsprache + umschaltbarer Lichtbalken) auf dem
+   Board. Am Gerät zu beurteilen: Grundhelligkeit (`RGB_MATRIX_DEFAULT_VAL 40`)
+   und ob der Statusbalken im Alltag trägt.
 3. **Tippgefühl bei `TAPPING_TERM 150`** im Alltag beurteilen — der einzige
    Punkt, der sich nur über längere Benutzung zeigt. Bei versehentlichen
    Modifiern liegen `FLOW_TAP_TERM` und `SPECULATIVE_HOLD` dokumentiert bereit
@@ -1190,12 +1243,15 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    Tap-Hold-Auflösung heraus, das ändert dort das Bild.
 4. ~~**GMMK Pro: dieselbe Aussperr-Falle schließen**~~ — **erledigt 2026-08-06**,
    siehe eigenen Abschnitt im K3-Pro-Kapitel. Am 2026-08-06 geflasht.
-5. ~~**Sofle Choc: toter `_GAMING`-Zweig im Encoder-Handler**~~ — **erledigt
-   2026-08-06** in sofle_choc **und** sofle/rev1 (dieselbe Stelle, gleicher
-   Fehler), siehe „Encoder + `_GAMING`" unten. Kostet je 4 Byte;
-   ⚠️ **sofle/rev1 hat danach nur noch 18 Byte frei.** Noch nicht geflasht.
-6. Kyria-Handedness (`chordal_hold_layout`), dann ganz zuletzt das OLED.
-7. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
+5. **Sofle Choc (beide Hälften) flashen** — der Encoder-`_GAMING`-Fix
+   (`3c5032d689`) ist dort noch nicht auf der Hardware. Der einzige offene
+   Flash.
+6. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
+7. Ganz zuletzt das OLED der schwarzen Sofle Choc — blockiert, weil der
+   BOOT-Taster mit aufgestecktem OLED nicht mehr erreichbar ist.
+
+⛔ **Nicht mehr in dieser Liste:** Kyria-Handedness und alles zu `sofle/rev1`.
+Beide Boards sind zurückgestellt, siehe das Kapitel oben.
 
 Offen als *Entscheidung*, nicht als Arbeit: ob die Shift+Shift-Geste bei
 „beide halten" bleibt oder den Combo-Weg bekommt (siehe oben).

@@ -26,7 +26,7 @@
 #endif
 
 #ifdef ENABLE_FACTORY_TEST
-/#    include "factory_test.h"
+#    include "factory_test.h"
 #endif
 
 #define POWER_ON_LED_DURATION 3000
