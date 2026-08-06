@@ -52,8 +52,7 @@ oder `make <KB>:wechselbalg`:
 
 | Tastatur | Build-Target (`<KB>`) | MCU |
 |---|---|---|
-| ~~Sofle RGB („die weiße Sofle")~~ | `sofle/rev1` | AVR — **zurückgestellt, siehe unten** |
-| Sofle Choc (weiß) | `sofle_choc` | AVR — Atmel/atmega32u4 (rechts Elite-C, links Pro Micro) |
+| ~~Sofle Choc (weiß)~~ | `sofle_choc` | AVR — Atmel/atmega32u4 — **zurückgestellt, siehe unten** |
 | Sofle Choc (schwarz) | `sofle_choc` + `-e CONVERT_TO=liatris` | RP2040 (2× splitkb Liatris) |
 | ~~splitkb Kyria~~ | `splitkb/kyria/rev1` | AVR — **zurückgestellt, siehe unten** |
 | GMMK Pro ISO | `gmmk/pro/rev1/iso` | STM32 |
@@ -78,29 +77,42 @@ oder `make <KB>:wechselbalg`:
 Werte — genau das war die Ursache des `FN_EXIT`-Bugs. Der Gewinn wäre null
 (ein Enum-Eintrag kostet kein Flash), das Risiko real.
 
-## ⛔ Zurückgestellt: Sofle RGB (`sofle/rev1`) und Kyria
+## ⛔ Zurückgestellt: Sofle Choc (weiß) und Kyria
 
 **Entscheidung Michael, mehrfach bestätigt, zuletzt 2026-08-06: diese beiden
 Boards werden vorerst ignoriert.** Er will dort langfristig **andere Controller
 einbauen**; jede Optimierung am AVR-Flash wäre Arbeit, die der Umbau wegwirft.
 
 Konkret heißt das für jede Session:
-- **Nicht flashen, nicht optimieren, nicht als Blocker behandeln.** Sie müssen
-  weiterhin *kompilieren* — mehr nicht.
-- Die berühmten **18 Byte Rest auf `sofle/rev1`** sind damit kein Alarm mehr.
-  Kippt der nächste Upstream-Merge sie, ist der Notausgang die auskommentierte
-  `OPT_DEFS`-Zeile am Ende ihrer Keymap-`rules.mk` (fällt auf TAPPING_TERM 600
-  ohne Chordal Hold zurück). Kein Grund, Features zurückzubauen.
+- **Nicht flashen, nicht optimieren, nicht als Blocker behandeln.**
+- ⚠️ Die weiße Sofle Choc lässt sich **nicht aus dem Build nehmen**: sie teilt
+  sich `keyboards/sofle_choc/keymaps/wechselbalg/` mit der schwarzen. Ihr
+  AVR-Build (144 Byte frei) bleibt also eine Schranke für Userspace-Änderungen.
+  **Wenn sie je blockiert, ist die Antwort, sie nicht mehr zu bauen — nicht,
+  Features zurückzubauen.** Die Unterscheidung läuft über
+  `ifeq ($(strip $(CONVERT_TO)),liatris)` in ihrer `rules.mk`.
 - Die fehlende **`chordal_hold_layout` der Kyria** bleibt offen und ist
   ungefährlich, solange das Board nicht benutzt wird. Vor einem etwaigen Flash
   nachtragen — aber der kommt erst nach dem Controller-Umbau.
-- Beim Controller-Umbau fallen die AVR-Sonderzweige für diese Boards ersatzlos
-  weg: `WB_LAYOUT_*`-Reduktion, `WB_NO_BOTH_SHIFTS_CW`, das `#ifndef __AVR__`
-  um `WB_JIGGLER`/`WB_DF_PREV`, `MAGIC_ENABLE ?= no`.
+- Beim Controller-Umbau fallen die AVR-Sonderzweige ersatzlos weg:
+  `WB_LAYOUT_*`-Reduktion, das `#ifndef __AVR__` um `WB_JIGGLER`/`WB_DF_PREV`,
+  `MAGIC_ENABLE ?= no`.
 
-⚠️ **Namensfalle:** „die weiße Sofle" ist `sofle/rev1`, **nicht** die
-Sofle Choc (weiß) — das sind zwei verschiedene Boards, und die Sofle Choc
-(weiß) ist **aktiv in Benutzung**.
+## ⛔ Entfernt: Sofle RGB (`sofle/rev1`) — Michael besitzt das Board nicht
+
+Klargestellt 2026-08-06: **es gibt nur zwei Sofle-Boards, beide Choc** (weiß und
+schwarz). Eine normale Sofle RGB existiert nicht. Der Keymap
+`keyboards/sofle/keymaps/wechselbalg/` war eine Karteileiche und ist
+**gelöscht** (git-Historie behält ihn).
+
+Das ist mehr als Aufräumen: `sofle/rev1` war mit **18 Byte Rest** die engste
+Schranke im ganzen Projekt und hat jede Userspace-Änderung mitbestimmt. Diese
+Fessel ist weg. Ältere Messwerte weiter unten in dieser Datei nennen das Board
+noch — die stehen als historische Aufzeichnung da, nicht als Aufgabe.
+
+Nebenwirkung: `WB_NO_BOTH_SHIFTS_CW` wurde **nur** dort gesetzt und hat jetzt
+keinen Nutzer mehr. Der Schalter bleibt im Userspace dokumentiert, falls ein
+Board die 14 Byte je wieder sparen muss.
 
 **Zwei physische Sofle-Choc-Boards, farblich unterschieden:**
 - **Weiß** = Original-Bestückung mit Atmel-Chips (rechts Elite-C/Atmel-DFU,
@@ -160,11 +172,12 @@ gepflegt werden:
 - **Features** (`rules.mk`): Layer Lock + Caps Word aus dem QMK-Core
   (`LAYER_LOCK_ENABLE`/`CAPS_WORD_ENABLE`); `F_LLOCK` = Alias für `QK_LLCK`.
   Caps Word geht zusätzlich per **beide Shifts halten und loslassen**
-  (`BOTH_SHIFTS_TURNS_ON_CAPS_WORD`, überall außer sofle/rev1).
-  `LTO_ENABLE = yes` (die AVR-Boards sind flash-eng).
+  (`BOTH_SHIFTS_TURNS_ON_CAPS_WORD`, auf **allen** Boards).
+  `LTO_ENABLE = yes` (die verbliebenen AVR-Boards sind flash-eng).
 - **Flash-Gating im Userspace**: `WB_LAYOUT_*` (welche Basis-Layouts),
   `WB_JIGGLER`/`WB_DF_PREV` (C4/C6, auf AVR aus),
-  `WB_NO_ADVANCED_TAP_HOLD` (Lotus58), `WB_NO_BOTH_SHIFTS_CW` (sofle/rev1).
+  `WB_NO_ADVANCED_TAP_HOLD` (Lotus58), `WB_NO_BOTH_SHIFTS_CW` (**ohne Nutzer**,
+  seit `sofle/rev1` raus ist — bleibt als Notausgang dokumentiert).
   Merkregel: `rules.mk`-Schalter mit `?=` im Userspace (Keymap wird *vorher*
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
@@ -1015,10 +1028,10 @@ diese Zweige ersatzlos weg** — `WB_LAYOUT_*` auf „alle" und
 Flash danach: **sofle/rev1 99 % / 22 Bytes frei** ⚠️, sofle_choc 99 % /
 194 Bytes, kyria 95 % / 1230 Bytes, lotus58 96 % / 912 Bytes.
 
-> ⛔ **Seit 2026-08-06 kein Alarm mehr:** `sofle/rev1` ist zurückgestellt
-> (Controller-Umbau geplant, siehe Kapitel oben). Der Rest hier bleibt als
-> Bedienungsanleitung stehen, falls der nächste Upstream-Merge den Build kippt —
-> aber es ist kein Grund, Features zurückzubauen.
+> ⛔ **Gegenstandslos seit 2026-08-06:** `sofle/rev1` ist aus dem Projekt
+> entfernt, Michael besitzt das Board nicht (siehe Kapitel oben). Der Absatz
+> bleibt als historische Aufzeichnung stehen — die 18 Byte sind **keine
+> Schranke mehr**, weder für Upstream-Merges noch für Userspace-Änderungen.
 >
 > ⚠️ **sofle/rev1 hat 22 Bytes Luft** (Stand 2026-08-04; seit dem Encoder-Fix
 > vom 2026-08-06 sind es **18**). Das baut heute, aber der nächste
@@ -1204,14 +1217,14 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — |
 | GMMK Pro ISO | ✅ 2026-08-06 | — (Beleuchtung mitgeflasht) |
-| Sofle Choc weiß (AVR) | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
 | Sofle Choc schwarz (Liatris) | ❌ | Encoder-`_GAMING`-Fix (`3c5032d689`) |
-| ~~Sofle RGB (`sofle/rev1`)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
+| ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-Offen ist damit nur noch **ein** Flash: die beiden Sofle-Choc-Hälften (weiß und
-schwarz) haben den Encoder-`_GAMING`-Fix noch nicht.
+Offen ist damit nur noch **ein** Flash: die **schwarze** Sofle Choc (beide
+Hälften) hat den Encoder-`_GAMING`-Fix noch nicht. Ohne ihn macht der rechte
+Encoder im Gaming-Layout Lautstärke statt Pfeil hoch/runter.
 
 Wichtig dabei: **die `_ADJUST`-Falltüren sind auf beiden ISO-Boards erledigt und
 auch geflasht.** Am Binary geprüft — auf `_ADJUST` stehen nur noch `DF()` auf
@@ -1243,15 +1256,16 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    Tap-Hold-Auflösung heraus, das ändert dort das Bild.
 4. ~~**GMMK Pro: dieselbe Aussperr-Falle schließen**~~ — **erledigt 2026-08-06**,
    siehe eigenen Abschnitt im K3-Pro-Kapitel. Am 2026-08-06 geflasht.
-5. **Sofle Choc (beide Hälften) flashen** — der Encoder-`_GAMING`-Fix
-   (`3c5032d689`) ist dort noch nicht auf der Hardware. Der einzige offene
-   Flash.
+5. **Schwarze Sofle Choc flashen** (beide Hälften, `-e CONVERT_TO=liatris`) —
+   der Encoder-`_GAMING`-Fix (`3c5032d689`) ist dort noch nicht auf der
+   Hardware. Der einzige offene Flash.
 6. **Keychron-Bluetooth-Modul nachziehen** (eigenes Vorhaben, siehe K3-Pro-Kapitel).
 7. Ganz zuletzt das OLED der schwarzen Sofle Choc — blockiert, weil der
    BOOT-Taster mit aufgestecktem OLED nicht mehr erreichbar ist.
 
-⛔ **Nicht mehr in dieser Liste:** Kyria-Handedness und alles zu `sofle/rev1`.
-Beide Boards sind zurückgestellt, siehe das Kapitel oben.
+⛔ **Nicht mehr in dieser Liste:** die Kyria-Handedness und die weiße Sofle Choc
+(beide zurückgestellt), sowie alles zu `sofle/rev1` (Board existiert nicht,
+Keymap gelöscht) — siehe die beiden Kapitel oben.
 
 Offen als *Entscheidung*, nicht als Arbeit: ob die Shift+Shift-Geste bei
 „beide halten" bleibt oder den Combo-Weg bekommt (siehe oben).
