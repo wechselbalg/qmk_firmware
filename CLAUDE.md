@@ -182,13 +182,15 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-07, Split-Watchdog eingebaut, noch nicht geflasht)
+## Aktueller Stand (Stand: 2026-08-07, alle drei Boards geflasht)
 
-⚠️ **Neu und offen:** die schwarze Sofle Choc bootet sporadisch nicht (beide
-Hälften dunkel, keine Eingaben). BOOTSEL ist am 2026-08-07 gemessen
-**widerlegt**; die Ursache ist eingegrenzt, aber noch nicht benannt. Analyse,
-das gemessene Fehlerbild und die drei eingebauten Änderungen (Watchdog,
-`SPLIT_USB_DETECT` raus, Power-LED-Heartbeat) stehen im eigenen Kapitel
+⚠️ **Neu und in Beobachtung:** die schwarze Sofle Choc bootete sporadisch nicht
+(beide Hälften dunkel, keine Eingaben). BOOTSEL ist gemessen **widerlegt**; die
+Ursache ist eingegrenzt, aber nicht benannt. Drei Änderungen sind seit dem
+2026-08-07 auf dem Board: Split-Watchdog, `SPLIT_USB_DETECT` raus (VBUS über
+GP19, auf der Hardware bestätigt) und die Power-LED als Lebenszeichen der
+Hauptschleife. **Ob es hilft, zeigt erst die Zeit** — und beim nächsten
+Fehlstart sagt die Power-LED, wo weiterzusuchen ist. Alles im eigenen Kapitel
 „Sofle Choc (schwarz): sporadischer Boot-Ausfall" weiter unten.
 
 **Fertig:**
@@ -1176,13 +1178,13 @@ gar nicht ein.
 2-Sekunden-Rennen samt `usb_disconnect()`-Sackgasse, und die Peripherie-Hälfte
 bootet 2 s schneller, weil sie nicht mehr auf den Timeout wartet.
 
-⚠️ **Die eine Sache, die am Board zu prüfen ist:** ob über das TRRS-Kabel
-**VCC** (3,3 V vom Regler des Masters) und nicht **RAW/VBUS** (5 V) gebrückt
-wird. Läge VBUS auf dem Kabel, sähen es beide Hälften und beide hielten sich
-für Master. Genau davor warnt auch splitkbs eigene Fehlersuche „Only one half
-of my keyboard works at a time" mit dem J1-Jumper der alten Pro Micros.
-Symptom wäre unübersehbar (Doppelzeichen / keine Peripherie), der Rückweg ist
-ein Reflash.
+✅ **Am 2026-08-07 auf der Hardware bestätigt: beide Hälften spielen zusammen.**
+Damit steht fest, dass über das TRRS-Kabel **VCC** gebrückt wird und nicht
+RAW/VBUS — läge VBUS auf dem Kabel, sähen es beide Hälften und beide hielten
+sich für Master (Symptom: Doppelzeichen). Genau davor warnt splitkbs eigene
+Fehlersuche „Only one half of my keyboard works at a time" mit dem J1-Jumper
+der alten Pro Micros. Die VBUS-Erkennung über GP19 trägt also real, nicht nur
+auf dem Papier.
 
 Zum Vergleich, wie splitkb es bei einem eigenen Board macht: Elora rev1
 ([config.h:38](keyboards/splitkb/elora/rev1/config.h:38)) hat `USB_VBUS_PIN`,
@@ -1616,13 +1618,16 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
 | GMMK Pro ISO | ✅ 2026-08-06 | — |
-| Sofle Choc schwarz (Liatris) | ⚠️ nein | Watchdog, `SPLIT_USB_DETECT` raus, Power-LED-Heartbeat (2026-08-07) |
+| Sofle Choc schwarz (Liatris) | ✅ 2026-08-07, beide Hälften | — |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Ein Flash offen:** die schwarze Sofle Choc, wegen des Split-Watchdogs — siehe
-das Kapitel „Sporadischer Boot-Ausfall" unten. Beide ISO-Boards sind aktuell.
+**Kein Flash offen.** Alle drei benutzten Boards laufen auf Repo-Stand. Die
+schwarze Sofle Choc wurde am 2026-08-07 mit Watchdog, VBUS-Master-Erkennung und
+Power-LED-Heartbeat geflasht; **beide Hälften spielen zusammen** (siehe Kapitel
+„Sporadischer Boot-Ausfall"). Ob der Boot-Ausfall damit weg ist, zeigt sich erst
+über die Zeit — er war sporadisch.
 
 Die schwarze Sofle Choc wird je Hälfte über `--side left` / `--side right`
 geflasht, also mit `-bl uf2-split-left` bzw. `-right`. Das ist nicht kosmetisch:
@@ -1654,14 +1659,16 @@ inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
    Ursache liegt zwischen dem Ende von `keyboard_post_init_user()` und dem
    ersten RGB-Frame, ist aber noch nicht benannt.
 
-   **Beide Hälften flashen** — enthält `SPLIT_WATCHDOG_ENABLE`, den Wegfall von
-   `SPLIT_USB_DETECT` (Master-Erkennung jetzt über `USB_VBUS_PIN`/GP19) und den
-   Power-LED-Heartbeat. Dabei zwei Dinge beobachten:
-   - **Spielen beide Hälften zusammen?** Läge VBUS statt VCC auf dem
-     TRRS-Kabel, wären beide Master (Doppelzeichen).
-   - **Beim nächsten Fehlstart: leuchtet die Power-LED?** Das ist jetzt die
-     Antwort auf „läuft die Hauptschleife überhaupt an" — siehe die Tabelle im
-     Kapitel oben. Danach richtet sich, wo weitergesucht wird.
+   ✅ **Am 2026-08-07 beide Hälften geflasht** (Watchdog, VBUS-Master-Erkennung,
+   Power-LED-Heartbeat), **beide spielen zusammen** — die VBUS-Erkennung über
+   GP19 trägt auf der Hardware.
+
+   **Was jetzt zu tun ist: abwarten und beim nächsten Fehlstart zuerst auf die
+   Power-LED schauen.** Leuchtet sie, kommt die Hauptschleife nicht in Gang;
+   geht sie aus, läuft die Schleife und der RGB-Pfad ist tot. Danach richtet
+   sich, wo weitergesucht wird — siehe die Tabelle im Kapitel oben. Tritt der
+   Fehler über längere Zeit gar nicht mehr auf, war es doch das
+   `SPLIT_USB_DETECT`-Rennen.
 1. **K3 Pro am Board nachprüfen** (2026-08-05 dreimal geflasht, siehe eigenes
    Kapitel): ob Colemak-DH mit dem korrigierten `M` sauber tippt, und ob die
    Farbsprache in der Praxis trägt — besonders die Helligkeit
