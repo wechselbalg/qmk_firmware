@@ -184,9 +184,11 @@ gepflegt werden:
 
 ## Aktueller Stand (Stand: 2026-08-07, Split-Watchdog eingebaut, noch nicht geflasht)
 
-⚠️ **Neu und offen:** die schwarze Sofle Choc bootet sporadisch nicht (alles
-schwarz außer der Power-LED, beide Hälften). Analyse, Messanleitung und der
-eingebaute `SPLIT_WATCHDOG_ENABLE` stehen im eigenen Kapitel
+⚠️ **Neu und offen:** die schwarze Sofle Choc bootet sporadisch nicht (beide
+Hälften dunkel, keine Eingaben). BOOTSEL ist am 2026-08-07 gemessen
+**widerlegt**; die Ursache ist eingegrenzt, aber noch nicht benannt. Analyse,
+das gemessene Fehlerbild und die drei eingebauten Änderungen (Watchdog,
+`SPLIT_USB_DETECT` raus, Power-LED-Heartbeat) stehen im eigenen Kapitel
 „Sofle Choc (schwarz): sporadischer Boot-Ausfall" weiter unten.
 
 **Fertig:**
@@ -849,27 +851,85 @@ das alte Animationsschema bemerkte.
 
 # Sofle Choc (schwarz): sporadischer Boot-Ausfall (2026-08-07)
 
-**Symptom (Michael, mehrfach):** nach dem Einstecken bleibt alles schwarz
-**außer der Power-LED**, keine Eingaben kommen an, **beide Hälften gleichermaßen**.
-Mehrfaches Aus- und Einstecken hilft irgendwann. Läuft sie erstmal, gibt es keine
-weiteren Probleme.
+## ✅ Gemessenes Fehlerbild (2026-08-07, maßgeblich)
 
-## Die Power-LED ist die halbe Diagnose
+Michaels erste Beschreibung („Power-LED bleibt an") war ungenau und hat die
+Analyse zunächst in die falsche Richtung geschickt. **Das gilt:**
 
-`keyboard_post_init_user()` schaltet die grüne Liatris-LED an GP24 aktiv aus
-([keymap.c:469](keyboards/sofle_choc/keymaps/wechselbalg/keymap.c:469)), und das
-läuft auf **beiden** Hälften. Leuchtet sie, ist der Code dort **nicht
-angekommen** — die Firmware hängt vor `keyboard_post_init_user()` oder läuft gar
-nicht erst an.
+| Beobachtung | am Fehlstart 2026-08-07 |
+|---|---|
+| Power-LED (GP24) | **kurz an, dann aus** — und bleibt aus |
+| Tasten-LEDs | **nie an**, von Anfang an dunkel |
+| Eingaben | kommen nicht an |
+| `diskutil list \| grep -i RPI` | **kein `RPI-RP2`** |
+| betroffen | beide Hälften |
+| Abhilfe | mehrfaches Aus-/Einstecken, danach dauerhaft stabil |
 
-Das grenzt scharf ab. Insbesondere schließt es die naheliegende Erklärung als
-*alleinige* Ursache aus (siehe unten): im Fall „beide Hälften halten sich für
-Peripherie" booten beide **vollständig** durch, die Power-LED wäre also aus und
-die Tasten-LEDs an. Der Serial-Empfang der Peripherie läuft in einem eigenen
-Thread ([serial_protocol.c:38](platforms/chibios/drivers/serial_protocol.c:38)),
-blockiert die Hauptschleife also nicht — `rgb_matrix_task()` läuft weiter.
+⛔ **Damit ist der BOOTSEL-Verdacht widerlegt** (siehe das Kapitel unten, das
+als Referenz stehen bleibt): im BOOTSEL meldet sich der Chip als
+Massenspeicher, und genau der fehlt.
 
-## Hauptverdacht: Double-Tap-Reset wirft das Board in den BOOTSEL-Modus
+## Was das Fehlerbild eingrenzt
+
+**Power-LED geht aus ⇒ `keyboard_post_init_user()` ist gelaufen.** Genau dort
+wird GP24 angesteuert
+([keymap.c](keyboards/sofle_choc/keymaps/wechselbalg/keymap.c)), auf **beiden**
+Hälften. Die Firmware startet also, durchläuft `keyboard_init()` komplett —
+inklusive `rgb_matrix_init()` und `split_post_init()` — und kommt bis ans Ende.
+Ein Hänger *vor* post_init ist damit ebenfalls raus. Und weil die LED danach aus
+*bleibt*, resettet der Chip auch nicht im Kreis (bei einem Reset wäre GP24 wieder
+undriven, die LED also an).
+
+**Tasten-LEDs nie an ⇒ es wurde nie ein RGB-Frame geschrieben.** WS2812 halten
+ihren letzten Wert bis zum nächsten Datenwort; dunkel heisst also nicht
+„gelöscht", sondern „nie beschrieben".
+
+Zusammen ergibt das ein **schmales Fenster**: der Fehler liegt zwischen dem Ende
+von `keyboard_post_init_user()` und dem ersten `rgb_matrix_task()`-Flush.
+
+⚠️ **Was dazu nicht passt:** „nichts reagiert" wäre bestens durch „beide Hälften
+halten sich für Peripherie" erklärt — aber dann müssten die LEDs leuchten.
+Nachgeprüft: `RGB_MATRIX_SPLIT` ist gesetzt, deshalb ist das
+`if (!is_keyboard_master()) return;` in
+[rgb_matrix.c:199](quantum/rgb_matrix/rgb_matrix.c:199) gar nicht einkompiliert
+— eine Peripherie-Hälfte rendert selbst. `rgb_matrix_set_suspend_state()` ist
+ohne `RGB_MATRIX_SLEEP` eine leere Funktion
+([rgb_matrix.c:529](quantum/rgb_matrix/rgb_matrix.c:529)), ein USB-Suspend kann
+die LEDs also auch nicht löschen. Der Serial-Empfang der Peripherie läuft in
+einem eigenen Thread
+([serial_protocol.c:38](platforms/chibios/drivers/serial_protocol.c:38)) und
+blockiert die Hauptschleife nicht.
+
+**Geprüft und als Ursache ausgeschlossen:** `hal_lld_peripheral_unreset()` in
+`wb_status_led_hw_init()` — es löscht nur das Reset-Bit und wartet auf
+`RESET_DONE` (`lib/chibios/os/hal/ports/RP/RP2040/hal_lld.h:186`), ist bei
+laufendem PIO0 also ein No-op und kann den ws2812-Treiber nicht abschiessen.
+
+## Die Power-LED als Lebenszeichen der Hauptschleife (eingebaut 2026-08-07)
+
+Weil der Fehler sporadisch ist und Michael ihn schlecht auf Kommando einfangen
+kann, ist die Power-LED jetzt **selbstberichtend**: sie geht nicht mehr in
+`keyboard_post_init_user()` aus, sondern erst, wenn `housekeeping_task_keymap()`
+`WB_HEARTBEAT_LOOPS` (200) Durchläufe gezählt hat.
+
+| beim nächsten Fehlstart | Bedeutung |
+|---|---|
+| LED **an** + alles dunkel | die Hauptschleife kommt nicht in Gang |
+| LED **aus** + alles dunkel | die Schleife läuft, der **RGB-Pfad** ist tot (dann PIO0/ws2812 verdächtig, nicht der Boot) |
+
+Im Normalbetrieb ändert sich nichts Sichtbares — die LED geht nach gut 100 ms
+aus wie bisher. Kosten: **+32 Byte** (49968 → 50000).
+
+Dafür gibt es neu den schwachen Hook **`housekeeping_task_keymap()`** in
+[wechselbalg.c](users/wechselbalg/wechselbalg.c), analog zu
+`process_record_keymap()` und aus demselben Grund: `housekeeping_task_user()`
+darf es nur einmal geben. **Eine Keymap darf `housekeeping_task_user()` also
+ebenfalls nicht mehr selbst definieren.** Die schwache Vorgabe kostet nichts —
+**alle fünf anderen Boards sind nach der Änderung bytegleich** (sofle_choc weiss
+28528 / 144 frei, kyria 27460 / 1212, lotus58 27776 / 896, GMMK Pro 44936,
+K3 Pro 38168).
+
+## ⛔ Widerlegter Hauptverdacht (Referenz): Double-Tap-Reset → BOOTSEL
 
 `CONVERT_TO=liatris` führt über `promicro_to_liatris/pre_converter.mk` auf den
 Konverter **`promicro_to_rp2040_ce`** und damit auf das Board **`QMK_PM2040`**
@@ -918,14 +978,17 @@ Dort passt jede einzelne Beobachtung:
 | Aus-/Einstecken hilft irgendwann | irgendwann prellt es nicht / SRAM ist leer |
 | danach stabil | einmal sauber gebootet, bleibt es dabei |
 
-**Der entscheidende Test beim nächsten Auftreten**, vor dem Ausstecken:
+⛔ **Am 2026-08-07 gemessen und widerlegt.** Michael hat den Test im Fehlerfall
+ausgeführt:
 
 ```bash
-diskutil list | grep -i -e RPI -e RP2
+diskutil list | grep -i -e RPI -e RP2   # -> keine Ausgabe
 ```
 
-Taucht `RPI-RP2` auf, ist es das — und dann ist es **kein Keymap-Bug**, sondern
-Steckverbindung plus ein 500-ms-Fenster.
+Kein `RPI-RP2`, also kein BOOTSEL. Der Rest dieses Abschnitts bleibt als
+Referenz stehen — die Mechanik ist richtig beschrieben und der Doppeltipp ist
+auf dieser Hardware aktiv, er ist nur **nicht die Ursache**. Insbesondere die
+Abschalt-Anleitung unten bleibt gültig, falls sie je gebraucht wird.
 
 ### Wie man es abschaltet — und was es kostet
 
@@ -1553,7 +1616,7 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
 | GMMK Pro ISO | ✅ 2026-08-06 | — |
-| Sofle Choc schwarz (Liatris) | ⚠️ nein | `SPLIT_WATCHDOG_ENABLE` + `SPLIT_USB_DETECT` raus (2026-08-07) |
+| Sofle Choc schwarz (Liatris) | ⚠️ nein | Watchdog, `SPLIT_USB_DETECT` raus, Power-LED-Heartbeat (2026-08-07) |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
@@ -1586,19 +1649,19 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (neu 2026-08-07, eigenes
-   Kapitel oben). Zwei Tests, der zweite geht sofort:
-   - beim nächsten Auftreten `diskutil list | grep -i RPI` — zeigt es
-     `RPI-RP2`, ist es der Double-Tap-Reset im BOOTSEL;
-   - **jederzeit:** Reset-Taster der Tastatur zweimal schnell drücken. Kommt
-     `RPI-RP2`, ist der Doppeltipp auf dieser Hardware aktiv — dann ist der
-     BOOTSEL-Mechanismus scharf, und zugleich steht fest, was ein Abschalten
-     kosten würde.
+0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (offen seit
+   2026-08-07, eigenes Kapitel oben). BOOTSEL ist gemessen widerlegt; die
+   Ursache liegt zwischen dem Ende von `keyboard_post_init_user()` und dem
+   ersten RGB-Frame, ist aber noch nicht benannt.
 
-   **Zu flashen sind beide Hälften**: `SPLIT_WATCHDOG_ENABLE` und der Wegfall
-   von `SPLIT_USB_DETECT` (Master-Erkennung jetzt über `USB_VBUS_PIN`/GP19).
-   Dabei gleich prüfen, ob beide Hälften richtig zusammenspielen — läge VBUS
-   statt VCC auf dem TRRS-Kabel, wären beide Master (Doppelzeichen).
+   **Beide Hälften flashen** — enthält `SPLIT_WATCHDOG_ENABLE`, den Wegfall von
+   `SPLIT_USB_DETECT` (Master-Erkennung jetzt über `USB_VBUS_PIN`/GP19) und den
+   Power-LED-Heartbeat. Dabei zwei Dinge beobachten:
+   - **Spielen beide Hälften zusammen?** Läge VBUS statt VCC auf dem
+     TRRS-Kabel, wären beide Master (Doppelzeichen).
+   - **Beim nächsten Fehlstart: leuchtet die Power-LED?** Das ist jetzt die
+     Antwort auf „läuft die Hauptschleife überhaupt an" — siehe die Tabelle im
+     Kapitel oben. Danach richtet sich, wo weitergesucht wird.
 1. **K3 Pro am Board nachprüfen** (2026-08-05 dreimal geflasht, siehe eigenes
    Kapitel): ob Colemak-DH mit dem korrigierten `M` sauber tippt, und ob die
    Farbsprache in der Praxis trägt — besonders die Helligkeit

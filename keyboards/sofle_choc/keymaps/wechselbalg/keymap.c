@@ -453,21 +453,69 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 #endif
 
+#ifdef CONVERT_TO_LIATRIS
+/* ==========================================================================
+   Power-LED (GP24) als Lebenszeichen der Hauptschleife
+
+   Anlass: der sporadische Boot-Ausfall (CLAUDE.md, eigenes Kapitel). Beim
+   Fehlstart am 2026-08-07 war belegt: Power-LED ging aus, Tasten-LEDs kamen
+   **nie** an, nichts reagierte, und im BOOTSEL war der Chip nicht. Weil
+   WS2812 ihren letzten Wert halten, heisst "nie an", dass kein einziges
+   RGB-Frame geschrieben wurde -- der Fehler liegt also zwischen dem Ende von
+   keyboard_post_init_user() und dem ersten rgb_matrix_task()-Flush.
+
+   Genau diese Frage kann die Power-LED beantworten, wenn sie nicht mehr in
+   post_init ausgeht, sondern erst nachdem die Hauptschleife WB_HEARTBEAT_LOOPS
+   Durchlaeufe geschafft hat:
+
+     LED bleibt AN  + alles dunkel -> die Hauptschleife kommt nicht in Gang
+     LED geht AUS   + alles dunkel -> die Schleife laeuft, der RGB-Pfad ist tot
+                                      (dann PIO0/ws2812 verdaechtig, nicht der Boot)
+
+   Im Normalbetrieb aendert sich nichts Sichtbares: die LED geht nach gut
+   100 ms aus, so wie bisher auch. Sie kostet einen uint16_t und einen
+   Vergleich pro Durchlauf.
+   ========================================================================== */
+#    define LIATRIS_POWER_LED_PIN 24U
+
+#    ifndef WB_HEARTBEAT_LOOPS
+#        define WB_HEARTBEAT_LOOPS 200
+#    endif
+
+static uint16_t wb_heartbeat_count = 0;
+
+static void wb_heartbeat_task(void) {
+    if (wb_heartbeat_count > WB_HEARTBEAT_LOOPS) {
+        return;  // schon aus, nichts mehr zu tun
+    }
+    if (++wb_heartbeat_count == WB_HEARTBEAT_LOOPS) {
+        gpio_write_pin_high(LIATRIS_POWER_LED_PIN);  // aus
+    }
+}
+#endif  // CONVERT_TO_LIATRIS
+
+void housekeeping_task_keymap(void) {
+#ifdef CONVERT_TO_LIATRIS
+    wb_heartbeat_task();
+#endif
+}
+
 void keyboard_post_init_user(void) {
 #ifdef CONVERT_TO_LIATRIS
     /*
-    Liatris: die gruene Power-LED an GP24 ist invertiert (HIGH = aus) und
-    leuchtet undriven auf voller Helligkeit -- also beim Boot aktiv abschalten.
-    Muss auf beiden Haelften passieren, keyboard_post_init_user() laeuft dort.
+    Liatris: die Power-LED an GP24 ist invertiert (HIGH = aus) und leuchtet
+    undriven auf voller Helligkeit. Sie wird ausgeschaltet -- aber **nicht mehr
+    hier**, sondern erst, wenn die Hauptschleife nachweislich laeuft, siehe
+    wb_heartbeat_task() weiter unten. Hier wird sie nur aktiv angesteuert, damit
+    "an" ab jetzt eine Aussage ist und nicht bloss ein undriven Pin.
 
     Numerisch statt GP24: CONVERT_TO=liatris zieht das Pro-Micro-Pinmapping
     (promicro_to_rp2040_ce/_pin_defs.h) heran, das die GPxx-Namen des RP2040
     ersetzt -- GP24 ist dort schlicht nicht definiert. Auf RP2040 ist der
     Pin-Bezeichner ohnehin die GPIO-Nummer.
     */
-#    define LIATRIS_POWER_LED_PIN 24U
     gpio_set_pin_output(LIATRIS_POWER_LED_PIN);
-    gpio_write_pin_high(LIATRIS_POWER_LED_PIN);
+    gpio_write_pin_low(LIATRIS_POWER_LED_PIN);  // an
 #endif
 
 #ifdef WB_STATUS_LED

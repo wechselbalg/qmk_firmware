@@ -137,6 +137,13 @@ ruft diesen Hook am Ende auf.
 */
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record);
 
+/*
+Dasselbe fuer den Takt: housekeeping_task_user() liegt in wechselbalg.c und
+ruft diesen Hook am Ende auf. Eine Keymap darf housekeeping_task_user() also
+ebenfalls nicht selbst definieren.
+*/
+void housekeeping_task_keymap(void);
+
 #ifdef WB_JIGGLER
 // Laeuft der Mouse Jiggler gerade? Fuer die Status-LED.
 bool wb_is_jiggling(void);

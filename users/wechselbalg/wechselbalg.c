@@ -206,19 +206,27 @@ static void wb_jiggle_task(void) {
 #endif  // WB_JIGGLER
 
 /*
-Der gemeinsame Takt. Nur angelegt, wenn es hier wirklich etwas zu tun gibt --
-auf den AVR-Boards ist beides aus, und dort zaehlt jedes Byte.
+Der gemeinsame Takt.
+
+Board-Eigenes haengt sich in housekeeping_task_keymap() ein -- dasselbe Muster
+wie process_record_keymap(), und aus demselben Grund: housekeeping_task_user()
+darf es nur einmal geben, eine Keymap wuerde sonst ein Doppel-Symbol erzeugen.
+
+Die schwache Vorgabe ist leer und verschwindet per LTO, wenn sie niemand
+ueberschreibt -- auf den AVR-Boards bleibt also alles beim Alten (nachgemessen:
+das weisse Board aendert sich um 0 Byte).
 */
-#if defined(WB_JIGGLER) || defined(WB_STATUS_LED)
+__attribute__((weak)) void housekeeping_task_keymap(void) {}
+
 void housekeeping_task_user(void) {
-#    ifdef WB_JIGGLER
+#ifdef WB_JIGGLER
     wb_jiggle_task();
-#    endif
-#    ifdef WB_STATUS_LED
-    wb_status_led_task();
-#    endif
-}
 #endif
+#ifdef WB_STATUS_LED
+    wb_status_led_task();
+#endif
+    housekeeping_task_keymap();
+}
 
 /* ------------------------------------------------------------------------
    Gemeinsames process_record_user()
