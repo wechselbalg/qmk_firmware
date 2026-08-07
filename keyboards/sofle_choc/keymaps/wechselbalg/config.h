@@ -23,32 +23,46 @@
 
 
 #ifdef CONVERT_TO_LIATRIS
-    // Liatris-Build (RP2040): beide Haelften koennen Master sein, je nachdem
-    // welche Seite gerade per USB verbunden ist.
-    #define SPLIT_USB_DETECT
+    /*
+    Master-Erkennung: **kein SPLIT_USB_DETECT** (Michael, 2026-08-07).
+
+    Der Liatris fuehrt USB-VBUS auf GP19, und der Konverter setzt das auch
+    schon: promicro_to_rp2040_ce/converter.mk haengt -DUSB_VBUS_PIN=19U an
+    (nachgeprueft im cflags.txt dieses Builds; die Board-Definition des
+    Herstellers nennt VBUS_SENSE GP19, POWER_LED GP24, NEOPIXEL GP25 -- die
+    beiden letzteren decken sich mit unserem Code, also stimmt die Quelle).
+
+    Damit faellt usb_bus_detected() auf usb_vbus_state() zurueck
+    (tmk_core/protocol/usb_util.c:27) und liest den Pin **direkt**: sofort,
+    deterministisch, und beide Haelften koennen weiterhin Master sein.
+
+    SPLIT_USB_DETECT war der Ersatz fuer genau das und hat es teuer erkauft:
+    is_keyboard_master_impl() pollt bis zu SPLIT_USB_TIMEOUT (2000 ms) auf
+    USB_ACTIVE (split_util.c:64 und :181) und ruft danach usb_disconnect(),
+    also usbDisconnectBus() + usbStop(). Braucht der Host laenger -- Hub, KVM,
+    beschaeftigtes System --, holt nichts den USB-Treiber zurueck: keine
+    Haelfte ist Master, das Board ist bis zum Ausstecken tot. Ein Rennen gegen
+    die Enumerierung, also sporadisch. Das ist jetzt strukturell weg, und die
+    Peripherie-Haelfte bootet 2 s schneller.
+
+    ⚠️ Setzt voraus, dass ueber TRRS **VCC** (3,3 V) gebrueckt wird und nicht
+    RAW/VBUS. Laege VBUS auf dem Kabel, saehen es beide Haelften und beide
+    waeren Master -- Symptom waere sofort sichtbar (Doppelzeichen), Rueckweg
+    ist ein Reflash mit SPLIT_USB_DETECT.
+    */
 
     /*
-    Notausgang gegen "beide Haelften halten sich fuer Peripherie".
-
-    SPLIT_USB_DETECT wartet in is_keyboard_master_impl() bis zu
-    SPLIT_USB_TIMEOUT (2000 ms) darauf, dass der USB-Treiber USB_ACTIVE
-    erreicht (quantum/split_common/split_util.c:64 und :181). Braucht der Host
-    laenger -- Hub, KVM, gerade beschaeftigtes System --, erklaert sich die
-    angesteckte Haelfte zur Peripherie UND ruft usb_disconnect(), also
-    usbDisconnectBus() + usbStop(). Danach holt nichts den USB-Treiber zurueck:
-    keine Haelfte ist Master, das Board ist bis zum Ausstecken tot. Weil es ein
-    Rennen gegen die Enumerierung ist, tritt das sporadisch auf.
-
-    Der Watchdog laesst jede Haelfte, die sich fuer Peripherie haelt und
-    innerhalb SPLIT_WATCHDOG_TIMEOUT nicht vom Master angesprochen wurde, per
-    mcu_reset() neu starten -- damit bekommt sie eine neue Chance, den
-    USB-Bus zu sehen. Der Zustand heilt sich also selbst, statt auf mehrfaches
-    Aus- und Einstecken zu warten.
+    Guertel und Hosentraeger: jede Haelfte, die sich fuer Peripherie haelt und
+    SPLIT_WATCHDOG_TIMEOUT lang nicht angesprochen wurde, startet per
+    mcu_reset() neu. Ohne SPLIT_USB_DETECT sollte der Fall gar nicht mehr
+    auftreten -- der Watchdog faengt aber auch einen abgerissenen Split-Link
+    ab und kostet nur 260 Byte.
 
     Kein eigenes SPLIT_WATCHDOG_TIMEOUT: der Default ist
-    SPLIT_USB_TIMEOUT + 100 = 2100 ms (split_util.c:83-87) und damit genau ein
-    Erkennungsdurchlauf plus Reserve. Der Ping ist eine echte Transaktion
-    (PUT_WATCHDOG, transactions.c:790), nicht bloss ein Timer.
+    SPLIT_USB_TIMEOUT + 100 = 2100 ms (split_util.c:83-87). SPLIT_USB_TIMEOUT
+    ist dort unbedingt definiert, gilt also auch ohne SPLIT_USB_DETECT. Der
+    Ping ist eine echte Transaktion (PUT_WATCHDOG, transactions.c:790), nicht
+    bloss ein Timer.
     */
     #define SPLIT_WATCHDOG_ENABLE
 
@@ -57,6 +71,12 @@
     // rechte Haelfte wird mit der falschen (linken) Pin-Belegung gelesen ->
     // gespiegeltes Verhalten. Fix: Haendigkeit fest im EEPROM ablegen, dafuer
     // jede Haelfte einmalig mit -bl uf2-split-left / uf2-split-right flashen.
+    //
+    // Das ist der Grund fuer die zwei verschiedenen Binaries. Wer das los
+    // werden will, braucht SPLIT_HAND_PIN auf einem der freien Pads der
+    // unteren Liatris-Reihe (GP13..GP16) -- siehe CLAUDE.md, Kapitel
+    // "Haendigkeit ohne EE_HANDS". Kostet je Haelfte einen Draht auf VCC bzw.
+    // GND, bringt dafuer **ein** Image fuer beide Seiten.
     #define EE_HANDS
 
     // Zusaetzlicher Draht (Elite-C-Pin B7 = GP12) ueber den vierten TRRS-Kanal

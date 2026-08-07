@@ -962,9 +962,32 @@ siehe „Zuletzt: OLED"). Das ist genau der Notausgang, der für das OLED-Paket
 eingeplant war — Abschalten und OLED-Umbau schließen sich also gegenseitig aus,
 solange der Boot-Taster nicht nach außen verlängert ist.
 
-## Nebenverdacht, trotzdem behoben: `SPLIT_USB_DETECT` ohne Watchdog
+## ✅ Nebenverdacht beseitigt: `SPLIT_USB_DETECT` ist raus (2026-08-07)
 
-Unabhängig davon ist die Master-Erkennung eine bekannte Falle.
+**Entscheidung Michael:** nicht nur absichern, sondern die Ursache entfernen.
+`SPLIT_USB_DETECT` ist aus der Keymap-`config.h` gestrichen, die Master-Erkennung
+läuft jetzt über den VBUS-Pin — Begründung und Belege im Abschnitt
+„`USB_VBUS_PIN` ist längst da" weiter unten.
+
+**Am präprozessierten Quelltext des echten Builds belegt**, das ist die
+entscheidende Gegenprobe:
+
+```c
+usb_bus_detected(void) { return usb_vbus_state(); }
+
+usb_vbus_state(void) {
+    __pal_lld_pad_set_mode(0U, 19U, ...);                  // GP19 als Input
+    chSysPolledDelayX(/* 5 us */);
+    return ((SIO->GPIO_IN) >> 19U) & 1U;                   // Bit 19 lesen
+}
+```
+
+Die Zwei-Sekunden-Schleife existiert im Binary also nicht mehr. Kosten:
+**−8 Byte** (49976 → 49968) — wenig, weil die Schleife selbst klein war und
+`usb_disconnect()` für den Suspend-Pfad ohnehin verlinkt bleibt; der Gewinn ist
+Verhalten, nicht Grösse. Das weisse AVR-Board bleibt bei 28528 Byte / 144 frei.
+
+Zur Nachvollziehbarkeit, was die alte Konstruktion falsch machte:
 `is_keyboard_master_impl()` wartet bis zu `SPLIT_USB_TIMEOUT` (2000 ms) darauf,
 dass der USB-Treiber `USB_ACTIVE` erreicht
 ([split_util.c:64](quantum/split_common/split_util.c:64) und
@@ -974,12 +997,16 @@ sich die angesteckte Hälfte zur Peripherie **und ruft `usb_disconnect()`** —
 keine Hälfte ist Master, das Board ist bis zum Ausstecken tot. QMKs Doku nennt
 das ausdrücklich ([split_keyboard.md:471](docs/features/split_keyboard.md:471)).
 
-**Gesetzt: `SPLIT_WATCHDOG_ENABLE`** im `CONVERT_TO_LIATRIS`-Zweig der
-Keymap-`config.h`. Jede Hälfte, die sich für Peripherie hält und
-`SPLIT_WATCHDOG_TIMEOUT` (Default `SPLIT_USB_TIMEOUT + 100` = 2100 ms) lang nicht
-angesprochen wurde, startet per `mcu_reset()` neu — der Zustand heilt sich also
-selbst. Der Ping ist eine echte Transaktion (`PUT_WATCHDOG`,
+**Zusätzlich gesetzt und bewusst behalten: `SPLIT_WATCHDOG_ENABLE`.** Jede
+Hälfte, die sich für Peripherie hält und `SPLIT_WATCHDOG_TIMEOUT` (Default
+`SPLIT_USB_TIMEOUT + 100` = 2100 ms) lang nicht angesprochen wurde, startet per
+`mcu_reset()` neu. Der Ping ist eine echte Transaktion (`PUT_WATCHDOG`,
 [transactions.c:790](quantum/split_common/transactions.c:790)), kein blosser Timer.
+
+Mit dem VBUS-Weg sollte der Peripherie-Patt gar nicht mehr auftreten — der
+Watchdog fängt aber auch einen im Betrieb abgerissenen Split-Link ab und ist für
+260 Byte billig. `SPLIT_USB_TIMEOUT` ist in `split_util.c` unbedingt definiert,
+der Default-Timeout gilt also auch ohne `SPLIT_USB_DETECT`.
 
 **Geprüft:**
 - Kosten **+260 Byte** (49716 → 49976), auf RP2040 belanglos.
@@ -1000,7 +1027,33 @@ selbst. Der Ping ist eine echte Transaktion (`PUT_WATCHDOG`,
 Michaels Frage (2026-08-07): geht Split-Erkennung robuster, mit **einer** Firmware
 für beide Hälften, z. B. über einen Pin?
 
-**Das sind zwei getrennte Dinge**, und nur eines davon lässt sich per Pin lösen:
+**Vorab, weil es sonst wieder aufkommt: die Erinnerung „das ging doch früher
+ohne zwei Images" stimmt — es war KMK, nicht VBUS.** Der KMK-Port erkannte die
+Seite am **CircuitPython-Laufwerksnamen**:
+
+```python
+# /Users/mike/dev/kmkfw/boards/wechselbalg/runtime.py:107
+split = Split(
+    split_side=None,  # auto-detect via drive name; either half can be target
+```
+
+(zusammen mit `led_chase_test.py:35`: `SplitSide.RIGHT if name.endswith('R')`).
+Gleicher Code auf beiden Hälften, die Seite kam aus einem pro Hälfte
+gespeicherten Label — konzeptionell dasselbe wie `EE_HANDS`, nur ohne Neubau,
+weil KMK kein kompiliertes Binary ist. QMK hat dafür kein Gegenstück: in
+`split_util.c` steht bei `INIT_EE_HANDS_*` ausdrücklich
+„TODO: Remove once ARM has a way to configure EECONFIG_HANDEDNESS within the
+emulated eeprom via dfu-util or another tool".
+
+Der zweite Kandidat für die Erinnerung ist das **weisse** Board: dessen
+`#else`-Zweig in derselben `config.h` benutzt bis heute `MASTER_RIGHT`, und das
+braucht kein EEPROM — `is_keyboard_left_impl()` gibt dann schlicht
+`!is_keyboard_master()` zurück. Ein Image für beide Hälften, aber die
+USB-Seite liegt damit fest. Genau das war der Preis, der beim schwarzen Board
+nicht gezahlt werden sollte.
+
+**Ansonsten sind das zwei getrennte Dinge**, und nur eines lässt sich per Pin
+lösen:
 
 | | heute | Alternative |
 |---|---|---|
@@ -1083,10 +1136,45 @@ Das ist der Zielzustand, und er ist hier vollständig erreichbar.
 | **Untere Pad-Reihe** | **GP12, GP13, GP14, GP15, GP16** |
 | Onboard | `VBUS_SENSE` GP19, `POWER_LED` GP24, `NEOPIXEL` GP25 |
 
-Der Reset-Pin ist intern auf RUN geführt und benutzt **QMKs Double-Tap-Reset**;
-der Boot-Taster zieht QSPI_CS und ist der native RP2040-Weg (splitkb-Doku). Wer
-den Double-Tap abschaltet, verliert also den Reset-Weg in den Bootloader — der
-Boot-Taster bleibt, und genau der ist mit aufgestecktem OLED unerreichbar.
+### ⚠️ Reset-Pin vs. Boot-Taster — splitkbs Doku widerspricht sich
+
+Michaels Annahme (2026-08-07) war, der Doppeltipp laufe über den **Boot-Taster**;
+dann wäre er mit verdecktem Taster ohnehin verloren und Abschalten kostenlos.
+Die Quellenlage ist uneinheitlich:
+
+| Quelle | Aussage |
+|---|---|
+| [Pinout-Seite](https://docs.splitkb.com/product-guides/liatris/pinout) | „The reset pin is internally wired to RUN, while the boot button pulls down QSPI_CS" · „The reset pin uses QMK's double-tap reset functionality, whereas the boot button uses the RP2040 native way" |
+| [Flashing-Seite](https://docs.splitkb.com/product-guides/liatris/flashing) | Doppeltipp gehe auf den Boot-Taster |
+
+**Technisch kann nur die Pinout-Seite stimmen.** QSPI_CS wird ausschliesslich
+vom Boot-ROM beim Reset abgetastet — den Boot-Taster im Betrieb zu drücken tut
+nichts. QMKs `__late_init`-Mechanismus braucht zwei echte **Resets**, also den
+RUN-Pin. Und der Reset-Pin sitzt im Pro-Micro-Header, hängt also an dem
+Reset-Taster, den die **Sofle-Choc-Platine selbst** mitbringt (deren Readme:
+„Press reset button twice on the keyboard when asked").
+
+**Folge:** der Doppeltipp ist gerade der Weg, der **ohne** den verdeckten
+Boot-Taster auskommt. Abschalten kostet also mehr als angenommen.
+
+⚠️ **Am Board zu prüfen, dauert zehn Sekunden und geht jederzeit** (anders als
+der `diskutil`-Test, der ein Auftreten des Fehlers braucht): den Reset-Taster
+der Tastatur zweimal schnell drücken. Erscheint `RPI-RP2`, ist der Doppeltipp
+auf dieser Hardware aktiv — dann ist er ein echter Notausgang **und** zugleich
+der Beleg, dass der BOOTSEL-Mechanismus hier scharf ist.
+
+### Die drei Wege in den Bootloader, nach Robustheit
+
+| | Weg | funktioniert wenn |
+|---|---|---|
+| 1 | `QK_BOOT` auf `_ADJUST` | die Firmware bootet und der Layer erreichbar ist |
+| 2 | Reset-Taster zweimal (Double-Tap) | `__late_init` läuft — überlebt eine kaputte Keymap |
+| 3 | Boot-Taster beim Einstecken halten | immer — aber mit OLED unerreichbar |
+
+Stufe 2 abzuschalten heisst, zwischen 1 und 3 nichts mehr zu haben. Wer sie
+abschalten will, sollte vorher den Boot-Taster nach aussen verlängern —
+dieselbe Lötarbeit, die das OLED-Paket ohnehin braucht. Alternativ zwei Drähte
+direkt an die Pads des Boot-Tasters und auf einen externen Taster.
 
 ---
 
@@ -1465,7 +1553,7 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
 | GMMK Pro ISO | ✅ 2026-08-06 | — |
-| Sofle Choc schwarz (Liatris) | ⚠️ nein | `SPLIT_WATCHDOG_ENABLE` (2026-08-07) |
+| Sofle Choc schwarz (Liatris) | ⚠️ nein | `SPLIT_WATCHDOG_ENABLE` + `SPLIT_USB_DETECT` raus (2026-08-07) |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
@@ -1499,10 +1587,18 @@ sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
 0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (neu 2026-08-07, eigenes
-   Kapitel oben). Zuerst **messen, nicht flashen**: beim nächsten Auftreten
-   `diskutil list | grep -i RPI` — zeigt es `RPI-RP2`, ist es der
-   Double-Tap-Reset im BOOTSEL und keine Keymap-Frage. Der Split-Watchdog ist
-   unabhängig davon schon eingebaut und wartet auf einen Flash beider Hälften.
+   Kapitel oben). Zwei Tests, der zweite geht sofort:
+   - beim nächsten Auftreten `diskutil list | grep -i RPI` — zeigt es
+     `RPI-RP2`, ist es der Double-Tap-Reset im BOOTSEL;
+   - **jederzeit:** Reset-Taster der Tastatur zweimal schnell drücken. Kommt
+     `RPI-RP2`, ist der Doppeltipp auf dieser Hardware aktiv — dann ist der
+     BOOTSEL-Mechanismus scharf, und zugleich steht fest, was ein Abschalten
+     kosten würde.
+
+   **Zu flashen sind beide Hälften**: `SPLIT_WATCHDOG_ENABLE` und der Wegfall
+   von `SPLIT_USB_DETECT` (Master-Erkennung jetzt über `USB_VBUS_PIN`/GP19).
+   Dabei gleich prüfen, ob beide Hälften richtig zusammenspielen — läge VBUS
+   statt VCC auf dem TRRS-Kabel, wären beide Master (Doppelzeichen).
 1. **K3 Pro am Board nachprüfen** (2026-08-05 dreimal geflasht, siehe eigenes
    Kapitel): ob Colemak-DH mit dem korrigierten `M` sauber tippt, und ob die
    Farbsprache in der Praxis trägt — besonders die Helligkeit
