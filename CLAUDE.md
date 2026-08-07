@@ -871,12 +871,17 @@ blockiert die Hauptschleife also nicht — `rgb_matrix_task()` läuft weiter.
 
 ## Hauptverdacht: Double-Tap-Reset wirft das Board in den BOOTSEL-Modus
 
-`platforms/chibios/boards/GENERIC_PROMICRO_RP2040/configs/config.h:86` setzt
-**bedingungslos** `RP2040_BOOTLOADER_DOUBLE_TAP_RESET`, ohne eigenen Timeout —
-es gilt der Default von **200 ms**
-([rp2040.c:27](platforms/chibios/bootloaders/rp2040.c:27)). Der Liatris-Build
-zieht diese Board-Config über `CONVERT_TO=liatris`. **Am ELF bestätigt:**
-`__late_init` und `magic_location` sind einkompiliert.
+`CONVERT_TO=liatris` führt über `promicro_to_liatris/pre_converter.mk` auf den
+Konverter **`promicro_to_rp2040_ce`** und damit auf das Board **`QMK_PM2040`**
+(am `cflags.txt` bestätigt: `-DQMK_BOARD="QMK_PM2040"`). Dessen
+[config.h:56-61](platforms/chibios/boards/QMK_PM2040/configs/config.h:56) setzt
+`RP2040_BOOTLOADER_DOUBLE_TAP_RESET` mit einem Fenster von **500 ms** — beide
+Defines allerdings `#ifndef`-geschützt, also von aussen überschreibbar.
+**Am ELF bestätigt:** `__late_init` und `magic_location` sind einkompiliert.
+
+⚠️ Nicht mit `GENERIC_PROMICRO_RP2040` verwechseln (dort steht dasselbe
+bedingungslos und mit 200 ms Default) — das ist ein *anderes* Board und in
+diesem Build nicht beteiligt.
 
 ```c
 void __late_init(void) {              // laeuft VOR main()
@@ -894,8 +899,13 @@ void __late_init(void) {              // laeuft VOR main()
 
 `magic_location` liegt in `.ram0.bootloader_magic`, einem SRAM-Bereich, der beim
 Reset **absichtlich nicht initialisiert** wird. Wird der RP2040 innerhalb dieser
-200 ms erneut zurückgesetzt — ein prellender USB-Stecker, ein Brown-out beim
+500 ms erneut zurückgesetzt — ein prellender USB-Stecker, ein Brown-out beim
 Einstecken —, steht das Magic noch, und der Chip landet im **BOOTSEL-Modus**.
+
+⚠️ **Michael benutzt einen USB-Magnetstecker** (2026-08-07). Genau dort ist ein
+Prellen beim Ankoppeln wahrscheinlich, und zwar typischerweise in den ersten
+Millisekunden — also mitten im Fenster. Das hebt diesen Verdacht von „möglich"
+auf „passt zur Hardware".
 
 Dort passt jede einzelne Beobachtung:
 
@@ -914,11 +924,43 @@ Dort passt jede einzelne Beobachtung:
 diskutil list | grep -i -e RPI -e RP2
 ```
 
-Taucht `RPI-RP2` auf, ist es das — und dann ist es **kein Firmware-Bug**, sondern
-Kabel/Hub/Netzteil plus ein sehr enges Zeitfenster. Gegenmittel wären dann
-`RP2040_BOOTLOADER_DOUBLE_TAP_RESET` abzuschalten (kostet den Doppel-Reset-Weg
-in den Bootloader, der als OLED-Notausgang eingeplant war, siehe „Zuletzt: OLED")
-oder ein anderes Kabel/ein anderer Port.
+Taucht `RPI-RP2` auf, ist es das — und dann ist es **kein Keymap-Bug**, sondern
+Steckverbindung plus ein 500-ms-Fenster.
+
+### Wie man es abschaltet — und was es kostet
+
+Die Include-Reihenfolge steht im `cflags.txt` am Ende der `-include`-Kette:
+
+```
+users/wechselbalg/config.h → keymaps/wechselbalg/config.h
+  → QMK_PM2040/configs/config.h → platforms/chibios/config.h → *post_config.h
+```
+
+Die Keymap-`config.h` kommt also **vor** der Board-Config. Daraus folgt:
+
+- **Fenster verkürzen: eine Zeile in der Keymap-`config.h`.**
+  `#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 100U` — die Board-Config
+  überspringt ihren eigenen Wert dann per `#ifndef`.
+- **Ganz abschalten: braucht ein `post_config.h`.** Ein `#undef` in der
+  Keymap-`config.h` liefe ins Leere, weil die Board-Config danach kommt.
+  `users/wechselbalg/post_config.h` wird über `POST_CONFIG_H`
+  ([build_keyboard.mk:433](builddefs/build_keyboard.mk:433)) **nach** allen
+  `config.h` eingehängt — dort greift `#undef RP2040_BOOTLOADER_DOUBLE_TAP_RESET`.
+  Auf Nicht-RP2040-Boards ist ein `#undef` eines undefinierten Makros zulässig
+  und folgenlos.
+
+⚠️ **Verkürzen hilft nur begrenzt.** Ein Magnetstecker prellt typischerweise in
+den ersten Millisekunden nach dem Ankoppeln, also ganz am Anfang des Fensters —
+gegen einen Prellvorgang bei 5 ms hilft auch ein 100-ms-Fenster nicht. Wirksam
+ist nur das Abschalten.
+
+⚠️ **Preis des Abschaltens:** der Reset-Pin des Liatris ist der einzige Weg in
+den Bootloader, der ohne laufende Firmware auskommt und **ohne** an den
+Boot-Taster zu müssen. Übrig blieben `QK_BOOT` auf `_ADJUST` (setzt bootende
+Firmware voraus) und der Boot-Taster (mit aufgestecktem OLED unerreichbar,
+siehe „Zuletzt: OLED"). Das ist genau der Notausgang, der für das OLED-Paket
+eingeplant war — Abschalten und OLED-Umbau schließen sich also gegenseitig aus,
+solange der Boot-Taster nicht nach außen verlängert ist.
 
 ## Nebenverdacht, trotzdem behoben: `SPLIT_USB_DETECT` ohne Watchdog
 
@@ -962,8 +1004,8 @@ für beide Hälften, z. B. über einen Pin?
 
 | | heute | Alternative |
 |---|---|---|
-| **Händigkeit** (links/rechts) | `EE_HANDS` → zwei Binaries | `SPLIT_HAND_PIN` → **ein** Binary |
-| **Master-Erkennung** (wer hat USB) | `SPLIT_USB_DETECT` → das Rennen oben | `USB_VBUS_PIN` → deterministisch |
+| **Händigkeit** (links/rechts) | `EE_HANDS` → zwei Binaries | `SPLIT_HAND_PIN` → **ein** Binary, ein Draht je Hälfte |
+| **Master-Erkennung** (wer hat USB) | `SPLIT_USB_DETECT` → das Rennen oben | `USB_VBUS_PIN` → deterministisch, **schon konfiguriert** |
 
 ### `SPLIT_HAND_PIN` — löst genau das gefragte Problem
 
@@ -972,12 +1014,22 @@ für beide Hälften, z. B. über einen Pin?
 Hälften aktiv angebunden sein — VCC links, GND rechts (bzw. umgekehrt per
 `SPLIT_HAND_PIN_LOW_IS_LEFT`). Floating ist undefiniert.
 
-**Freier Pin: genau einer.** Belegt sind auf dem Liatris D3/GP0 (WS2812),
-D2/GP1 (Serial TX), GP12 (der zusätzliche Full-Duplex-RX-Draht), C6/D7/E6/B4/B5
-(Reihen), F6/F7/B1/B3/B2/B6 (Spalten), F4/F5 (Encoder), GP24/GP25 (Power- und
-Status-LED). D1/GP2 und D0/GP3 sind `I2C1_SDA_PIN`/`I2C1_SCL_PIN`
-([GENERIC_PROMICRO_RP2040/configs/config.h:14](platforms/chibios/boards/GENERIC_PROMICRO_RP2040/configs/config.h:14))
-und damit für die OLEDs reserviert. Bleibt **D4 = GP4**.
+**Freie Pins: vier, und zwar gesicherte.** Der Liatris hat neben dem
+Pro-Micro-Footprint eine **untere Pad-Reihe mit GP12–GP16** (belegt aus der
+CircuitPython-Board-Definition `splitkb_liatris`, siehe „Der Liatris-Pinout"
+unten). Davon ist nur GP12 in Gebrauch — das ist der zusätzliche
+Full-Duplex-RX-Draht. **GP13, GP14, GP15 und GP16 sind unbelegt und bei Michael
+nicht einmal verlötet** (bestätigt 2026-08-07). Einer davon ist der Pin.
+
+⚠️ **Nicht D4/GP4 nehmen**, obwohl es rechnerisch auch frei wäre: der Pin ist
+im Pro-Micro-Footprint verlötet und damit mit der Sofle-Choc-Platine verbunden,
+deren Routing dort unbekannt ist. Die untere Pad-Reihe ist unverlötet und
+deshalb nachweislich unbeschaltet.
+
+Der Vollständigkeit halber die belegten: D3/GP0 (WS2812), D2/GP1 (Serial TX),
+C6/D7/E6/B4/B5 (Reihen), F6/F7/B1/B3/B2/B6 (Spalten), F4/F5 (Encoder),
+GP24/GP25 (Power- und Status-LED). D1/GP2 und D0/GP3 sind
+`I2C1_SDA_PIN`/`I2C1_SCL_PIN` und für die OLEDs reserviert.
 
 ### `SPLIT_HAND_MATRIX_GRID` — auf diesem Board **nicht** möglich
 
@@ -985,24 +1037,56 @@ Bräuchte keinen Pin, nur eine Diode an einer ungenutzten Matrixkreuzung. Die
 Sofle Choc hat aber **keine**: 5×6 = 30 Kreuzungen je Hälfte, 60 Tasten gesamt,
 alle belegt (nachgerechnet aus `keyboard.json`). Ginge nur auf Kosten einer Taste.
 
-### `USB_VBUS_PIN` — das eigentliche Robustheits-Upgrade, aber Hardware nötig
+### ✅ `USB_VBUS_PIN` ist längst da — `SPLIT_USB_DETECT` ist überflüssig
 
-Ohne `SPLIT_USB_DETECT` fällt `usb_bus_detected()` auf `usb_vbus_state()` zurück
-([usb_util.c:27](tmk_core/protocol/usb_util.c:27)) — und das liefert ohne
-`USB_VBUS_PIN` **`true`**, also hielten sich beide Hälften für Master. Ohne
-VBUS-Pin ist `SPLIT_USB_DETECT` daher alternativlos.
+**Korrektur einer früheren Annahme in dieser Datei (2026-08-07):** der Liatris
+legt VBUS sehr wohl auf einen GPIO, und QMK weiss das auch schon.
 
-Der Liatris legt VBUS **nicht** auf einen GPIO (auf dem Pico ist das GP24, hier
-ist GP24 die Power-LED). Nötig wäre ein Spannungsteiler von RAW auf einen freien
-GPIO — und der einzige freie ist derselbe D4/GP4 wie oben. **Beides zusammen
-geht also nur, wenn die OLEDs entfallen.**
+- `platforms/chibios/converters/promicro_to_rp2040_ce/converter.mk` (letzte
+  Zeile) setzt `OPT_DEFS += -DUSB_VBUS_PIN=19U`.
+- **Im Build angekommen**, geprüft: `-DUSB_VBUS_PIN=19U` steht in
+  `.build/obj_sofle_choc_wechselbalg_liatris/cflags.txt`.
+- **In Hardware vorhanden:** die CircuitPython-Board-Definition
+  `splitkb_liatris` nennt `VBUS_SENSE → GPIO19` (ebenso `POWER_LED → GPIO24`
+  und `NEOPIXEL → GPIO25`, die beide mit unserem Code übereinstimmen — das ist
+  zugleich die Gegenprobe, dass die Quelle stimmt).
 
-Zum Vergleich, wie splitkb selbst es macht: die Elora rev1
-([config.h:38](keyboards/splitkb/elora/rev1/config.h:38)) hat `USB_VBUS_PIN GP25`,
-`split.handedness.pin = GP14` und `split.transport.watchdog = true` — also
-Hardware-VBUS **und** Hardware-Händigkeit **und** den Watchdog. Das ist der
-saubere Zielzustand; auf einem Pro-Micro-Footprint mit OLED ist er nicht
-vollständig erreichbar.
+`usb_bus_detected()` fällt ohne `SPLIT_USB_DETECT` auf `usb_vbus_state()`
+zurück ([usb_util.c:27](tmk_core/protocol/usb_util.c:27)); das liest den Pin
+und liefert nur **ohne** `USB_VBUS_PIN` blind `true`. Der Fall tritt hier also
+gar nicht ein.
+
+**Folge:** `SPLIT_USB_DETECT` kann ersatzlos entfallen. Damit verschwindet das
+2-Sekunden-Rennen samt `usb_disconnect()`-Sackgasse, und die Peripherie-Hälfte
+bootet 2 s schneller, weil sie nicht mehr auf den Timeout wartet.
+
+⚠️ **Die eine Sache, die am Board zu prüfen ist:** ob über das TRRS-Kabel
+**VCC** (3,3 V vom Regler des Masters) und nicht **RAW/VBUS** (5 V) gebrückt
+wird. Läge VBUS auf dem Kabel, sähen es beide Hälften und beide hielten sich
+für Master. Genau davor warnt auch splitkbs eigene Fehlersuche „Only one half
+of my keyboard works at a time" mit dem J1-Jumper der alten Pro Micros.
+Symptom wäre unübersehbar (Doppelzeichen / keine Peripherie), der Rückweg ist
+ein Reflash.
+
+Zum Vergleich, wie splitkb es bei einem eigenen Board macht: Elora rev1
+([config.h:38](keyboards/splitkb/elora/rev1/config.h:38)) hat `USB_VBUS_PIN`,
+`split.handedness.pin` und `split.transport.watchdog = true` — Hardware-VBUS
+**und** Hardware-Händigkeit **und** Watchdog, und **kein** `SPLIT_USB_DETECT`.
+Das ist der Zielzustand, und er ist hier vollständig erreichbar.
+
+### Der Liatris-Pinout (Quelle: CircuitPython-Board-Definition `splitkb_liatris`)
+
+| Bereich | GPIOs |
+|---|---|
+| Linke Seite (Pro Micro) | GP0–GP9 |
+| Rechte Seite (Pro Micro) | GP29, GP28, GP27, GP26, GP22, GP20, GP23, GP21 |
+| **Untere Pad-Reihe** | **GP12, GP13, GP14, GP15, GP16** |
+| Onboard | `VBUS_SENSE` GP19, `POWER_LED` GP24, `NEOPIXEL` GP25 |
+
+Der Reset-Pin ist intern auf RUN geführt und benutzt **QMKs Double-Tap-Reset**;
+der Boot-Taster zieht QSPI_CS und ist der native RP2040-Weg (splitkb-Doku). Wer
+den Double-Tap abschaltet, verliert also den Reset-Weg in den Bootloader — der
+Boot-Taster bleibt, und genau der ist mit aufgestecktem OLED unerreichbar.
 
 ---
 
