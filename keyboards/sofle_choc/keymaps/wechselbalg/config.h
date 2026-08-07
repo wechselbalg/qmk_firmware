@@ -27,6 +27,31 @@
     // welche Seite gerade per USB verbunden ist.
     #define SPLIT_USB_DETECT
 
+    /*
+    Notausgang gegen "beide Haelften halten sich fuer Peripherie".
+
+    SPLIT_USB_DETECT wartet in is_keyboard_master_impl() bis zu
+    SPLIT_USB_TIMEOUT (2000 ms) darauf, dass der USB-Treiber USB_ACTIVE
+    erreicht (quantum/split_common/split_util.c:64 und :181). Braucht der Host
+    laenger -- Hub, KVM, gerade beschaeftigtes System --, erklaert sich die
+    angesteckte Haelfte zur Peripherie UND ruft usb_disconnect(), also
+    usbDisconnectBus() + usbStop(). Danach holt nichts den USB-Treiber zurueck:
+    keine Haelfte ist Master, das Board ist bis zum Ausstecken tot. Weil es ein
+    Rennen gegen die Enumerierung ist, tritt das sporadisch auf.
+
+    Der Watchdog laesst jede Haelfte, die sich fuer Peripherie haelt und
+    innerhalb SPLIT_WATCHDOG_TIMEOUT nicht vom Master angesprochen wurde, per
+    mcu_reset() neu starten -- damit bekommt sie eine neue Chance, den
+    USB-Bus zu sehen. Der Zustand heilt sich also selbst, statt auf mehrfaches
+    Aus- und Einstecken zu warten.
+
+    Kein eigenes SPLIT_WATCHDOG_TIMEOUT: der Default ist
+    SPLIT_USB_TIMEOUT + 100 = 2100 ms (split_util.c:83-87) und damit genau ein
+    Erkennungsdurchlauf plus Reserve. Der Ping ist eine echte Transaktion
+    (PUT_WATCHDOG, transactions.c:790), nicht bloss ein Timer.
+    */
+    #define SPLIT_WATCHDOG_ENABLE
+
     // Haendigkeit MUSS unabhaengig vom Master-Status feststehen, sonst denken
     // ohne weitere Angabe beide Haelften "ich bin links" (QMK-Default) und die
     // rechte Haelfte wird mit der falschen (linken) Pin-Belegung gelesen ->

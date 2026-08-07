@@ -182,7 +182,12 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-06, K3 Pro und GMMK Pro geflasht)
+## Aktueller Stand (Stand: 2026-08-07, Split-Watchdog eingebaut, noch nicht geflasht)
+
+⚠️ **Neu und offen:** die schwarze Sofle Choc bootet sporadisch nicht (alles
+schwarz außer der Power-LED, beide Hälften). Analyse, Messanleitung und der
+eingebaute `SPLIT_WATCHDOG_ENABLE` stehen im eigenen Kapitel
+„Sofle Choc (schwarz): sporadischer Boot-Ausfall" weiter unten.
 
 **Fertig:**
 - Fork aufgeräumt (nur noch master/develop/mike), auf aktuellen QMK-Stand gemergt.
@@ -842,6 +847,165 @@ das alte Animationsschema bemerkte.
 
 ---
 
+# Sofle Choc (schwarz): sporadischer Boot-Ausfall (2026-08-07)
+
+**Symptom (Michael, mehrfach):** nach dem Einstecken bleibt alles schwarz
+**außer der Power-LED**, keine Eingaben kommen an, **beide Hälften gleichermaßen**.
+Mehrfaches Aus- und Einstecken hilft irgendwann. Läuft sie erstmal, gibt es keine
+weiteren Probleme.
+
+## Die Power-LED ist die halbe Diagnose
+
+`keyboard_post_init_user()` schaltet die grüne Liatris-LED an GP24 aktiv aus
+([keymap.c:469](keyboards/sofle_choc/keymaps/wechselbalg/keymap.c:469)), und das
+läuft auf **beiden** Hälften. Leuchtet sie, ist der Code dort **nicht
+angekommen** — die Firmware hängt vor `keyboard_post_init_user()` oder läuft gar
+nicht erst an.
+
+Das grenzt scharf ab. Insbesondere schließt es die naheliegende Erklärung als
+*alleinige* Ursache aus (siehe unten): im Fall „beide Hälften halten sich für
+Peripherie" booten beide **vollständig** durch, die Power-LED wäre also aus und
+die Tasten-LEDs an. Der Serial-Empfang der Peripherie läuft in einem eigenen
+Thread ([serial_protocol.c:38](platforms/chibios/drivers/serial_protocol.c:38)),
+blockiert die Hauptschleife also nicht — `rgb_matrix_task()` läuft weiter.
+
+## Hauptverdacht: Double-Tap-Reset wirft das Board in den BOOTSEL-Modus
+
+`platforms/chibios/boards/GENERIC_PROMICRO_RP2040/configs/config.h:86` setzt
+**bedingungslos** `RP2040_BOOTLOADER_DOUBLE_TAP_RESET`, ohne eigenen Timeout —
+es gilt der Default von **200 ms**
+([rp2040.c:27](platforms/chibios/bootloaders/rp2040.c:27)). Der Liatris-Build
+zieht diese Board-Config über `CONVERT_TO=liatris`. **Am ELF bestätigt:**
+`__late_init` und `magic_location` sind einkompiliert.
+
+```c
+void __late_init(void) {              // laeuft VOR main()
+    clocks_init();
+    if (magic_location != magic_token) {
+        magic_location = magic_token;
+        wait_us(200 * 1000);          // 200-ms-Fenster
+        magic_location = 0;
+        return;                       // normaler Boot
+    }
+    magic_location = 0;
+    reset_usb_boot(0, 0);             // -> BOOTSEL
+}
+```
+
+`magic_location` liegt in `.ram0.bootloader_magic`, einem SRAM-Bereich, der beim
+Reset **absichtlich nicht initialisiert** wird. Wird der RP2040 innerhalb dieser
+200 ms erneut zurückgesetzt — ein prellender USB-Stecker, ein Brown-out beim
+Einstecken —, steht das Magic noch, und der Chip landet im **BOOTSEL-Modus**.
+
+Dort passt jede einzelne Beobachtung:
+
+| Beobachtung | im BOOTSEL |
+|---|---|
+| Power-LED an | GP24 wird vom Boot-ROM nicht angefasst, undriven = an |
+| alles andere schwarz | keine WS2812-Kette wird bedient |
+| keine Eingaben | das Gerät ist Massenspeicher, kein HID |
+| **beide** Hälften | gemeinsame Stromquelle, die Peripherie hängt am TRRS |
+| Aus-/Einstecken hilft irgendwann | irgendwann prellt es nicht / SRAM ist leer |
+| danach stabil | einmal sauber gebootet, bleibt es dabei |
+
+**Der entscheidende Test beim nächsten Auftreten**, vor dem Ausstecken:
+
+```bash
+diskutil list | grep -i -e RPI -e RP2
+```
+
+Taucht `RPI-RP2` auf, ist es das — und dann ist es **kein Firmware-Bug**, sondern
+Kabel/Hub/Netzteil plus ein sehr enges Zeitfenster. Gegenmittel wären dann
+`RP2040_BOOTLOADER_DOUBLE_TAP_RESET` abzuschalten (kostet den Doppel-Reset-Weg
+in den Bootloader, der als OLED-Notausgang eingeplant war, siehe „Zuletzt: OLED")
+oder ein anderes Kabel/ein anderer Port.
+
+## Nebenverdacht, trotzdem behoben: `SPLIT_USB_DETECT` ohne Watchdog
+
+Unabhängig davon ist die Master-Erkennung eine bekannte Falle.
+`is_keyboard_master_impl()` wartet bis zu `SPLIT_USB_TIMEOUT` (2000 ms) darauf,
+dass der USB-Treiber `USB_ACTIVE` erreicht
+([split_util.c:64](quantum/split_common/split_util.c:64) und
+[:181](quantum/split_common/split_util.c:181)). Braucht der Host länger, erklärt
+sich die angesteckte Hälfte zur Peripherie **und ruft `usb_disconnect()`** —
+`usbDisconnectBus()` + `usbStop()`. Danach holt nichts den USB-Treiber zurück:
+keine Hälfte ist Master, das Board ist bis zum Ausstecken tot. QMKs Doku nennt
+das ausdrücklich ([split_keyboard.md:471](docs/features/split_keyboard.md:471)).
+
+**Gesetzt: `SPLIT_WATCHDOG_ENABLE`** im `CONVERT_TO_LIATRIS`-Zweig der
+Keymap-`config.h`. Jede Hälfte, die sich für Peripherie hält und
+`SPLIT_WATCHDOG_TIMEOUT` (Default `SPLIT_USB_TIMEOUT + 100` = 2100 ms) lang nicht
+angesprochen wurde, startet per `mcu_reset()` neu — der Zustand heilt sich also
+selbst. Der Ping ist eine echte Transaktion (`PUT_WATCHDOG`,
+[transactions.c:790](quantum/split_common/transactions.c:790)), kein blosser Timer.
+
+**Geprüft:**
+- Kosten **+260 Byte** (49716 → 49976), auf RP2040 belanglos.
+- Am ELF verlinkt: `split_watchdog_started`, `split_watchdog_done`,
+  `watchdog_handlers_master`.
+- **Kein Konflikt mit dem Double-Tap-Reset oben.** `mcu_reset()` ist auf RP2040
+  ein blankes `NVIC_SystemReset()`
+  ([rp2040.c:16](platforms/chibios/bootloaders/rp2040.c:16)), und der Watchdog
+  feuert frühestens 2100 ms nach dem Boot — da ist `magic_location` längst
+  wieder 0. Ein Watchdog-Reset landet also **nicht** im BOOTSEL.
+- Das weiße AVR-Board bleibt unberührt (Define steht im
+  `CONVERT_TO_LIATRIS`-Zweig): weiterhin 28528 Byte, 144 frei.
+
+⚠️ **Noch nicht geflasht.**
+
+## Händigkeit ohne EE_HANDS — was möglich wäre
+
+Michaels Frage (2026-08-07): geht Split-Erkennung robuster, mit **einer** Firmware
+für beide Hälften, z. B. über einen Pin?
+
+**Das sind zwei getrennte Dinge**, und nur eines davon lässt sich per Pin lösen:
+
+| | heute | Alternative |
+|---|---|---|
+| **Händigkeit** (links/rechts) | `EE_HANDS` → zwei Binaries | `SPLIT_HAND_PIN` → **ein** Binary |
+| **Master-Erkennung** (wer hat USB) | `SPLIT_USB_DETECT` → das Rennen oben | `USB_VBUS_PIN` → deterministisch |
+
+### `SPLIT_HAND_PIN` — löst genau das gefragte Problem
+
+([split_util.c:140](quantum/split_common/split_util.c:140)) liest den Pin als
+`gpio_set_pin_input()`, also **ohne Pull-up**. Der Pin muss auf **beiden**
+Hälften aktiv angebunden sein — VCC links, GND rechts (bzw. umgekehrt per
+`SPLIT_HAND_PIN_LOW_IS_LEFT`). Floating ist undefiniert.
+
+**Freier Pin: genau einer.** Belegt sind auf dem Liatris D3/GP0 (WS2812),
+D2/GP1 (Serial TX), GP12 (der zusätzliche Full-Duplex-RX-Draht), C6/D7/E6/B4/B5
+(Reihen), F6/F7/B1/B3/B2/B6 (Spalten), F4/F5 (Encoder), GP24/GP25 (Power- und
+Status-LED). D1/GP2 und D0/GP3 sind `I2C1_SDA_PIN`/`I2C1_SCL_PIN`
+([GENERIC_PROMICRO_RP2040/configs/config.h:14](platforms/chibios/boards/GENERIC_PROMICRO_RP2040/configs/config.h:14))
+und damit für die OLEDs reserviert. Bleibt **D4 = GP4**.
+
+### `SPLIT_HAND_MATRIX_GRID` — auf diesem Board **nicht** möglich
+
+Bräuchte keinen Pin, nur eine Diode an einer ungenutzten Matrixkreuzung. Die
+Sofle Choc hat aber **keine**: 5×6 = 30 Kreuzungen je Hälfte, 60 Tasten gesamt,
+alle belegt (nachgerechnet aus `keyboard.json`). Ginge nur auf Kosten einer Taste.
+
+### `USB_VBUS_PIN` — das eigentliche Robustheits-Upgrade, aber Hardware nötig
+
+Ohne `SPLIT_USB_DETECT` fällt `usb_bus_detected()` auf `usb_vbus_state()` zurück
+([usb_util.c:27](tmk_core/protocol/usb_util.c:27)) — und das liefert ohne
+`USB_VBUS_PIN` **`true`**, also hielten sich beide Hälften für Master. Ohne
+VBUS-Pin ist `SPLIT_USB_DETECT` daher alternativlos.
+
+Der Liatris legt VBUS **nicht** auf einen GPIO (auf dem Pico ist das GP24, hier
+ist GP24 die Power-LED). Nötig wäre ein Spannungsteiler von RAW auf einen freien
+GPIO — und der einzige freie ist derselbe D4/GP4 wie oben. **Beides zusammen
+geht also nur, wenn die OLEDs entfallen.**
+
+Zum Vergleich, wie splitkb selbst es macht: die Elora rev1
+([config.h:38](keyboards/splitkb/elora/rev1/config.h:38)) hat `USB_VBUS_PIN GP25`,
+`split.handedness.pin = GP14` und `split.transport.watchdog = true` — also
+Hardware-VBUS **und** Hardware-Händigkeit **und** den Watchdog. Das ist der
+saubere Zielzustand; auf einem Pro-Micro-Footprint mit OLED ist er nicht
+vollständig erreichbar.
+
+---
+
 # KMK→QMK-Angleichung (laufend, Stand 2026-08-04 — Schritt 3 erledigt)
 
 Parallel läuft unter `/Users/mike/dev/kmkfw` ein KMK-Port derselben Sofle Choc
@@ -1217,36 +1381,44 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
 | GMMK Pro ISO | ✅ 2026-08-06 | — |
-| Sofle Choc schwarz (Liatris) | ✅ 2026-08-06, beide Hälften | — |
+| Sofle Choc schwarz (Liatris) | ⚠️ nein | `SPLIT_WATCHDOG_ENABLE` (2026-08-07) |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Kein Flash mehr offen.** Alle drei benutzten Boards laufen auf Repo-Stand.
+**Ein Flash offen:** die schwarze Sofle Choc, wegen des Split-Watchdogs — siehe
+das Kapitel „Sporadischer Boot-Ausfall" unten. Beide ISO-Boards sind aktuell.
 
-Die schwarze Sofle Choc wurde je Hälfte über `--side left` / `--side right`
+Die schwarze Sofle Choc wird je Hälfte über `--side left` / `--side right`
 geflasht, also mit `-bl uf2-split-left` bzw. `-right`. Das ist nicht kosmetisch:
 die Händigkeit steckt im EEPROM (`EE_HANDS`), und ohne sie fallen bei
 `SPLIT_USB_DETECT` **beide** Hälften auf „ich bin links" zurück. Beide Hälften
 brauchen den Stand ohnehin, weil der Encoder-Callback auf dem jeweiligen Master
 läuft und `SPLIT_USB_DETECT` den zur Laufzeit bestimmt.
 
-Die schwarze Sofle Choc wurde je Hälfte über `--side left` / `--side right`
-geflasht, also mit `-bl uf2-split-left` bzw. `-uf2-split-right`. Das ist nicht
-kosmetisch: die Händigkeit steckt im EEPROM (`EE_HANDS`), und ohne sie fallen
-bei `SPLIT_USB_DETECT` **beide** Hälften auf „ich bin links" zurück.
+⚠️ Das sind dadurch **zwei verschiedene Binaries**: `uf2-split-left` setzt
+`OPT_DEFS += -DINIT_EE_HANDS_LEFT` ([flash.mk:50](platforms/chibios/flash.mk:50)),
+und dieses Firmware-Image schreibt die Händigkeit bei **jedem** Boot ins EEPROM
+zurück ([split_util.c:158-171](quantum/split_common/split_util.c:158)). Die
+falsche Datei auf der falschen Hälfte fällt also nicht auf und heilt auch nicht
+von selbst. Wie man das los wird, steht bei „Händigkeit ohne EE_HANDS" unten.
 
 Wichtig dabei: **die `_ADJUST`-Falltüren sind auf beiden ISO-Boards erledigt und
 auch geflasht.** Am Binary geprüft — auf `_ADJUST` stehen nur noch `DF()` auf
 Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 `KC_NO`. Da ist nichts mehr offen.
 
-## Reihenfolge für die nächste Session (Stand 2026-08-06)
+## Reihenfolge für die nächste Session (Stand 2026-08-07)
 
 **Die KMK→QMK-Angleichung ist inhaltlich durch.** C1–C8, C7 und die Status-LED
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
+0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (neu 2026-08-07, eigenes
+   Kapitel oben). Zuerst **messen, nicht flashen**: beim nächsten Auftreten
+   `diskutil list | grep -i RPI` — zeigt es `RPI-RP2`, ist es der
+   Double-Tap-Reset im BOOTSEL und keine Keymap-Frage. Der Split-Watchdog ist
+   unabhängig davon schon eingebaut und wartet auf einen Flash beider Hälften.
 1. **K3 Pro am Board nachprüfen** (2026-08-05 dreimal geflasht, siehe eigenes
    Kapitel): ob Colemak-DH mit dem korrigierten `M` sauber tippt, und ob die
    Farbsprache in der Praxis trägt — besonders die Helligkeit
