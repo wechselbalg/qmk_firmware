@@ -182,9 +182,16 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-07, alle drei Boards geflasht)
+## Aktueller Stand (Stand: 2026-08-07, drei Flashes offen)
 
-⚠️ **Neu und in Beobachtung:** die schwarze Sofle Choc bootete sporadisch nicht
+⚠️ **Zuletzt dazugekommen:** die AltGr-Ebene der deutschen Belegung wird im
+Mac-Modus jetzt übersetzt — `@` lag unter macOS auf ⌥L statt AltGr+Q und kam
+deshalb gar nicht heraus, ebenso `[ ] { } \ | ~` und die Klammern von
+`DBRACES`. Das eigene Kapitel „Die AltGr-Ebene unter macOS" erklärt, warum
+`MAC_TOG` das prinzipiell nicht konnte. **Alle drei benutzten Boards sind
+dadurch hinter dem Repo-Stand** — siehe „Was ist auf welchem Gerät?".
+
+⚠️ **Weiter in Beobachtung:** die schwarze Sofle Choc bootete sporadisch nicht
 (beide Hälften dunkel, keine Eingaben). BOOTSEL ist gemessen **widerlegt**; die
 Ursache ist eingegrenzt, aber nicht benannt. Drei Änderungen sind seit dem
 2026-08-07 auf dem Board: Split-Watchdog, `SPLIT_USB_DETECT` raus (VBUS über
@@ -1243,6 +1250,144 @@ direkt an die Pads des Boot-Tasters und auf einen externen Taster.
 
 ---
 
+# Die AltGr-Ebene unter macOS (2026-08-07)
+
+## Der Befund
+
+Michael ist aufgefallen, dass **das `@` auf dem `_SYM`-Layer am Mac nicht
+funktioniert**. Seine Frage war, ob der Mac-Modus das beheben kann.
+
+**Nein — `MAC_TOG`/`CG_TOGG` kann das prinzipiell nicht**, und zwar aus einem
+Grund, der sich lohnt zu merken: hier ist **nicht der Modifier ein anderer,
+sondern die Basistaste**.
+
+| | @ |
+|---|---|
+| Windows/Linux Deutsch | AltGr + **Q** |
+| macOS Deutsch | ⌥ + **L** |
+
+Der Modifier ist auf beiden Systemen derselbe (RAlt = rechte Option). `CG_TOGG`
+tauscht Ctrl⇄GUI und fasst Alt gar nicht an — es gäbe also nichts zu tauschen,
+selbst wenn es könnte. Das unterscheidet den Fall von den Wortsprüngen
+(`FF_WORD`/`RV_WORD`), wo Ctrl⇄Opt tatsächlich ein *anderer* Modifier ist.
+Gemeinsam ist beiden nur die Lösung: eine echte Fallunterscheidung auf
+`WB_HOST_IS_MAC()`.
+
+## Es war nicht nur das @
+
+Die ganze AltGr-Ebene der deutschen Windows-Belegung liegt auf dem Mac anders.
+Behandelt sind jetzt sieben Zeichen plus die Tilde:
+
+| Zeichen | Windows | macOS | im Wrapper |
+|---|---|---|---|
+| `@` | AltGr+Q | ⌥L | `N3___AT` (SYMBOL_R2) |
+| `[` `]` | AltGr+8/9 | ⌥5 / ⌥6 | `N3_LBRC`/`N3_RBRC` (L1) |
+| `{` `}` | AltGr+7/0 | ⌥8 / ⌥9 | `N3_CLBR`/`N3_CRBR` (L2) |
+| `\` | AltGr+ß | ⇧⌥7 | `N3_BSLS` (L2) |
+| `\|` | AltGr+< | ⌥7 | `N3_PIPE` (L3) |
+| `~` | AltGr++ | ⌥N — **Dead Key** | `DE_TILD` (L2), `N3_TILD` (L3) |
+
+**Bewusst nicht angefasst**, weil dort kein Unterschied besteht: alles mit
+`S(...)` — `°` (`S(DE_CIRC)`), `§` (`S(DE_3)`) — liegt auf beiden Systemen auf
+derselben Shift-Kombination. Ebenso `€` (`ALGR(DE_E)` = ⌥E) und `µ`
+(`ALGR(DE_M)` = ⌥M), die auf dem Mac zufällig auf derselben Taste sitzen.
+
+⚠️ **Noch offen und am Board zu prüfen:** die übrigen `RALT(...)`/`RSA(...)`-
+Zeichen in `SYMBOL_L0`/`SYMBOL_R0` — `¹ ² ³ ¢ ‹ › ‘ ’ §`-Nachbarn. Dort kommt
+unter macOS ebenfalls etwas anderes heraus; *was* genau, ist nicht geraten,
+sondern muss am Gerät nachgesehen werden. Nachtragen ist dann eine Zeile in
+`wb_mac_altgr()`.
+
+## Umsetzung: Übersetzung statt neuer Keycodes
+
+In [users/wechselbalg/wechselbalg.c](users/wechselbalg/wechselbalg.c), direkt
+neben `wb_word_jump()`:
+
+- **`wb_mac_altgr(keycode)`** — Tabelle mit den sieben Ersetzungen, liefert `0`
+  wenn es keinen Unterschied gibt.
+- **`wb_localize(keycode)`** — wendet die Tabelle im Mac-Modus an, sonst die
+  Identität. Für `DBRACES`, das seine Klammern selbst tippt.
+- Der Abgriff sitzt in `process_record_user()` **vor** dem großen Switch.
+
+⚠️ **Ausdrücklich keine neuen Einträge in `enum CustomKeys`.** Das ist der
+eigentliche Entwurfsgrund: jeder neue Keycode verschiebt die folgenden Werte,
+und genau das war die Ursache des `FN_EXIT`-Bugs. Die vorhandenen
+`ALGR(...)`-Keycodes abzufangen wirkt außerdem auf **allen** Layern und
+**allen** Boards zugleich und lässt sämtliche Keymaps unangetastet.
+
+Zwei Details:
+
+- **`register_code16`/`unregister_code16` statt `tap_code16`** — damit Halten
+  und Auto-Repeat erhalten bleiben wie bei der Taste selbst.
+- **Die Tilde passt nicht in die Tabelle.** ⌥N ist auf dem Mac ein *Dead Key*
+  und erscheint erst, wenn ein Zeichen folgt; sie wird deshalb als
+  `tap_code16(ALGR(DE_N))` + `tap_code(KC_SPC)` gesendet.
+
+## `DBRACES` hatte denselben Fehler in anderer Verpackung
+
+`DBRACES` tippte `[]`/`{}`/`<>` per `SEND_STRING`. Dessen Tabelle
+(`sendstring_german.h`) bildet aber ebenfalls die **Windows**-AltGr-Ebene ab —
+unter macOS kam also Murks heraus. Jetzt werden die Keycodes selbst getippt,
+durch `wb_localize()` übersetzt. `<` und `>` brauchen das nicht: sie liegen auf
+beiden Systemen auf der NUBS-Taste.
+
+**Nebenwirkung, die unabhängig vom Mac ein echter Bug war:** die
+**Lotus58**-Keymap ist die einzige, die `sendstring_german.h` gar nicht
+einbindet (geprüft über alle fünf Keymaps) — dort tippte `DBRACES` also schon
+immer die US-Ebene, auf deutscher Belegung `ü` und `+`. Mit dem Umbau auf
+Keycodes ist das mit erledigt. Das Board ist stillgelegt, aber der Grund, den
+Weg über Keycodes zu gehen, wird dadurch stärker.
+
+## Gating und Kosten
+
+`WB_HOST_IS_MAC()` ist ohne `MAGIC_ENABLE` ein hartes `false`
+([wechselbalg.h:170](users/wechselbalg/wechselbalg.h:170)) — der ganze Block
+fällt auf den AVR-Boards also weg. **Am Binary geprüft:** `wb_mac_altgr` und
+`wb_localize` kommen in den AVR-ELFs nicht vor. Ein einzelnes Board kann per
+`-DWB_NO_MAC_ALTGR` aussteigen.
+
+| Board | vorher | nachher | Δ |
+|---|---|---|---|
+| Sofle Choc schwarz (Liatris) | 50000 | **50320** | +320 |
+| GMMK Pro ISO | 44936 | **45140** | +204 |
+| K3 Pro ISO | 38168 | **38392** | +224 |
+| Sofle Choc weiß (AVR) | 28528 / 144 frei | 28532 / **140 frei** | +4 |
+| Kyria (AVR) | 27460 / 1212 frei | 27474 / 1198 frei | +14 |
+| Lotus58 (AVR) | 27776 / 896 frei | 27792 / 880 frei | +16 |
+
+⚠️ **Die AVR-Boards wachsen trotz Gating.** Das kommt nicht vom Mac-Block,
+sondern allein vom `DBRACES`-Umbau: zwei `tap_code16()` mit variablen Keycodes
+sind etwas größer als ein `SEND_STRING` mit Stringliteral. Bewusst in Kauf
+genommen — es ist der Preis dafür, dass `DBRACES` jetzt auf **jedem** Board und
+**beiden** Hosts das Richtige tippt.
+
+## Am Binary geprüft (GMMK-Pro-ELF, ohne Hardware)
+
+`wb_mac_altgr` hat LTO als eigenes Symbol überlebt und ist im Disassembly
+vollständig nachvollziehbar — alle sieben Ersetzungen mit den erwarteten
+Keycode-Werten:
+
+| | Eingang | Ausgang | |
+|---|---|---|---|
+| `@` | `0x1414` ALGR(Q) | `0x140f` ALGR(L) | ✅ |
+| `[` | `0x1425` ALGR(8) | `0x1422` ALGR(5) | ✅ |
+| `]` | `0x1426` ALGR(9) | `0x1423` ALGR(6) | ✅ |
+| `{` | `0x1424` ALGR(7) | `0x1425` ALGR(8) | ✅ |
+| `}` | `0x1427` ALGR(0) | `0x1426` ALGR(9) | ✅ |
+| `\` | `0x142d` ALGR(ß) | `0x1624` RSA(7) | ✅ |
+| `\|` | `0x1464` ALGR(NUBS) | `0x1424` ALGR(7) | ✅ |
+
+Ebenfalls im Code belegt: das Gate liest `keymap_config` Byte 1 Bit 0
+(= `swap_lctl_lgui`, also genau der Zustand, den `CG_TOGG` schaltet), die
+Tilde `0x1430` ruft `tap_code16(0x1411)` + `tap_code(0x2c)` (⌥N, Space), und
+`DBRACES` schickt alle drei Klammerpaare durch `wb_mac_altgr` — wobei `<`/`>`
+(`0x64`/`0x264`) korrekt unverändert durchlaufen.
+
+⚠️ **Noch nicht auf Hardware getestet, und alle drei benutzten Boards sind
+damit hinter dem Repo-Stand.** Siehe „Was ist auf welchem Gerät?".
+
+---
+
 # KMK→QMK-Angleichung (laufend, Stand 2026-08-04 — Schritt 3 erledigt)
 
 Parallel läuft unter `/Users/mike/dev/kmkfw` ein KMK-Port derselben Sofle Choc
@@ -1609,25 +1754,35 @@ aus. Ein einzelnes Board abweichend: `-DWB_JIGGLER` / `-DWB_DF_PREV` per
 180 (−14, nur C2), kyria 1212, lotus58 896. Alle sechs Boards + der
 Liatris-Build kompilieren.
 
-## Was ist auf welchem Gerät? (Stand 2026-08-06)
+## Was ist auf welchem Gerät? (Stand 2026-08-07)
 
 Der Repo-Stand ist nicht der Geräte-Stand. Diese Tabelle sagt, was auf der
 Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ✅ `b873674fd1` | — (hat keinen Encoder) |
-| GMMK Pro ISO | ✅ 2026-08-06 | — |
-| Sofle Choc schwarz (Liatris) | ✅ 2026-08-07, beide Hälften | — |
+| K3 Pro ISO | ⚠️ nein | Mac-AltGr-Ebene (`@ [ ] { } \ \| ~`) + `DBRACES` |
+| GMMK Pro ISO | ⚠️ nein | Mac-AltGr-Ebene (`@ [ ] { } \ \| ~`) + `DBRACES` |
+| Sofle Choc schwarz (Liatris) | ⚠️ nein | Mac-AltGr-Ebene (`@ [ ] { } \ \| ~`) + `DBRACES` |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Kein Flash offen.** Alle drei benutzten Boards laufen auf Repo-Stand. Die
-schwarze Sofle Choc wurde am 2026-08-07 mit Watchdog, VBUS-Master-Erkennung und
-Power-LED-Heartbeat geflasht; **beide Hälften spielen zusammen** (siehe Kapitel
-„Sporadischer Boot-Ausfall"). Ob der Boot-Ausfall damit weg ist, zeigt sich erst
-über die Zeit — er war sporadisch.
+⚠️ **Drei Flashes offen** (seit 2026-08-07): alle Boards mit Mac-Modus brauchen
+die AltGr-Übersetzung aus dem Kapitel „Die AltGr-Ebene unter macOS". Das ist
+reiner Userspace, es geht also alles in einem Zug:
+
+```bash
+python3 util/wechselbalg/flash.py k3_pro
+python3 util/wechselbalg/flash.py gmmk_pro
+python3 util/wechselbalg/flash.py sofle_choc_black
+```
+
+Davor war der Stand: alle drei auf Repo-Stand. Die schwarze Sofle Choc wurde am
+2026-08-07 mit Watchdog, VBUS-Master-Erkennung und Power-LED-Heartbeat geflasht;
+**beide Hälften spielen zusammen** (siehe Kapitel „Sporadischer Boot-Ausfall").
+Ob der Boot-Ausfall damit weg ist, zeigt sich erst über die Zeit — er war
+sporadisch. Beim Nachflashen bleibt der Heartbeat also erhalten.
 
 Die schwarze Sofle Choc wird je Hälfte über `--side left` / `--side right`
 geflasht, also mit `-bl uf2-split-left` bzw. `-right`. Das ist nicht kosmetisch:
@@ -1653,6 +1808,13 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 **Die KMK→QMK-Angleichung ist inhaltlich durch.** C1–C8, C7 und die Status-LED
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
+
+0a. **Alle drei Boards flashen** — die Mac-AltGr-Übersetzung ist reiner
+   Userspace und geht in einem Zug (Befehle bei „Was ist auf welchem Gerät?").
+   Danach am Mac prüfen: `@ [ ] { } \ | ~` und `DBRACES`, und ob die
+   Tilde-Auflösung per Leerzeichen sich im Alltag richtig anfühlt. Bei der
+   Gelegenheit nachsehen, was `¹ ² ³ ¢ ‹ › ‘ ’` unter macOS tatsächlich
+   liefern — die stehen noch nicht in `wb_mac_altgr()`.
 
 0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (offen seit
    2026-08-07, eigenes Kapitel oben). BOOTSEL ist gemessen widerlegt; die

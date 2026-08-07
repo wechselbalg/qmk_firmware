@@ -95,6 +95,67 @@ static void wb_word_jump(bool forward) {
 }
 
 /* ------------------------------------------------------------------------
+   Mac-Modus: die AltGr-Ebene der deutschen Belegung liegt woanders
+
+   Zweiter Fall derselben Sorte wie wb_word_jump() darueber, aber aus einem
+   anderen Grund: hier ist nicht der Modifier ein anderer, sondern die
+   *Basistaste*. @ ist unter Windows/Linux AltGr+Q, unter macOS Opt+L -- der
+   Modifier (RAlt = rechte Option) ist auf beiden Systemen derselbe. Ein
+   Modifier-*Tausch* wie CG_TOGG kann das prinzipiell nicht reparieren.
+
+   Deshalb werden die betroffenen Keycodes im Mac-Modus abgefangen und durch
+   ihre Mac-Entsprechung ersetzt, statt neue Keycodes ins Keymap zu legen.
+   Das wirkt auf allen Layern und allen Boards zugleich, laesst die Keymaps
+   unangetastet und -- der eigentliche Grund -- kostet keinen Eintrag in
+   enum CustomKeys: dessen Verschiebung war die Ursache des FN_EXIT-Bugs.
+
+   Unveraendert bleibt alles mit S(...): ° (S(DE_CIRC)) und § (S(DE_3))
+   liegen auf beiden Systemen auf derselben Shift-Kombination. Ebenso € und
+   µ, die auf dem Mac zufaellig auf derselben Taste sitzen.
+
+   ~ ist der Sonderfall: Opt+N ist auf dem Mac ein Dead Key und braucht ein
+   Leerzeichen hinterher, passt also nicht in die Tabelle. Siehe unten.
+
+   Ohne MAGIC_ENABLE gibt es gar keinen Mac-Modus (WB_HOST_IS_MAC() ist dann
+   ein hartes false), der ganze Block faellt dort also weg -- die AVR-Boards
+   sind nicht betroffen. Einzeln abschaltbar per -DWB_NO_MAC_ALTGR.
+   ------------------------------------------------------------------------ */
+#if defined(MAGIC_ENABLE) && !defined(WB_NO_MAC_ALTGR)
+#    define WB_MAC_ALTGR
+#endif
+
+#ifdef WB_MAC_ALTGR
+// Mac-Entsprechung eines AltGr-Zeichens, oder 0 wenn es keinen Unterschied gibt.
+static uint16_t wb_mac_altgr(uint16_t keycode) {
+    switch (keycode) {
+        case DE_AT:   return ALGR(DE_L);  // @   AltGr+Q  -> Opt+L
+        case DE_LBRC: return ALGR(DE_5);  // [   AltGr+8  -> Opt+5
+        case DE_RBRC: return ALGR(DE_6);  // ]   AltGr+9  -> Opt+6
+        case DE_LCBR: return ALGR(DE_8);  // {   AltGr+7  -> Opt+8
+        case DE_RCBR: return ALGR(DE_9);  // }   AltGr+0  -> Opt+9
+        case DE_PIPE: return ALGR(DE_7);  // |   AltGr+<  -> Opt+7
+        case DE_BSLS: return RSA(DE_7);   // '\' AltGr+ss -> Shift+Opt+7
+        default:      return 0;
+    }
+}
+#endif
+
+/*
+Den Keycode auf den laufenden Host uebersetzen. Ausserhalb des Mac-Modus --
+und auf jedem Board ohne MAGIC_ENABLE -- die Identitaet, die LTO wegfaltet.
+Wird auch von DBRACES gebraucht, das seine Klammern selbst tippt.
+*/
+static uint16_t wb_localize(uint16_t keycode) {
+#ifdef WB_MAC_ALTGR
+    if (WB_HOST_IS_MAC()) {
+        const uint16_t mac_kc = wb_mac_altgr(keycode);
+        if (mac_kc) return mac_kc;
+    }
+#endif
+    return keycode;
+}
+
+/* ------------------------------------------------------------------------
    DF_PREV -- zurueck auf das vorherige Basis-Layout (C6)
 
    Der Ausstieg aus _GAMING, ohne hart auf QWERT zu springen. Nachbau von
@@ -245,6 +306,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 #endif
 
+#ifdef WB_MAC_ALTGR
+    if (WB_HOST_IS_MAC()) {
+        /* ~ passt nicht in die Tabelle: Opt+N ist auf dem Mac ein Dead Key
+           und erscheint erst, wenn ein Zeichen folgt. Ein Leerzeichen loest
+           ihn zu einer blanken Tilde auf. */
+        if (keycode == DE_TILD) {
+            if (record->event.pressed) {
+                tap_code16(ALGR(DE_N));
+                tap_code(KC_SPC);
+            }
+            return false;
+        }
+        const uint16_t mac_kc = wb_mac_altgr(keycode);
+        if (mac_kc) {
+            // register/unregister statt tap_code16, damit Halten und
+            // Auto-Repeat erhalten bleiben wie bei der Taste selbst.
+            if (record->event.pressed) {
+                register_code16(mac_kc);
+            } else {
+                unregister_code16(mac_kc);
+            }
+            return false;
+        }
+    }
+#endif
+
     const uint8_t mods         = get_mods();
     const uint8_t oneshot_mods = get_oneshot_mods();
 
@@ -315,15 +402,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         case DBRACES:  // Types [], {}, or <> and puts cursor between braces.
             if (record->event.pressed) {
+                /* Nicht mehr per SEND_STRING: dessen Tabelle (sendstring_german.h)
+                   bildet die AltGr-Ebene der *Windows*-Belegung ab, unter macOS
+                   kaeme also Murks heraus. Getippt werden jetzt die Keycodes
+                   selbst, durch wb_localize() auf den Host uebersetzt.
+                   < und > brauchen das nicht -- sie liegen auf beiden Systemen
+                   auf derselben Taste. */
+                uint16_t open, close;
+                if ((mods | oneshot_mods) & MOD_MASK_SHIFT) {
+                    open = DE_LCBR, close = DE_RCBR;
+                } else if ((mods | oneshot_mods) & MOD_MASK_CTRL) {
+                    open = DE_LABK, close = DE_RABK;
+                } else {
+                    open = DE_LBRC, close = DE_RBRC;
+                }
                 clear_oneshot_mods();  // Temporarily disable mods.
                 unregister_mods(MOD_MASK_CSAG);
-                if ((mods | oneshot_mods) & MOD_MASK_SHIFT) {
-                    SEND_STRING("{}");
-                } else if ((mods | oneshot_mods) & MOD_MASK_CTRL) {
-                    SEND_STRING("<>");
-                } else {
-                    SEND_STRING("[]");
-                }
+                tap_code16(wb_localize(open));
+                tap_code16(wb_localize(close));
                 tap_code(KC_LEFT);    // Move cursor between braces.
                 register_mods(mods);  // Restore mods.
             }
