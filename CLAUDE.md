@@ -189,8 +189,7 @@ Mac-Modus jetzt übersetzt — `@` lag unter macOS auf ⌥L statt AltGr+Q und ka
 deshalb gar nicht heraus, ebenso `[ ] { } \ | ~` und die Klammern von
 `DBRACES`. Das eigene Kapitel „Die AltGr-Ebene unter macOS" erklärt, warum
 `MAC_TOG` das prinzipiell nicht konnte. **Alle drei benutzten Boards sind am
-2026-08-09 geflasht**, am Mac aber noch nicht nachgeprüft — siehe „Was ist auf
-welchem Gerät?".
+2026-08-09 geflasht, und das `@` ist am Mac bestätigt.**
 
 ⚠️ **Weiter in Beobachtung:** die schwarze Sofle Choc bootete sporadisch nicht
 (beide Hälften dunkel, keine Eingaben). BOOTSEL ist gemessen **widerlegt**; die
@@ -1384,8 +1383,19 @@ Tilde `0x1430` ruft `tap_code16(0x1411)` + `tap_code(0x2c)` (⌥N, Space), und
 `DBRACES` schickt alle drei Klammerpaare durch `wb_mac_altgr` — wobei `<`/`>`
 (`0x64`/`0x264`) korrekt unverändert durchlaufen.
 
-⚠️ **Noch nicht auf Hardware getestet, und alle drei benutzten Boards sind
-damit hinter dem Repo-Stand.** Siehe „Was ist auf welchem Gerät?".
+## ✅ Auf Hardware bestätigt (2026-08-09)
+
+Michael hat das `@` am Mac geprüft: **es kommt heraus.** Damit ist der ganze
+Mechanismus belegt und nicht nur die eine Taste — dass `@` funktioniert heißt,
+dass das Gate `keymap_config.swap_lctl_lgui` richtig gelesen wird, der Abgriff
+in `process_record_user()` vor dem großen Switch greift, und die
+`register_code16()`-Ersetzung beim Host ankommt. Die übrigen sechs Zeichen
+laufen durch dieselbe Tabelle und unterscheiden sich nur im Wert.
+
+**Noch nicht einzeln durchprobiert** (kein Verdacht, nur nicht angefasst):
+`[ ] { } \ |`, die Tilde mit ihrer Dead-Key-Auflösung per Leerzeichen, und
+`DBRACES` in seinen drei Varianten. Ebenso offen bleibt, was
+`¹ ² ³ ¢ ‹ › ‘ ’` unter macOS liefern — die stehen noch nicht in der Tabelle.
 
 ---
 
@@ -1771,8 +1781,16 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 **Kein Flash offen.** Alle drei benutzten Boards haben am 2026-08-09 die
 Mac-AltGr-Übersetzung bekommen (Kapitel „Die AltGr-Ebene unter macOS"), in
-einem Zug, weil es reiner Userspace ist. Am Gerät noch zu prüfen: ob `@ [ ] { }
-\ | ~` und `DBRACES` unter macOS jetzt richtig herauskommen.
+einem Zug, weil es reiner Userspace ist. ✅ **Das `@` ist am Mac bestätigt** —
+damit trägt der Mechanismus; die übrigen Zeichen laufen durch dieselbe Tabelle.
+
+⚠️ **Die Sofle Choc wurde beim ersten Anlauf seitenverkehrt geflasht**
+(links das `uf2-split-right`-Image und umgekehrt). Genau der Fall, vor dem der
+Absatz weiter unten warnt — und er bestätigt zugleich, dass die Reparatur
+harmlos ist: **einfach jede Hälfte mit ihrem richtigen Image neu flashen,
+kein EEPROM-Löschen nötig.** Die `-DINIT_EE_HANDS_*`-Images schreiben die
+Händigkeit bei jedem Boot zurück, der falsche Stand ist damit sofort
+überschrieben. Am 2026-08-09 so behoben.
 
 ⚠️ **Auf der GMMK Pro muss der Mac-Modus danach neu gesetzt werden.** Ihr
 Flash-Weg ist Esc-Bootmagic, und das ruft `eeconfig_disable()` — der Zustand,
@@ -1818,13 +1836,12 @@ sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
 0a. ~~**Alle drei Boards flashen**~~ — **erledigt 2026-08-09**, alle drei auf
-   Repo-Stand. Offen ist jetzt nur noch das **Nachprüfen am Mac**: kommen
-   `@ [ ] { } \ | ~` und `DBRACES` richtig heraus, und fühlt sich die
-   Tilde-Auflösung per Leerzeichen im Alltag richtig an? Bei der Gelegenheit
-   nachsehen, was `¹ ² ³ ¢ ‹ › ‘ ’` unter macOS tatsächlich liefern — die
-   stehen noch nicht in `wb_mac_altgr()`, Nachtragen ist je eine Zeile.
-   ⚠️ Auf der GMMK Pro vorher `MAC_TOG` neu setzen (End halten → C), sonst
-   testet man gegen einen Board-Zustand „PC" und sieht nichts.
+   Repo-Stand, und ✅ **das `@` ist am Mac bestätigt**. Der Mechanismus trägt
+   damit; was bleibt, ist Kleinkram bei Gelegenheit: `[ ] { } \ |`, die
+   Tilde (fühlt sich die Dead-Key-Auflösung per Leerzeichen im Alltag richtig
+   an?) und `DBRACES` einzeln durchprobieren, und nachsehen, was
+   `¹ ² ³ ¢ ‹ › ‘ ’` unter macOS liefern — die stehen noch nicht in
+   `wb_mac_altgr()`, Nachtragen ist je eine Zeile.
 
 0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (offen seit
    2026-08-07, eigenes Kapitel oben). BOOTSEL ist gemessen widerlegt; die
