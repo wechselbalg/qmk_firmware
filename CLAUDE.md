@@ -182,14 +182,15 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-07, drei Flashes offen)
+## Aktueller Stand (Stand: 2026-08-09, kein Flash offen)
 
 ⚠️ **Zuletzt dazugekommen:** die AltGr-Ebene der deutschen Belegung wird im
 Mac-Modus jetzt übersetzt — `@` lag unter macOS auf ⌥L statt AltGr+Q und kam
 deshalb gar nicht heraus, ebenso `[ ] { } \ | ~` und die Klammern von
 `DBRACES`. Das eigene Kapitel „Die AltGr-Ebene unter macOS" erklärt, warum
-`MAC_TOG` das prinzipiell nicht konnte. **Alle drei benutzten Boards sind
-dadurch hinter dem Repo-Stand** — siehe „Was ist auf welchem Gerät?".
+`MAC_TOG` das prinzipiell nicht konnte. **Alle drei benutzten Boards sind am
+2026-08-09 geflasht**, am Mac aber noch nicht nachgeprüft — siehe „Was ist auf
+welchem Gerät?".
 
 ⚠️ **Weiter in Beobachtung:** die schwarze Sofle Choc bootete sporadisch nicht
 (beide Hälften dunkel, keine Eingaben). BOOTSEL ist gemessen **widerlegt**; die
@@ -1761,28 +1762,35 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ⚠️ nein | Mac-AltGr-Ebene (`@ [ ] { } \ \| ~`) + `DBRACES` |
-| GMMK Pro ISO | ⚠️ nein | Mac-AltGr-Ebene (`@ [ ] { } \ \| ~`) + `DBRACES` |
-| Sofle Choc schwarz (Liatris) | ⚠️ nein | Mac-AltGr-Ebene (`@ [ ] { } \ \| ~`) + `DBRACES` |
+| K3 Pro ISO | ✅ `c4c80832c1`, 38392 Byte | — |
+| GMMK Pro ISO | ✅ `c4c80832c1`, 45140 Byte | — |
+| Sofle Choc schwarz (Liatris) | ✅ `c4c80832c1`, beide Hälften | — |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-⚠️ **Drei Flashes offen** (seit 2026-08-07): alle Boards mit Mac-Modus brauchen
-die AltGr-Übersetzung aus dem Kapitel „Die AltGr-Ebene unter macOS". Das ist
-reiner Userspace, es geht also alles in einem Zug:
+**Kein Flash offen.** Alle drei benutzten Boards haben am 2026-08-09 die
+Mac-AltGr-Übersetzung bekommen (Kapitel „Die AltGr-Ebene unter macOS"), in
+einem Zug, weil es reiner Userspace ist. Am Gerät noch zu prüfen: ob `@ [ ] { }
+\ | ~` und `DBRACES` unter macOS jetzt richtig herauskommen.
 
-```bash
-python3 util/wechselbalg/flash.py k3_pro
-python3 util/wechselbalg/flash.py gmmk_pro
-python3 util/wechselbalg/flash.py sofle_choc_black
-```
+⚠️ **Auf der GMMK Pro muss der Mac-Modus danach neu gesetzt werden.** Ihr
+Flash-Weg ist Esc-Bootmagic, und das ruft `eeconfig_disable()` — der Zustand,
+an dem `WB_HOST_IS_MAC()` hängt, steht danach wieder auf PC. Einmal
+`MAC_TOG` drücken: **End halten → C**. Ohne das greift die neue Übersetzung
+nicht, und es sieht aus wie ein Fehler im Code. Der K3 Pro heilt sich selbst,
+weil sein Win/Mac-Schiebeschalter bei jedem Boot gelesen wird; die Sofle Choc
+wird per UF2 geflasht und verliert ihr EEPROM gar nicht erst.
+
+⚠️ **Die Liatris-Images sind 50336 statt 50320 Byte** — die 16 Byte sind
+`-DINIT_EE_HANDS_*`. Das ist zugleich die Kontrolle, dass wirklich das
+seitenspezifische Binary geflasht wurde und nicht das neutrale.
 
 Davor war der Stand: alle drei auf Repo-Stand. Die schwarze Sofle Choc wurde am
 2026-08-07 mit Watchdog, VBUS-Master-Erkennung und Power-LED-Heartbeat geflasht;
 **beide Hälften spielen zusammen** (siehe Kapitel „Sporadischer Boot-Ausfall").
 Ob der Boot-Ausfall damit weg ist, zeigt sich erst über die Zeit — er war
-sporadisch. Beim Nachflashen bleibt der Heartbeat also erhalten.
+sporadisch. Der Heartbeat ist beim Nachflashen erhalten geblieben.
 
 Die schwarze Sofle Choc wird je Hälfte über `--side left` / `--side right`
 geflasht, also mit `-bl uf2-split-left` bzw. `-right`. Das ist nicht kosmetisch:
@@ -1809,12 +1817,14 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-0a. **Alle drei Boards flashen** — die Mac-AltGr-Übersetzung ist reiner
-   Userspace und geht in einem Zug (Befehle bei „Was ist auf welchem Gerät?").
-   Danach am Mac prüfen: `@ [ ] { } \ | ~` und `DBRACES`, und ob die
-   Tilde-Auflösung per Leerzeichen sich im Alltag richtig anfühlt. Bei der
-   Gelegenheit nachsehen, was `¹ ² ³ ¢ ‹ › ‘ ’` unter macOS tatsächlich
-   liefern — die stehen noch nicht in `wb_mac_altgr()`.
+0a. ~~**Alle drei Boards flashen**~~ — **erledigt 2026-08-09**, alle drei auf
+   Repo-Stand. Offen ist jetzt nur noch das **Nachprüfen am Mac**: kommen
+   `@ [ ] { } \ | ~` und `DBRACES` richtig heraus, und fühlt sich die
+   Tilde-Auflösung per Leerzeichen im Alltag richtig an? Bei der Gelegenheit
+   nachsehen, was `¹ ² ³ ¢ ‹ › ‘ ’` unter macOS tatsächlich liefern — die
+   stehen noch nicht in `wb_mac_altgr()`, Nachtragen ist je eine Zeile.
+   ⚠️ Auf der GMMK Pro vorher `MAC_TOG` neu setzen (End halten → C), sonst
+   testet man gegen einen Board-Zustand „PC" und sieht nichts.
 
 0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (offen seit
    2026-08-07, eigenes Kapitel oben). BOOTSEL ist gemessen widerlegt; die
