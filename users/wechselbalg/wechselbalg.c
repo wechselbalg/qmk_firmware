@@ -19,7 +19,16 @@ bool caps_word_press_user(uint16_t keycode) {
         case DE_SS:
         case KC_BSPC:
         case KC_DEL:
-        case KC_UNDS:
+        /* War KC_UNDS -- und das ist auf deutscher Belegung das falsche Zeichen.
+           KC_UNDS kommt aus keymap_us.h und ist S(KC_MINUS); DE_SS *ist*
+           KC_MINS, also war KC_UNDS hier wertgleich mit DE_QUES. Die Regel galt
+           damit fuer '?' statt fuer '_' -- genau verkehrt herum. Das '_' des
+           _SYM-Layers ist DE_UNDS = S(DE_MINS) = S(KC_SLSH) und fiel bis dahin
+           in den default-Zweig, hat Caps Word also beendet.
+           (Die '-'-Taste selbst steht oben in der Shift-Gruppe und liefert
+           waehrend Caps Word ohnehin '_' -- das ist die uebliche Snake-Case-
+           Bequemlichkeit und bleibt, wie sie war.) */
+        case DE_UNDS:
             return true;
 
         default:
@@ -135,7 +144,41 @@ static uint16_t wb_mac_altgr(uint16_t keycode) {
         case DE_RCBR: return ALGR(DE_9);  // }   AltGr+0  -> Opt+9
         case DE_PIPE: return ALGR(DE_7);  // |   AltGr+<  -> Opt+7
         case DE_BSLS: return RSA(DE_7);   // '\' AltGr+ss -> Shift+Opt+7
-        default:      return 0;
+
+        // Die obere Reihe des _SYM-Layers (SYMBOL_L0 / SYMBOL_R0).
+        case N3_LSAQ: return RSA(DE_B);      // <   Shift+AltGr+X -> Shift+Opt+B
+        case N3_RSAQ: return RSA(DE_N);      // >   Shift+AltGr+Y -> Shift+Opt+N
+        case N3_CENT: return ALGR(DE_4);     // ¢   AltGr+C       -> Opt+4
+        case N3_L_SQ: return ALGR(DE_HASH);  // '   Shift+AltGr+B -> Opt+#
+        case N3_R_SQ: return RSA(DE_HASH);   // '   Shift+AltGr+N -> Shift+Opt+#
+
+        default: return 0;
+    }
+}
+
+/*
+Zeichen, die es auf der deutschen Mac-Belegung ueberhaupt nicht gibt.
+
+Ausgemessen, nicht geraten: ein Skript hat ueber Carbons UCKeyTranslate alle
+Tasten x alle Modifier-Kombinationen der aktiven Belegung durchgespielt und
+rueckwaerts nach diesen Zeichen gesucht. Fuer die drei hochgestellten Ziffern
+gibt es keinen Treffer -- Apples deutsche Belegung kennt sie schlicht nicht.
+
+Windows liefert hier AltGr+1/2/3; dieselben Griffe ergeben auf dem Mac
+"¡", "“" und "¶". Statt still das falsche Zeichen zu tippen, tun die drei
+Tasten im Mac-Modus deshalb gar nichts -- dieselbe Regel wie bei den
+_ADJUST-Falltueren: eine tote Taste ist ehrlicher als ein falsches Ziel.
+Wer die Fremdzeichen doch lieber haette, streicht diese Funktion (eine Zeile
+im Aufrufer) -- dann laufen sie wieder unveraendert durch.
+*/
+static bool wb_mac_has_no_key(uint16_t keycode) {
+    switch (keycode) {
+        case N3_SUP1:  // ¹
+        case N3_SUP2:  // ²
+        case N3_SUP3:  // ³
+            return true;
+        default:
+            return false;
     }
 }
 #endif
@@ -308,23 +351,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 #ifdef WB_MAC_ALTGR
     if (WB_HOST_IS_MAC()) {
-        /* ~ passt nicht in die Tabelle: Opt+N ist auf dem Mac ein Dead Key
-           und erscheint erst, wenn ein Zeichen folgt. Ein Leerzeichen loest
-           ihn zu einer blanken Tilde auf. */
-        if (keycode == DE_TILD) {
-            if (record->event.pressed) {
-                tap_code16(ALGR(DE_N));
-                tap_code(KC_SPC);
-            }
-            return false;
-        }
         const uint16_t mac_kc = wb_mac_altgr(keycode);
-        if (mac_kc) {
-            // register/unregister statt tap_code16, damit Halten und
-            // Auto-Repeat erhalten bleiben wie bei der Taste selbst.
+
+        if (mac_kc || keycode == DE_TILD || wb_mac_has_no_key(keycode)) {
+            /* Ab hier geben wir false zurueck, der Keycode erreicht den Core
+               also nicht mehr -- und damit auch process_caps_word() nicht, das
+               in quantum.c erst nach process_record_user() drankommt. Keines
+               dieser Zeichen steht in caps_word_press_user(), auf PC beenden
+               sie Caps Word also. Damit der Mac sich nicht anders verhaelt,
+               hier von Hand. */
             if (record->event.pressed) {
-                register_code16(mac_kc);
-            } else {
+#    ifdef CAPS_WORD_ENABLE
+                caps_word_off();
+#    endif
+                if (keycode == DE_TILD) {
+                    /* ~ passt nicht in die Tabelle: Opt+N ist auf dem Mac ein
+                       Dead Key und erscheint erst, wenn ein Zeichen folgt.
+                       Ein Leerzeichen loest ihn zur blanken Tilde auf. */
+                    tap_code16(ALGR(DE_N));
+                    tap_code(KC_SPC);
+                } else if (mac_kc) {
+                    // register/unregister statt tap_code16, damit Halten und
+                    // Auto-Repeat erhalten bleiben wie bei der Taste selbst.
+                    register_code16(mac_kc);
+                }
+            } else if (mac_kc) {
                 unregister_code16(mac_kc);
             }
             return false;

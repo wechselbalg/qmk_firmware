@@ -182,14 +182,16 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-09, kein Flash offen)
+## Aktueller Stand (Stand: 2026-08-09, drei Flashes offen)
 
 ⚠️ **Zuletzt dazugekommen:** die AltGr-Ebene der deutschen Belegung wird im
 Mac-Modus jetzt übersetzt — `@` lag unter macOS auf ⌥L statt AltGr+Q und kam
 deshalb gar nicht heraus, ebenso `[ ] { } \ | ~` und die Klammern von
 `DBRACES`. Das eigene Kapitel „Die AltGr-Ebene unter macOS" erklärt, warum
-`MAC_TOG` das prinzipiell nicht konnte. **Alle drei benutzten Boards sind am
-2026-08-09 geflasht, und das `@` ist am Mac bestätigt.**
+`MAC_TOG` das prinzipiell nicht konnte. Die erste Runde ist auf allen drei
+Boards und ✅ **am Mac bestätigt**; die **obere `_SYM`-Reihe** (`‹ › ¢ ‘ ’`)
+und der **Caps-Word-Fix für `_`** kamen am selben Tag dazu und sind **noch
+nicht geflasht**.
 
 ⚠️ **Weiter in Beobachtung:** die schwarze Sofle Choc bootete sporadisch nicht
 (beide Hälften dunkel, keine Eingaben). BOOTSEL ist gemessen **widerlegt**; die
@@ -1281,6 +1283,9 @@ Behandelt sind jetzt sieben Zeichen plus die Tilde:
 | Zeichen | Windows | macOS | im Wrapper |
 |---|---|---|---|
 | `@` | AltGr+Q | ⌥L | `N3___AT` (SYMBOL_R2) |
+| `‹` `›` | ⇧AltGr+X/Y | ⇧⌥B / ⇧⌥N | `N3_LSAQ`/`N3_RSAQ` (L0) |
+| `¢` | AltGr+C | ⌥4 | `N3_CENT` (R0) |
+| `‘` `’` | ⇧AltGr+B/N | ⌥# / ⇧⌥# | `N3_L_SQ`/`N3_R_SQ` (R0) |
 | `[` `]` | AltGr+8/9 | ⌥5 / ⌥6 | `N3_LBRC`/`N3_RBRC` (L1) |
 | `{` `}` | AltGr+7/0 | ⌥8 / ⌥9 | `N3_CLBR`/`N3_CRBR` (L2) |
 | `\` | AltGr+ß | ⇧⌥7 | `N3_BSLS` (L2) |
@@ -1292,11 +1297,50 @@ Behandelt sind jetzt sieben Zeichen plus die Tilde:
 derselben Shift-Kombination. Ebenso `€` (`ALGR(DE_E)` = ⌥E) und `µ`
 (`ALGR(DE_M)` = ⌥M), die auf dem Mac zufällig auf derselben Taste sitzen.
 
-⚠️ **Noch offen und am Board zu prüfen:** die übrigen `RALT(...)`/`RSA(...)`-
-Zeichen in `SYMBOL_L0`/`SYMBOL_R0` — `¹ ² ³ ¢ ‹ › ‘ ’ §`-Nachbarn. Dort kommt
-unter macOS ebenfalls etwas anderes heraus; *was* genau, ist nicht geraten,
-sondern muss am Gerät nachgesehen werden. Nachtragen ist dann eine Zeile in
-`wb_mac_altgr()`.
+## Die obere Reihe — nachgetragen 2026-08-09, und ein Messwerkzeug dafür
+
+Michael hat am Gerät festgestellt, dass die **obere Reihe des `_SYM`-Layers**
+(`SYMBOL_L0`/`SYMBOL_R0`) am Mac nicht funktioniert. Diesmal wurde nicht
+geraten, sondern **die echte Systembelegung ausgelesen**: das neue
+[util/wechselbalg/mac_layout.py](util/wechselbalg/mac_layout.py) fragt über
+Carbons `UCKeyTranslate` die *aktive* macOS-Belegung ab, in beide Richtungen
+(Kombination → Zeichen und Zeichen → Kombination).
+
+**Aktive Belegung ist das Standard-„German"** — wichtig zu wissen, weil auf
+diesem Mac auch *Deutsch (Neo 2)*, *Bone 2* und *NeoQwertz* installiert sind.
+Alle Aussagen hier gelten für „German"; unter einer Neo-Belegung wäre alles
+anders.
+
+| Wrapper | Zeichen | Windows | macOS | |
+|---|---|---|---|---|
+| `N3_LSAQ` | `‹` | ⇧AltGr+X | **⇧⌥B** | nachgetragen |
+| `N3_RSAQ` | `›` | ⇧AltGr+Y | **⇧⌥N** | nachgetragen |
+| `N3_CENT` | `¢` | AltGr+C | **⌥4** | nachgetragen |
+| `N3_L_SQ` | `‘` | ⇧AltGr+B | **⌥#** | nachgetragen |
+| `N3_R_SQ` | `’` | ⇧AltGr+N | **⇧⌥#** | nachgetragen |
+| `N2_SECT` | `§` | ⇧3 | ⇧3 | gleich, nichts zu tun |
+| `N3_SUP1/2/3` | `¹ ² ³` | AltGr+1/2/3 | **gibt es nicht** | siehe unten |
+
+⚠️ **`¹ ² ³` sind auf der deutschen Mac-Belegung nicht erreichbar.** Das ist
+kein Rateschluss: das Skript hat *alle* Tasten × *alle* Modifier-Kombinationen
+durchgespielt und rückwärts gesucht — kein Treffer. Dieselben Griffe liefern
+dort `¡`, `“` und `¶`.
+
+**Entscheidung: die drei Tasten tun im Mac-Modus gar nichts** (`wb_mac_has_no_key()`).
+Dieselbe Regel wie bei den `_ADJUST`-Falltüren — eine tote Taste ist ehrlicher
+als ein falsches Zeichen. Wer die Fremdzeichen doch lieber hätte, streicht den
+Aufruf, eine Zeile. Ein echtes `¹²³` ginge nur über Unicode-Eingabe, und
+QMKs `UC_MAC` verlangt die Belegung *Unicode Hex Input* — schließt sich mit der
+deutschen also aus.
+
+⚠️ **Beim Nachtragen aufpassen:** `DE_HASH` ist `KC_NUHS` (0x32), **nicht**
+`KC_BSLS`. Auf ISO-Tastaturen ist `#` die Non-US-Hash-Taste. Am Binary
+gegengeprüft: `ALGR(DE_HASH)` ist `0x1432`, nicht `0x1431`.
+
+**Ebenfalls ausgemessen und unverändert richtig:** `«` `»` `„` `“` `”` `…` `·`
+`–` `—` `¡` `¿` `£` `¥` liegen auf dem Mac zwar teils anders, kommen aber im
+`_SYM`-Layer nicht vor. `¤` und `ſ` gibt es dort ebenfalls nicht. Wenn eines
+davon je in ein Layout wandert, erst `mac_layout.py` fragen.
 
 ## Umsetzung: Übersetzung statt neuer Keycodes
 
@@ -1346,14 +1390,18 @@ fällt auf den AVR-Boards also weg. **Am Binary geprüft:** `wb_mac_altgr` und
 `wb_localize` kommen in den AVR-ELFs nicht vor. Ein einzelnes Board kann per
 `-DWB_NO_MAC_ALTGR` aussteigen.
 
-| Board | vorher | nachher | Δ |
+| Board | vorher | 1. Runde | + obere Reihe |
 |---|---|---|---|
-| Sofle Choc schwarz (Liatris) | 50000 | **50320** | +320 |
-| GMMK Pro ISO | 44936 | **45140** | +204 |
-| K3 Pro ISO | 38168 | **38392** | +224 |
-| Sofle Choc weiß (AVR) | 28528 / 144 frei | 28532 / **140 frei** | +4 |
-| Kyria (AVR) | 27460 / 1212 frei | 27474 / 1198 frei | +14 |
-| Lotus58 (AVR) | 27776 / 896 frei | 27792 / 880 frei | +16 |
+| Sofle Choc schwarz (Liatris) | 50000 | 50320 | **50464** |
+| GMMK Pro ISO | 44936 | 45140 | **45252** |
+| K3 Pro ISO | 38168 | 38392 | **38516** |
+| Sofle Choc weiß (AVR) | 28528 / 144 frei | 28532 / 140 frei | **28532 / 140** |
+| Kyria (AVR) | 27460 / 1212 frei | 27474 / 1198 frei | **27474 / 1198** |
+| Lotus58 (AVR) | 27776 / 896 frei | 27792 / 880 frei | **27792 / 880** |
+
+Die zweite Runde (obere Reihe, `¹²³`-Unterdrückung, `caps_word_off()`) lässt
+die AVR-Boards **bytegleich** — sie besteht ausschließlich aus Mac-Code, und
+der Caps-Word-Fix tauscht nur eine Konstante im Switch.
 
 ⚠️ **Die AVR-Boards wachsen trotz Gating.** Das kommt nicht vom Mac-Block,
 sondern allein vom `DBRACES`-Umbau: zwei `tap_code16()` mit variablen Keycodes
@@ -1396,6 +1444,51 @@ laufen durch dieselbe Tabelle und unterscheiden sich nur im Wert.
 `[ ] { } \ |`, die Tilde mit ihrer Dead-Key-Auflösung per Leerzeichen, und
 `DBRACES` in seinen drei Varianten. Ebenso offen bleibt, was
 `¹ ² ³ ¢ ‹ › ‘ ’` unter macOS liefern — die stehen noch nicht in der Tabelle.
+
+---
+
+# Caps Word: der Unterstrich beendete es (behoben 2026-08-09)
+
+Michaels Beobachtung: ein `_` aus dem `_SYM`-Layer beendet Caps Word, statt es
+fortzusetzen. Das war ein **Wertfehler**, kein Verhalten mit Absicht.
+
+In `caps_word_press_user()` ([wechselbalg.c](users/wechselbalg/wechselbalg.c))
+stand `case KC_UNDS:` in der Gruppe „setzt fort, ohne zu shiften". `KC_UNDS`
+kommt aber aus `keymap_us.h` und ist `S(KC_MINUS)`. Und weil auf der deutschen
+Belegung `DE_SS` **ist** `KC_MINS`, war dieser Wert gleichbedeutend mit
+`S(DE_SS)` = **`DE_QUES`**.
+
+Die Regel galt also für **`?`** statt für `_` — genau verkehrt herum. Das `_`
+des Symbol-Layers ist `DE_UNDS` = `S(DE_MINS)` = `S(KC_SLSH)`, ein ganz anderer
+Wert, und fiel damit in den `default`-Zweig.
+
+**Fix:** `case KC_UNDS:` → `case DE_UNDS:`. Am Binary bestätigt
+(`cmp.w r3, #0x238` im K3-Pro-/GMMK-ELF).
+
+Zwei Dinge, die dabei *nicht* zu ändern waren:
+
+- Die **`-`-Taste** (`DE_MINS`) steht weiterhin in der Shift-Gruppe und liefert
+  während Caps Word ohnehin `_`. Das ist QMKs übliche Snake-Case-Bequemlichkeit
+  und war nie kaputt — deshalb ist der Fehler auch so lange nicht aufgefallen.
+- `caps_word_press_user()` bekommt den **vollen 16-Bit-Keycode**; nur Mod-Taps
+  und Layer-Taps werden vorher ausgepackt
+  ([process_caps_word.c](quantum/process_keycode/process_caps_word.c)). Ein
+  `S(...)`-Keycode kommt also so an, wie er im Keymap steht — Vergleiche gegen
+  die `DE_*`-Namen sind daher Pflicht, `KC_*`-Namen sind hier eine Falle.
+
+**Merkregel:** in diesem Userspace nie `KC_`-Aliase für Zeichen benutzen, die es
+auf der deutschen Belegung woanders gibt. Sie kompilieren klaglos und meinen
+etwas anderes.
+
+## Nebenwirkung der Mac-Übersetzung, gleich mit erledigt
+
+`process_record_user()` läuft **vor** `process_caps_word()`
+([quantum.c:355](quantum/quantum.c:355) gegen
+[:384](quantum/quantum.c:384)). Die Mac-AltGr-Übersetzung gibt `false` zurück,
+Caps Word sah diese Tasten also gar nicht — auf PC beenden `@ [ ] { } \ | ~`
+Caps Word, auf dem Mac hätten sie es stehen lassen. Der Mac-Zweig ruft deshalb
+jetzt selbst `caps_word_off()`. Kostet auf AVR nichts (der ganze Block ist dort
+gar nicht einkompiliert).
 
 ---
 
@@ -1772,17 +1865,24 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ✅ `c4c80832c1`, 38392 Byte | — |
-| GMMK Pro ISO | ✅ `c4c80832c1`, 45140 Byte | — |
-| Sofle Choc schwarz (Liatris) | ✅ `c4c80832c1`, beide Hälften | — |
+| K3 Pro ISO | ⚠️ nein | obere `_SYM`-Reihe am Mac + Caps-Word-`_` |
+| GMMK Pro ISO | ⚠️ nein | obere `_SYM`-Reihe am Mac + Caps-Word-`_` |
+| Sofle Choc schwarz (Liatris) | ⚠️ nein | obere `_SYM`-Reihe am Mac + Caps-Word-`_` |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Kein Flash offen.** Alle drei benutzten Boards haben am 2026-08-09 die
-Mac-AltGr-Übersetzung bekommen (Kapitel „Die AltGr-Ebene unter macOS"), in
-einem Zug, weil es reiner Userspace ist. ✅ **Das `@` ist am Mac bestätigt** —
-damit trägt der Mechanismus; die übrigen Zeichen laufen durch dieselbe Tabelle.
+⚠️ **Drei Flashes offen (zweite Runde, 2026-08-09).** Alle drei Boards haben die
+erste Runde der Mac-AltGr-Übersetzung schon bekommen, und ✅ **`@ [ ] { } \ | ~`
+sind am Mac bestätigt.** Dazugekommen ist seitdem die **obere `_SYM`-Reihe**
+(`‹ › ¢ ‘ ’`, plus die stummen `¹ ² ³`) und der **Caps-Word-Fix für `_`**.
+Wieder reiner Userspace, geht also in einem Zug:
+
+```bash
+python3 util/wechselbalg/flash.py k3_pro
+python3 util/wechselbalg/flash.py gmmk_pro
+python3 util/wechselbalg/flash.py sofle_choc_black
+```
 
 ⚠️ **Die Sofle Choc wurde beim ersten Anlauf seitenverkehrt geflasht**
 (links das `uf2-split-right`-Image und umgekehrt). Genau der Fall, vor dem der
