@@ -47,6 +47,31 @@ Aus, wenn WB_NO_ADVANCED_TAP_HOLD gesetzt ist -- siehe TAPPING_TERM oben.
 #endif
 
 /*
+Schaltet Tap-Hold ab, solange schnell getippt wird: liegt der vorherige
+Tastendruck weniger als FLOW_TAP_TERM ms zurueck und sind sowohl die
+vorherige als auch die aktuelle Taste Buchstaben oder Space (QMKs
+is_flow_tap_key()-Vorgabe, hier unveraendert benutzt), wird die aktuelle
+Taste sofort als Tap gewertet -- unabhaengig davon, wie lange sie danach
+noch gehalten wird.
+
+Bis 2026-08-10 als TODO offen. Aktiviert, nachdem genau das Szenario, das
+hier verhindert werden soll, auf der GMMK Pro real aufgetreten ist: NAV_SPC
+(Leertaste, Tap = Space / Hold = _NAV) ist in chordal_hold_layout bewusst
+'*' statt 'L'/'R' und dadurch nicht durch die "gleiche Hand"-Regel
+geschuetzt. Schnelles Tippen von "ein" direkt nach einem Leerzeichen liess
+die Leertaste kurz als gehalten statt getippt durchgehen -- _NAV aktivierte
+sich, und aus dem "n" wurde NX_CENT (Strg+Enter), was in Outlook eine
+halbfertige Mail abschickte. Siehe auch die NAVIGATION__3-Aenderung in
+wrappers.h fuer die zusaetzliche Entschaerfung der Ziel-Taste.
+
+150 ms ist QMKs empfohlener Startwert. Gleiches Gating wie CHORDAL_HOLD --
+aus, wenn WB_NO_ADVANCED_TAP_HOLD gesetzt ist.
+*/
+#ifndef WB_NO_ADVANCED_TAP_HOLD
+#    define FLOW_TAP_TERM 150
+#endif
+
+/*
 Retro Tapping nur ueber die Callback-Variante: get_retro_tapping() in
 wechselbalg.c setzt getrennte Zeitfenster fuer Layer-Taps und Mod-Taps und
 baut damit KMKs retro_tap_timeout nach, das QMK nicht kennt.

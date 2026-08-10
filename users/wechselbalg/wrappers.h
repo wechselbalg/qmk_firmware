@@ -360,7 +360,18 @@ auf, weil das Board die NUBS-Taste dazwischen hat.
 // Ergaenzung zurueck (___NO__). Ausdruecklich NICHT an NAVIGATION_R3 selbst
 // geaendert -- die benutzen sofle_choc und kyria direkt, dort ist die
 // Leertaste ein normaler Tap-Hold ohne '*' und die Taste unproblematisch.
-#define ______________________________________NAVIGATION__3_____________________________________  F_LLOCK, KC_INS, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT, NX_CENT, MS_WHLD, MS_UP  , MS_WHLU, ___NO__, F_LLOCK
+//
+// 2026-08-10, zweite Aenderung: NX_CENT (Strg+Enter, "Senden" in Outlook &
+// Co.) sass an der n-Position (erstes Element der R3-Haelfte) -- vom
+// gleichen Leertasten-Mechanismus betroffen, aber ungleich gefaehrlicher,
+// weil "n" ein haeufiger Buchstabe ist statt eines Sonderzeichens. Reales
+// Beispiel: schnelles "ein" direkt nach einem Leerzeichen loeste damit eine
+// Mail aus. FLOW_TAP_TERM (config.h) faengt den Normalfall (durchgetipptes
+// Wort) jetzt schon ab; NX_CENT wandert zusaetzlich auf die deutlich
+// seltener getroffene "-"-Position, die seit der ersten Aenderung ___NO__
+// war. Strg+Enter bleibt damit ueber MO__NAV erreichbar, nur eben nicht
+// mehr auf dem haeufigsten Buchstaben.
+#define ______________________________________NAVIGATION__3_____________________________________  F_LLOCK, KC_INS, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT, ___NO__, MS_WHLD, MS_UP  , MS_WHLU, NX_CENT, F_LLOCK
 #define __________________________________7_NAVIGATION__THUMBS__________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_NM0, N3_COMM, N3__DOT, KC_RCTL
 
 // ADJUST

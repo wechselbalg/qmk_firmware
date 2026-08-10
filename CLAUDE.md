@@ -182,9 +182,61 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-10, kein Flash offen)
+## Aktueller Stand (Stand: 2026-08-10, ein Flash offen: K3 Pro + GMMK Pro)
 
-✅ **Zuletzt dazugekommen:** doppelte Enter-Taste auf `_NAV` bei K3 Pro und
+⚠️ **Zuletzt dazugekommen:** ein zweiter, schwererer Fall desselben Musters —
+diesmal löste schnelles Tippen von "ein" auf der GMMK Pro eine **Mail in
+Outlook** aus (Inhalt nur "ei", der Rest ging als Tastenkombo drauf). Ursache:
+[users/wechselbalg/keymap_neo2.h:198](users/wechselbalg/keymap_neo2.h:198)
+definiert `NX_CENT` als `LCTL(KC_ENT)` — Strg+Enter, in Outlook (und vielen
+anderen Apps) der "Senden"-Shortcut. Der saß in
+[users/wechselbalg/wrappers.h](users/wechselbalg/wrappers.h) auf `_NAV`
+genau an der Position des Buchstabens **N** (erstes Element von
+`NAVIGATION_R3`) — betroffen vom selben `NAV_SPC`-Mechanismus wie beim
+NAV-Enter-Fix weiter oben, aber ungleich gefährlicher, weil "n" ein sehr
+häufiger Buchstabe ist statt eines Sonderzeichens.
+
+**Zwei Fixes, diesmal zusammen:**
+1. **`FLOW_TAP_TERM 150`** aktiviert (`users/wechselbalg/config.h`, gleiches
+   Gating wie `CHORDAL_HOLD`/`TAPPING_TERM 150` über `WB_NO_ADVANCED_TAP_HOLD`).
+   War als TODO vorbereitet, jetzt durch den Vorfall ausgelöst. QMKs
+   Vorgabe-`is_flow_tap_key()` deckt Buchstaben + Space automatisch ab: liegt
+   der vorherige Tastendruck weniger als 150 ms zurück, wird ein Tap-Hold wie
+   `NAV_SPC` sofort als Tap gewertet, unabhängig davon wie lange danach noch
+   gehalten wird. Das fängt den Normalfall (durchgetipptes Wort direkt nach
+   einem Leerzeichen) strukturell ab, für **alle** Boards und **alle**
+   `_NAV`/`_SYM`/`_NUM`-Tasten, nicht nur `n`.
+2. **`NX_CENT` von der `n`- auf die `-`-Position verschoben** (nur in der
+   ISO-spezifischen `NAVIGATION__3`, K3 Pro/GMMK Pro) — als zweite
+   Absicherung, falls FLOW_TAP_TERM einen Randfall (Tippen nach einer Pause)
+   doch nicht abfängt. Strg+Enter bleibt über `MO__NAV` erreichbar, nur nicht
+   mehr auf dem häufigsten Buchstaben. `NAVIGATION_R3` selbst (Sofle
+   Choc/Kyria) bleibt unangetastet — dort ist die Leertaste kein `'*'` und
+   die alte Position unproblematisch.
+
+**Kosten, geprüft (2026-08-10):**
+
+| Board | vorher | nachher |
+|---|---|---|
+| K3 Pro | 38516 | **39068** (+552) |
+| GMMK Pro | 45252 | **45784** (+532) |
+| Kyria (AVR) | 1198 frei | **614 frei** |
+| Sofle Choc weiß (AVR) | 140 frei | ⛔ **428 Byte drüber, baut nicht mehr** |
+| Sofle Choc schwarz (Liatris) | 50464 | 50980 (+516, RP2040 irrelevant) |
+| Lotus58 | 880 frei | 880 frei (unverändert — `WB_NO_ADVANCED_TAP_HOLD`-Gate bestätigt) |
+
+⚠️ **Die weiße Sofle Choc kompiliert seit FLOW_TAP_TERM nicht mehr.** Erwartet
+und nach ihrem eigenen Kapitel oben (⛔ Zurückgestellt) abgedeckt: „Wenn sie je
+blockiert, ist die Antwort, sie nicht mehr zu bauen — nicht, Features
+zurückzubauen." Sie wird ohnehin nicht mehr geflasht (Controller-Umbau
+geplant); reine Dokumentation, kein Handlungsbedarf.
+
+**Noch nicht auf K3 Pro/GMMK Pro geflasht** — Binaries haben sich seit der
+letzten Flash-Bestätigung geändert (39068/45784 statt 38516/45252).
+
+---
+
+✅ **Davor, bereits erledigt:** doppelte Enter-Taste auf `_NAV` bei K3 Pro und
 GMMK Pro gefunden, behoben und auf beide Geräte geflasht. Michael berichtete, er
 habe dort mehrfach ungewollt eine Chat-Nachricht abgeschickt. Befund: die
 13-breite `NAVIGATION__3` (nur von diesen beiden ISO-Boards benutzt) enthielt
@@ -1891,17 +1943,24 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ✅ `fbe7b833ee`, 38516 Byte | — |
-| GMMK Pro ISO | ✅ `fbe7b833ee`, 45252 Byte | — |
-| Sofle Choc schwarz (Liatris) | ✅ `b7227697f4`, beide Hälften | — (von diesem Fix nicht betroffen, siehe Kapitel „Aktueller Stand") |
-| ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
+| K3 Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 38516 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung, **noch nicht geflasht** (39068 Byte) |
+| GMMK Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 45252 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung, **noch nicht geflasht** (45784 Byte) |
+| Sofle Choc schwarz (Liatris) | ⚠️ vorheriger Stand `b7227697f4` | FLOW_TAP_TERM (50980 Byte statt 50464) — unkritisch, kein akuter Grund zum Nachflashen |
+| ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant; baut seit FLOW_TAP_TERM ohnehin nicht mehr |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Kein Flash offen.** Die doppelte Enter-Taste auf `_NAV` (siehe Kapitel
-„Aktueller Stand" oben) ist behoben, am 2026-08-10 auf beiden Geräten
-angekommen und am Gerät bestätigt: schnelles Tippen von "Leerzeichen, dann
-`-`" liefert jetzt zuverlässig `-`, kein Enter mehr.
+**Ein Flash offen: K3 Pro + GMMK Pro, mit Priorität.** `NX_CENT` (Strg+Enter =
+"Senden" in Outlook) saß auf `_NAV` an der `n`-Position und hat über denselben
+Leertasten-Mechanismus wie die doppelte Enter-Taste eine Mail ausgelöst — noch
+gefährlicher, weil "n" viel häufiger ist als "-". Fix ist im Repo
+(FLOW_TAP_TERM + Verschiebung auf `-`), siehe Kapitel „Aktueller Stand" oben,
+aber noch nicht geflasht.
+
+Davor, bereits erledigt und bestätigt: die doppelte Enter-Taste auf `_NAV` ist
+behoben, am 2026-08-10 auf beiden Geräten angekommen und am Gerät bestätigt —
+schnelles Tippen von "Leerzeichen, dann `-`" lieferte zuverlässig `-`. Dieser
+Gerätestand ist mit dem neuen Fix jetzt selbst wieder veraltet.
 
 Davor, bereits geflasht: die zweite AltGr-Runde (obere `_SYM`-Reihe,
 Caps-Word-Fix) ist am 2026-08-09 auf allen drei Boards angekommen. Am Mac zu
@@ -1950,10 +2009,18 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
+0c. ⚠️ **NEU, mit Priorität: K3 Pro und GMMK Pro erneut flashen.**
+   FLOW_TAP_TERM aktiviert + `NX_CENT` (Strg+Enter = "Senden" in Outlook) von
+   der `n`- auf die `-`-Position verschoben (siehe „Aktueller Stand" oben) —
+   löste bei Michael live eine ungewollt abgeschickte Outlook-Mail aus. Fix
+   ist im Repo, aber noch nicht auf den Geräten (Binaries haben sich seit dem
+   letzten Flash von 2026-08-10 geändert: 39068/45784 statt 38516/45252).
+
 0b. ~~**K3 Pro und GMMK Pro flashen**~~ — **erledigt und am Gerät bestätigt,
-   2026-08-10.** Doppelte NAV-Enter-Taste behoben (siehe „Aktueller Stand"
-   oben) — löste bei Michael live ungewollt abgeschickte Chat-Nachrichten aus.
-   Schnelles "Leerzeichen, dann `-`" liefert jetzt zuverlässig `-`.
+   2026-08-10, seitdem durch 0c wieder überholt.** Doppelte NAV-Enter-Taste
+   behoben (siehe „Aktueller Stand" oben) — löste bei Michael live ungewollt
+   abgeschickte Chat-Nachrichten aus. Schnelles "Leerzeichen, dann `-`"
+   lieferte zuverlässig `-`.
 
 0a. ~~**Alle drei Boards flashen**~~ — **beide Runden erledigt, zuletzt
    2026-08-09**, alle drei auf Repo-Stand. ✅ **`@ [ ] { } \ | ~` sind am Mac
