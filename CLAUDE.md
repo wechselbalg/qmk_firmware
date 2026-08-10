@@ -182,7 +182,7 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-09, drei Flashes offen)
+## Aktueller Stand (Stand: 2026-08-09, kein Flash offen)
 
 ⚠️ **Zuletzt dazugekommen:** die AltGr-Ebene der deutschen Belegung wird im
 Mac-Modus jetzt übersetzt — `@` lag unter macOS auf ⌥L statt AltGr+Q und kam
@@ -190,8 +190,8 @@ deshalb gar nicht heraus, ebenso `[ ] { } \ | ~` und die Klammern von
 `DBRACES`. Das eigene Kapitel „Die AltGr-Ebene unter macOS" erklärt, warum
 `MAC_TOG` das prinzipiell nicht konnte. Die erste Runde ist auf allen drei
 Boards und ✅ **am Mac bestätigt**; die **obere `_SYM`-Reihe** (`‹ › ¢ ‘ ’`)
-und der **Caps-Word-Fix für `_`** kamen am selben Tag dazu und sind **noch
-nicht geflasht**.
+und der **Caps-Word-Fix für `_`** kamen am selben Tag dazu und sind seitdem
+ebenfalls geflasht — **noch nicht am Mac nachgeprüft**.
 
 ⚠️ **Weiter in Beobachtung:** die schwarze Sofle Choc bootete sporadisch nicht
 (beide Hälften dunkel, keine Eingaben). BOOTSEL ist gemessen **widerlegt**; die
@@ -1865,44 +1865,28 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ⚠️ nein | obere `_SYM`-Reihe am Mac + Caps-Word-`_` |
-| GMMK Pro ISO | ⚠️ nein | obere `_SYM`-Reihe am Mac + Caps-Word-`_` |
-| Sofle Choc schwarz (Liatris) | ⚠️ nein | obere `_SYM`-Reihe am Mac + Caps-Word-`_` |
+| K3 Pro ISO | ✅ `b7227697f4`, 38516 Byte | — |
+| GMMK Pro ISO | ✅ `b7227697f4`, 45252 Byte | — |
+| Sofle Choc schwarz (Liatris) | ✅ `b7227697f4`, beide Hälften | — |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-⚠️ **Drei Flashes offen (zweite Runde, 2026-08-09).** Alle drei Boards haben die
-erste Runde der Mac-AltGr-Übersetzung schon bekommen, und ✅ **`@ [ ] { } \ | ~`
-sind am Mac bestätigt.** Dazugekommen ist seitdem die **obere `_SYM`-Reihe**
-(`‹ › ¢ ‘ ’`, plus die stummen `¹ ² ³`) und der **Caps-Word-Fix für `_`**.
-Wieder reiner Userspace, geht also in einem Zug:
+**Kein Flash offen.** Die zweite Runde (obere `_SYM`-Reihe, Caps-Word-Fix) ist
+am 2026-08-09 auf allen drei Boards angekommen. Am Mac zu prüfen: `‹ › ¢ ‘ ’`
+aus der oberen Reihe, dass `¹ ² ³` bewusst stumm bleiben, und ob Caps Word
+einen `_` jetzt fortsetzt statt zu beenden.
 
-```bash
-python3 util/wechselbalg/flash.py k3_pro
-python3 util/wechselbalg/flash.py gmmk_pro
-python3 util/wechselbalg/flash.py sofle_choc_black
-```
+Beim ersten Flash-Durchgang dieser Runde ist der GMMK-Pro-Mac-Modus wie erwartet
+per Esc-Bootmagic zurückgesetzt worden — **`MAC_TOG` (End halten → C) danach
+nicht vergessen**, sonst greift die Übersetzung nicht und es sieht wie ein
+Fehler im Code aus. K3 Pro und Sofle Choc sind davon nicht betroffen (siehe
+oben im Kapitel „Die AltGr-Ebene unter macOS").
 
-⚠️ **Die Sofle Choc wurde beim ersten Anlauf seitenverkehrt geflasht**
-(links das `uf2-split-right`-Image und umgekehrt). Genau der Fall, vor dem der
-Absatz weiter unten warnt — und er bestätigt zugleich, dass die Reparatur
-harmlos ist: **einfach jede Hälfte mit ihrem richtigen Image neu flashen,
-kein EEPROM-Löschen nötig.** Die `-DINIT_EE_HANDS_*`-Images schreiben die
-Händigkeit bei jedem Boot zurück, der falsche Stand ist damit sofort
-überschrieben. Am 2026-08-09 so behoben.
-
-⚠️ **Auf der GMMK Pro muss der Mac-Modus danach neu gesetzt werden.** Ihr
-Flash-Weg ist Esc-Bootmagic, und das ruft `eeconfig_disable()` — der Zustand,
-an dem `WB_HOST_IS_MAC()` hängt, steht danach wieder auf PC. Einmal
-`MAC_TOG` drücken: **End halten → C**. Ohne das greift die neue Übersetzung
-nicht, und es sieht aus wie ein Fehler im Code. Der K3 Pro heilt sich selbst,
-weil sein Win/Mac-Schiebeschalter bei jedem Boot gelesen wird; die Sofle Choc
-wird per UF2 geflasht und verliert ihr EEPROM gar nicht erst.
-
-⚠️ **Die Liatris-Images sind 50336 statt 50320 Byte** — die 16 Byte sind
-`-DINIT_EE_HANDS_*`. Das ist zugleich die Kontrolle, dass wirklich das
-seitenspezifische Binary geflasht wurde und nicht das neutrale.
+Zur Erinnerung, weil es beim vorherigen Mal passiert ist: die Sofle Choc ist
+seitenspezifisch (`-bl uf2-split-left`/`-right`, `-DINIT_EE_HANDS_*`) — bei
+Verwechslung reicht erneutes Flashen mit den richtigen Seiten, kein
+EEPROM-Löschen nötig.
 
 Davor war der Stand: alle drei auf Repo-Stand. Die schwarze Sofle Choc wurde am
 2026-08-07 mit Watchdog, VBUS-Master-Erkennung und Power-LED-Heartbeat geflasht;
@@ -1935,13 +1919,11 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-0a. ~~**Alle drei Boards flashen**~~ — **erledigt 2026-08-09**, alle drei auf
-   Repo-Stand, und ✅ **das `@` ist am Mac bestätigt**. Der Mechanismus trägt
-   damit; was bleibt, ist Kleinkram bei Gelegenheit: `[ ] { } \ |`, die
-   Tilde (fühlt sich die Dead-Key-Auflösung per Leerzeichen im Alltag richtig
-   an?) und `DBRACES` einzeln durchprobieren, und nachsehen, was
-   `¹ ² ³ ¢ ‹ › ‘ ’` unter macOS liefern — die stehen noch nicht in
-   `wb_mac_altgr()`, Nachtragen ist je eine Zeile.
+0a. ~~**Alle drei Boards flashen**~~ — **beide Runden erledigt, zuletzt
+   2026-08-09**, alle drei auf Repo-Stand. ✅ **`@ [ ] { } \ | ~` sind am Mac
+   bestätigt.** Noch am Gerät nachzuprüfen: die obere `_SYM`-Reihe
+   (`‹ › ¢ ‘ ’`), dass `¹ ² ³` bewusst stumm bleiben, `DBRACES` einzeln, und
+   ob sich der Caps-Word-Fix für `_` richtig anfühlt.
 
 0. **Sporadischer Boot-Ausfall der schwarzen Sofle Choc** (offen seit
    2026-08-07, eigenes Kapitel oben). BOOTSEL ist gemessen widerlegt; die
