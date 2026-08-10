@@ -182,9 +182,33 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-09, kein Flash offen)
+## Aktueller Stand (Stand: 2026-08-10, ein Flash offen: K3 Pro + GMMK Pro)
 
-⚠️ **Zuletzt dazugekommen:** die AltGr-Ebene der deutschen Belegung wird im
+⚠️ **Zuletzt dazugekommen:** doppelte Enter-Taste auf `_NAV` bei K3 Pro und
+GMMK Pro gefunden und behoben (noch nicht geflasht). Michael berichtete, er
+habe dort mehrfach ungewollt eine Chat-Nachricht abgeschickt. Befund: die
+13-breite `NAVIGATION__3` (nur von diesen beiden ISO-Boards benutzt) enthielt
+**zwei** Enter-Tasten auf `_NAV` — `N3__ENT` an der B-Position (schon länger
+so) und ein zusätzliches `KC_ENT` an der `-`-Position direkt vor Shift/über
+der Leertaste, das am 2026-08-04 für die Sofle Choc gedacht war und über die
+gemeinsame `NAVIGATION_R3` in die ISO-Boards durchgeschlagen ist. Gefährlich
+war genau die zweite: `_NAV` wird über `NAV_SPC` (Leertaste haelt) erreicht,
+und die Leertaste ist in `chordal_hold_layout` bewusst `'*'` statt `'L'`/`'R'`
+— ein schnelles „Leerzeichen, dann -" (z. B. „Wort - Wort") konnte die
+Leertaste dadurch als gehalten statt getippt durchgehen lassen und aus dem
+`-` ein Enter machen, das die Nachricht abschickte.
+
+**Fix**, ausschließlich in [users/wechselbalg/wrappers.h](users/wechselbalg/wrappers.h)
+an `NAVIGATION__3`: die `-`-Position fällt auf ihren alten Wert vor der
+2026-08-04-Ergänzung zurück (`___NO__`), `N3__ENT` bleibt als einzige
+NAV-Enter-Taste. **Bewusst nicht an der gemeinsamen `NAVIGATION_R3` geändert**
+— die benutzen Sofle Choc und Kyria direkt, dort ist die Leertaste ein
+normaler Tap-Hold ohne `'*'` und die Taste unproblematisch; ein Eingriff dort
+hätte die Splits mitgeändert, was nicht gewollt war. Am Binary geprüft: K3 Pro
+und GMMK Pro bytegleich (38516 / 45252), Sofle Choc und Kyria unverändert
+(Kyria weiterhin 27474 / 1198 frei).
+
+⚠️ Die AltGr-Ebene der deutschen Belegung wird im
 Mac-Modus jetzt übersetzt — `@` lag unter macOS auf ⌥L statt AltGr+Q und kam
 deshalb gar nicht heraus, ebenso `[ ] { } \ | ~` und die Klammern von
 `DBRACES`. Das eigene Kapitel „Die AltGr-Ebene unter macOS" erklärt, warum
@@ -1858,24 +1882,29 @@ aus. Ein einzelnes Board abweichend: `-DWB_JIGGLER` / `-DWB_DF_PREV` per
 180 (−14, nur C2), kyria 1212, lotus58 896. Alle sechs Boards + der
 Liatris-Build kompilieren.
 
-## Was ist auf welchem Gerät? (Stand 2026-08-07)
+## Was ist auf welchem Gerät? (Stand 2026-08-10)
 
 Der Repo-Stand ist nicht der Geräte-Stand. Diese Tabelle sagt, was auf der
 Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ✅ `b7227697f4`, 38516 Byte | — |
-| GMMK Pro ISO | ✅ `b7227697f4`, 45252 Byte | — |
-| Sofle Choc schwarz (Liatris) | ✅ `b7227697f4`, beide Hälften | — |
+| K3 Pro ISO | ⚠️ `b7227697f4`, 38516 Byte | doppelte NAV-Enter-Taste behoben, **noch nicht geflasht** |
+| GMMK Pro ISO | ⚠️ `b7227697f4`, 45252 Byte | doppelte NAV-Enter-Taste behoben, **noch nicht geflasht** |
+| Sofle Choc schwarz (Liatris) | ✅ `b7227697f4`, beide Hälften | — (von diesem Fix nicht betroffen, siehe Kapitel „Aktueller Stand") |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Kein Flash offen.** Die zweite Runde (obere `_SYM`-Reihe, Caps-Word-Fix) ist
-am 2026-08-09 auf allen drei Boards angekommen. Am Mac zu prüfen: `‹ › ¢ ‘ ’`
-aus der oberen Reihe, dass `¹ ² ³` bewusst stumm bleiben, und ob Caps Word
-einen `_` jetzt fortsetzt statt zu beenden.
+**Ein Flash offen: K3 Pro + GMMK Pro.** Die doppelte Enter-Taste auf `_NAV`
+(siehe Kapitel „Aktueller Stand" oben) ist im Repo behoben, aber noch nicht
+auf den Geräten — Michael hat sie live erlebt (versehentlich abgeschickte
+Chat-Nachrichten), also mit Priorität flashen.
+
+Davor, bereits geflasht: die zweite AltGr-Runde (obere `_SYM`-Reihe,
+Caps-Word-Fix) ist am 2026-08-09 auf allen drei Boards angekommen. Am Mac zu
+prüfen: `‹ › ¢ ‘ ’` aus der oberen Reihe, dass `¹ ² ³` bewusst stumm bleiben,
+und ob Caps Word einen `_` jetzt fortsetzt statt zu beenden.
 
 Beim ersten Flash-Durchgang dieser Runde ist der GMMK-Pro-Mac-Modus wie erwartet
 per Esc-Bootmagic zurückgesetzt worden — **`MAC_TOG` (End halten → C) danach
@@ -1918,6 +1947,11 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 **Die KMK→QMK-Angleichung ist inhaltlich durch.** C1–C8, C7 und die Status-LED
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
+
+0b. ⚠️ **NEU, mit Priorität: K3 Pro und GMMK Pro flashen.** Doppelte
+   NAV-Enter-Taste behoben (siehe „Aktueller Stand" oben) — löste bei Michael
+   live ungewollt abgeschickte Chat-Nachrichten aus. Fix ist im Repo, aber noch
+   nicht auf den Geräten.
 
 0a. ~~**Alle drei Boards flashen**~~ — **beide Runden erledigt, zuletzt
    2026-08-09**, alle drei auf Repo-Stand. ✅ **`@ [ ] { } \ | ~` sind am Mac

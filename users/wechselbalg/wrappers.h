@@ -348,7 +348,19 @@ auf, weil das Board die NUBS-Taste dazwischen hat.
 #define ______________________________________NAVIGATION__0_____________________________________  _____________NAVIGATION_L0_________________, _____________NAVIGATION_R0_________________
 #define ______________________________________NAVIGATION__1_____________________________________  _____________NAVIGATION_L1_________________, _____________NAVIGATION_R1_________________
 #define ______________________________________NAVIGATION__2_____________________________________  _____________NAVIGATION_L2_________________, _____________NAVIGATION_R2_________________
-#define ______________________________________NAVIGATION__3_____________________________________  F_LLOCK, KC_INS, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT, _____________NAVIGATION_R3_________________
+// 2026-08-10: die R3-Haelfte hier NICHT ueber NAVIGATION_R3 einsetzen -- die
+// traegt seit 2026-08-04 ein KC_ENT an der Stelle, an der auf dem Grundlayer
+// DE_MINS liegt (direkt vor Shift, ueber der Leertaste). K3 Pro/GMMK Pro
+// erreichen _NAV per NAV_SPC (Leertaste haelt), und die ist in
+// chordal_hold_layout bewusst '*' (nicht 'L'/'R') -- ein schnelles
+// "Leerzeichen, dann -" (z.B. "Wort - Wort") kann die Leertaste dadurch als
+// gehalten statt getippt durchgehen lassen und aus dem "-" ein Enter machen,
+// das die Nachricht abschickt. N3__ENT (Position B) bleibt als einzige
+// NAV-Enter-Taste; die R3-Position faellt auf ihren alten Wert vor der
+// Ergaenzung zurueck (___NO__). Ausdruecklich NICHT an NAVIGATION_R3 selbst
+// geaendert -- die benutzen sofle_choc und kyria direkt, dort ist die
+// Leertaste ein normaler Tap-Hold ohne '*' und die Taste unproblematisch.
+#define ______________________________________NAVIGATION__3_____________________________________  F_LLOCK, KC_INS, N3__ESC, N3_UNDO, N3__TAB, N3_REDO, N3__ENT, NX_CENT, MS_WHLD, MS_UP  , MS_WHLU, ___NO__, F_LLOCK
 #define __________________________________7_NAVIGATION__THUMBS__________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_NM0, N3_COMM, N3__DOT, KC_RCTL
 
 // ADJUST
