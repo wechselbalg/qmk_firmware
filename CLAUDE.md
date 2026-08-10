@@ -182,10 +182,10 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-10, ein Flash offen: K3 Pro + GMMK Pro)
+## Aktueller Stand (Stand: 2026-08-10, kein Flash offen)
 
-⚠️ **Zuletzt dazugekommen:** doppelte Enter-Taste auf `_NAV` bei K3 Pro und
-GMMK Pro gefunden und behoben (noch nicht geflasht). Michael berichtete, er
+✅ **Zuletzt dazugekommen:** doppelte Enter-Taste auf `_NAV` bei K3 Pro und
+GMMK Pro gefunden, behoben und auf beide Geräte geflasht. Michael berichtete, er
 habe dort mehrfach ungewollt eine Chat-Nachricht abgeschickt. Befund: die
 13-breite `NAVIGATION__3` (nur von diesen beiden ISO-Boards benutzt) enthielt
 **zwei** Enter-Tasten auf `_NAV` — `N3__ENT` an der B-Position (schon länger
@@ -206,7 +206,9 @@ NAV-Enter-Taste. **Bewusst nicht an der gemeinsamen `NAVIGATION_R3` geändert**
 normaler Tap-Hold ohne `'*'` und die Taste unproblematisch; ein Eingriff dort
 hätte die Splits mitgeändert, was nicht gewollt war. Am Binary geprüft: K3 Pro
 und GMMK Pro bytegleich (38516 / 45252), Sofle Choc und Kyria unverändert
-(Kyria weiterhin 27474 / 1198 frei).
+(Kyria weiterhin 27474 / 1198 frei). ✅ **Auf beiden Geräten geflasht
+(2026-08-10)** — noch nicht am Gerät nachgeprüft, ob das `-` beim schnellen
+Tippen jetzt zuverlässig bleibt.
 
 ⚠️ Die AltGr-Ebene der deutschen Belegung wird im
 Mac-Modus jetzt übersetzt — `@` lag unter macOS auf ⌥L statt AltGr+Q und kam
@@ -1889,17 +1891,17 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ⚠️ `b7227697f4`, 38516 Byte | doppelte NAV-Enter-Taste behoben, **noch nicht geflasht** |
-| GMMK Pro ISO | ⚠️ `b7227697f4`, 45252 Byte | doppelte NAV-Enter-Taste behoben, **noch nicht geflasht** |
+| K3 Pro ISO | ✅ `fbe7b833ee`, 38516 Byte | — |
+| GMMK Pro ISO | ✅ `fbe7b833ee`, 45252 Byte | — |
 | Sofle Choc schwarz (Liatris) | ✅ `b7227697f4`, beide Hälften | — (von diesem Fix nicht betroffen, siehe Kapitel „Aktueller Stand") |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Ein Flash offen: K3 Pro + GMMK Pro.** Die doppelte Enter-Taste auf `_NAV`
-(siehe Kapitel „Aktueller Stand" oben) ist im Repo behoben, aber noch nicht
-auf den Geräten — Michael hat sie live erlebt (versehentlich abgeschickte
-Chat-Nachrichten), also mit Priorität flashen.
+**Kein Flash offen.** Die doppelte Enter-Taste auf `_NAV` (siehe Kapitel
+„Aktueller Stand" oben) ist behoben und am 2026-08-10 auf beiden Geräten
+angekommen. Noch am Gerät zu beurteilen: ob schnelles Tippen von "Leerzeichen,
+dann `-`" jetzt zuverlässig `-` liefert statt gelegentlich Enter.
 
 Davor, bereits geflasht: die zweite AltGr-Runde (obere `_SYM`-Reihe,
 Caps-Word-Fix) ist am 2026-08-09 auf allen drei Boards angekommen. Am Mac zu
@@ -1948,10 +1950,10 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-0b. ⚠️ **NEU, mit Priorität: K3 Pro und GMMK Pro flashen.** Doppelte
+0b. ~~**K3 Pro und GMMK Pro flashen**~~ — **erledigt 2026-08-10.** Doppelte
    NAV-Enter-Taste behoben (siehe „Aktueller Stand" oben) — löste bei Michael
-   live ungewollt abgeschickte Chat-Nachrichten aus. Fix ist im Repo, aber noch
-   nicht auf den Geräten.
+   live ungewollt abgeschickte Chat-Nachrichten aus. Noch am Gerät zu
+   beurteilen: ob schnelles "Leerzeichen, dann `-`" jetzt zuverlässig bleibt.
 
 0a. ~~**Alle drei Boards flashen**~~ — **beide Runden erledigt, zuletzt
    2026-08-09**, alle drei auf Repo-Stand. ✅ **`@ [ ] { } \ | ~` sind am Mac
