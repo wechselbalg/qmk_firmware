@@ -322,6 +322,49 @@ das weisse Board aendert sich um 0 Byte).
 */
 __attribute__((weak)) void housekeeping_task_keymap(void) {}
 
+/* ------------------------------------------------------------------------
+   Auto-NumLock beim Betreten von _NUM (2026-08-15)
+
+   Begruendung und Gating stehen bei WB_AUTO_NUMLOCK in wechselbalg.h.
+
+   Zwei Entwurfsentscheidungen, die nicht offensichtlich sind:
+
+   1. Der Tastendruck faellt NICHT in layer_state_set_user(), sondern in den
+      Takt. layer_state_set_*() laeuft aus process_record() heraus; von dort
+      selbst Tasten zu schicken, schiebt sich zwischen die gerade laufende
+      Ereignisverarbeitung. Der Callback setzt darum nur ein Flag.
+
+   2. Die Sperrzeit ist noetig, nicht kosmetisch. host_keyboard_led_state()
+      spiegelt, was der Host zuletzt gemeldet hat -- nach unserem Tap dauert
+      es ein paar Millisekunden, bis das Bit zurueckkommt. Wer _NUM in dem
+      Fenster loslaesst und sofort wieder betritt, wuerde ein zweites Mal
+      tappen und NumLock damit wieder **aus**schalten.
+   ------------------------------------------------------------------------ */
+#ifdef WB_AUTO_NUMLOCK
+#    ifndef WB_AUTO_NUMLOCK_GUARD_MS
+#        define WB_AUTO_NUMLOCK_GUARD_MS 500
+#    endif
+
+static bool     wb_numlock_pending = false;
+static uint32_t wb_numlock_last    = 0;
+
+static void wb_auto_numlock_task(void) {
+    if (!wb_numlock_pending) {
+        return;
+    }
+    wb_numlock_pending = false;
+
+    if (wb_numlock_last != 0 && timer_elapsed32(wb_numlock_last) < WB_AUTO_NUMLOCK_GUARD_MS) {
+        return;  // der vorige Tap ist noch unterwegs
+    }
+    if (host_keyboard_led_state().num_lock) {
+        return;  // schon an
+    }
+    wb_numlock_last = timer_read32();
+    tap_code(KC_NUM);
+}
+#endif  // WB_AUTO_NUMLOCK
+
 void housekeeping_task_user(void) {
 #ifdef WB_JIGGLER
     wb_jiggle_task();
@@ -329,7 +372,43 @@ void housekeeping_task_user(void) {
 #ifdef WB_STATUS_LED
     wb_status_led_task();
 #endif
+#ifdef WB_AUTO_NUMLOCK
+    wb_auto_numlock_task();
+#endif
     housekeeping_task_keymap();
+}
+
+/* ------------------------------------------------------------------------
+   Gemeinsames layer_state_set_user()
+
+   Lag frueher in den Board-Keymaps (sofle_choc zweimal hinter #ifdef, kyria).
+   Board-Eigenes kommt jetzt in layer_state_set_keymap(), das hier gerufen
+   wird -- dasselbe Muster wie process_record_keymap() und
+   housekeeping_task_keymap(), und aus demselben Grund.
+
+   Der Board-Hook laeuft **zuerst**: update_tri_layer_state() kann `state`
+   noch veraendern, und die NumLock-Pruefung soll den Endzustand sehen.
+
+   Die Flanke ist an `layer_state` erkennbar, weil action_layer.c den neuen
+   Wert erst **nach** dieser Kette zuweist (layer_state_set(), quantum/
+   action_layer.c) -- hier steht also noch der alte. Derselbe Kniff wie bei
+   DF_PREV weiter oben.
+   ------------------------------------------------------------------------ */
+__attribute__((weak)) layer_state_t layer_state_set_keymap(layer_state_t state) {
+    return state;
+}
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+    state = layer_state_set_keymap(state);
+
+#ifdef WB_AUTO_NUMLOCK
+    const layer_state_t num_bit = (layer_state_t)1 << _NUM;
+    if ((state & num_bit) && !(layer_state & num_bit) && !WB_HOST_IS_MAC()) {
+        wb_numlock_pending = true;
+    }
+#endif
+
+    return state;
 }
 
 /* ------------------------------------------------------------------------

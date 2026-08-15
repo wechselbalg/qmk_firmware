@@ -59,6 +59,32 @@ bessere Controller umgezogen sind.
 #ifndef __AVR__
 #    define WB_JIGGLER
 #    define WB_DF_PREV
+#    define WB_AUTO_NUMLOCK
+#endif
+
+/*
+WB_AUTO_NUMLOCK -- NumLock beim Betreten von _NUM einschalten, falls es aus ist.
+
+Der Zehnerblock schickt KC_P0..KC_P9. Bei ausgeschaltetem NumLock sind das am
+Host **keine Ziffern**, sondern Pos1/Bild/Pfeile -- der ganze Layer kippt dann
+still in Navigation um, und man merkt es erst an dem, was im Text steht. Die
+KC_NUM-Taste auf der linken Haelfte bleibt als manueller Weg bestehen, taugt
+aber nicht als Absicherung, weil man sie erst braucht, wenn es schon passiert
+ist.
+
+⚠ Nur im PC-Modus. macOS kennt kein NumLock; dort meldet der Host das Bit
+dauerhaft als 0, wir wuerden also bei *jedem* Layer-Wechsel tappen -- und
+KC_NUM ist auf dem Mac "Keypad Clear", was z. B. im Rechner die Anzeige
+loescht. Das Gate ist WB_HOST_IS_MAC(), also derselbe Zustand, an dem auch die
+AltGr-Uebersetzung haengt.
+
+Auf AVR aus (wie WB_JIGGLER/WB_DF_PREV): WB_HOST_IS_MAC() ist dort ohne
+MAGIC_ENABLE ein hartes false, das Gate wuerde also gar nicht greifen -- und
+Flash kostet es auch. Ein einzelnes Board abweichend per
+-DWB_AUTO_NUMLOCK / -DWB_NO_AUTO_NUMLOCK in dessen Keymap-rules.mk.
+*/
+#ifdef WB_NO_AUTO_NUMLOCK
+#    undef WB_AUTO_NUMLOCK
 #endif
 
 /*
@@ -143,6 +169,15 @@ ruft diesen Hook am Ende auf. Eine Keymap darf housekeeping_task_user() also
 ebenfalls nicht selbst definieren.
 */
 void housekeeping_task_keymap(void);
+
+/*
+Und dasselbe fuer Layer-Wechsel: layer_state_set_user() liegt seit dem
+Auto-NumLock (2026-08-15) in wechselbalg.c und ruft diesen Hook auf. Hier
+gehoert das Board-Eigene hinein -- update_tri_layer_state() bei den Splits,
+die RGBLIGHT-Layer der weissen Sofle Choc. Eine Keymap darf
+layer_state_set_user() also ebenfalls nicht mehr selbst definieren.
+*/
+layer_state_t layer_state_set_keymap(layer_state_t state);
 
 #ifdef WB_JIGGLER
 // Laeuft der Mouse Jiggler gerade? Fuer die Status-LED.

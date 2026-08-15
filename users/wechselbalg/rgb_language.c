@@ -244,14 +244,21 @@ abbildet: N3_NUM0..9 *sind* KC_P0..P9 und liegen als KC_KP_1..KC_KP_0
 zusammenhaengend, N3___UP/LEFT/DOWN/RGHT *sind* KC_UP/LEFT/DOWN/RIGHT und
 liegen als KC_RIGHT..KC_UP zusammenhaengend. Damit wandern die Bloecke mit,
 wenn die Tasten im Keymap umziehen.
+
+Seit 2026-08-15 reicht der Nummernblock-Bereich bis KC_KP_SLASH herunter statt
+erst bei KC_KP_1 zu beginnen: KC_KP_SLASH..KC_KP_DOT (0x54..0x63) ist
+zusammenhaengend und deckt `/ * - + Enter 1..0 .` ab, also genau den Block.
+Vorher blieben die Operatoren dunkel -- teils weil sie ausserhalb des Bereichs
+lagen, teils weil `*` und `/` gar keine Keypad-Keycodes waren. Beides ist mit
+dem _NUM-Umbau vom selben Tag erledigt (siehe wrappers.h an NUMBER_R0).
 */
 static bool wb_payload_color(uint16_t keycode, uint8_t layer, wb_color_t *out) {
     if (IS_MOUSE_KEYCODE(keycode)) {
         *out = WB_C_MOUSE;
         return true;
     }
-    if ((keycode >= KC_KP_1 && keycode <= KC_KP_0) ||  // Nummernblock
-        (keycode >= KC_RIGHT && keycode <= KC_UP)) {   // Pfeilkreuz
+    if ((keycode >= KC_KP_SLASH && keycode <= KC_KP_DOT) ||  // Nummernblock
+        (keycode >= KC_RIGHT && keycode <= KC_UP)) {         // Pfeilkreuz
         *out = WB_C_PAYLOAD;
         return true;
     }

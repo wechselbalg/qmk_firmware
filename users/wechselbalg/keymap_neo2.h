@@ -137,6 +137,28 @@
 #define N3_NMNS        KC_PMNS          // Keypad -
 //      ___NO__
 
+/*
+Die Keypad-Varianten von / und * (2026-08-15).
+
+N3_SLSH/N3_ASTR bleiben bestehen -- der _SYM-Layer benutzt sie weiter, und
+dort sind sie richtig, weil dort das Zeichen gemeint ist und nicht die Taste.
+Auf _NUM ist es umgekehrt: dort gehoert der Zehnerblock-Keycode hin.
+
+Der Unterschied ist keine Kosmetik. DE_SLSH ist S(DE_7) und DE_ASTR ist
+S(DE_PLUS) -- beides Shift-Kombis der *deutschen* Belegung. Unter einer
+anderen Host-Belegung (auf diesem Mac sind Neo 2, Bone 2 und NeoQwertz
+installiert) kommt damit etwas anderes heraus, waehrend KC_PSLS/KC_PAST
+belegungsunabhaengig sind. Ausserdem unterscheiden Tabellenkalkulation,
+Rechner, CAD und Spiele-Bindings den Zehnerblock von der Hauptreihe.
+
+Zusatznutzen: KC_KP_SLASH..KC_KP_DOT (0x54..0x63) liegen zusammenhaengend, die
+Farbsprache kann den Block damit vollstaendig einfaerben statt nur die Ziffern
+(siehe wb_payload_color() in rgb_language.c).
+*/
+#define N3_NSLS        KC_PSLS         // Keypad /
+#define N3_NAST        KC_PAST         // Keypad *
+#define N3_NENT        KC_PENT         // Keypad Enter
+
 // NEO2 Layer 4 - Line 2
 #define N3_PGUP        KC_PGUP
 #define N3_BSPC        KC_BSPC

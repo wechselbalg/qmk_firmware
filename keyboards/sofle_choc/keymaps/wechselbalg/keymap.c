@@ -432,7 +432,7 @@ const rgblight_segment_t* const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
     layer_ADJUST_lights
 );
 
-layer_state_t layer_state_set_user(layer_state_t state) {
+layer_state_t layer_state_set_keymap(layer_state_t state) {
     state = update_tri_layer_state(state, _NUM, _NAV, _ADJUST);
 	rgblight_set_layer_state(0, layer_state_cmp(state, _DEFAULTS)); //  && layer_state_cmp(default_layer_state,_QWERT))
 
@@ -447,7 +447,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 }
 #else
 
-layer_state_t layer_state_set_user(layer_state_t state) {
+layer_state_t layer_state_set_keymap(layer_state_t state) {
   return update_tri_layer_state(state, _NUM, _NAV, _ADJUST);
 }
 

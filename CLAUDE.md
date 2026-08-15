@@ -182,9 +182,20 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-10, ein Flash offen: K3 Pro + GMMK Pro)
+## Aktueller Stand (Stand: 2026-08-15, ein Flash offen: K3 Pro + GMMK Pro + Sofle)
 
-⚠️ **Zuletzt dazugekommen:** ein zweiter, schwererer Fall desselben Musters —
+⚠️ **Zuletzt dazugekommen (2026-08-15): der `_NUM`-Layer ist überarbeitet.**
+Eigenes Kapitel „Der Zehnerblock" weiter unten. Kurz: die rechte Hälfte ist
+jetzt an Standard-Zehnerblock **und** Neo-Ebene-4 zugleich ausgerichtet (das
+geht, weil sich die beiden nicht widersprechen), alle Dubletten *innerhalb*
+des Layers sind aufgelöst, `/ * − + Enter` sind echte Keypad-Keycodes,
+Backspace und Klammern sind dazugekommen, F10 fehlte auf der linken Hälfte.
+Dazu Auto-NumLock und die vollständige Einfärbung des Blocks durch die
+Farbsprache. **Noch auf keinem Gerät.**
+
+---
+
+⚠️ **Davor:** ein zweiter, schwererer Fall desselben Musters —
 diesmal löste schnelles Tippen von "ein" auf der GMMK Pro eine **Mail in
 Outlook** aus (Inhalt nur "ei", der Rest ging als Tastenkombo drauf). Ursache:
 [users/wechselbalg/keymap_neo2.h:198](users/wechselbalg/keymap_neo2.h:198)
@@ -1525,6 +1536,185 @@ laufen durch dieselbe Tabelle und unterscheiden sich nur im Wert.
 
 ---
 
+# Der Zehnerblock: `_NUM` überarbeitet (2026-08-15)
+
+Michaels Beobachtung: der Nummernblock auf der rechten Hälfte hatte
+„Optimierungsbedarf", besonders die Tasten **rechts von** und **oberhalb** der
+Ziffern. Er wollte ihn an zwei Vorbildern zugleich ausgerichtet haben: am
+Zehnerblock einer normalen Tastatur **und** am Numblock aus Neo Ebene 4.
+
+## Der Befund, der die Sache einfach gemacht hat
+
+**Die beiden Vorbilder widersprechen sich nicht.** Neos Ebene-4-Kopfreihe *ist*
+die Kopfreihe des Zehnerblocks: `/ * −` sitzen bei beiden über 8, 9 und der
+`+`-Spalte, Neo hat lediglich Tab dort, wo am Block NumLock liegt. Damit war
+keine Abwägung nötig, sondern nur eine Ausrichtung.
+
+```
+Standard-Numpad        Neo2 Ebene 4 (rechte Hand)
+NumLk  /   *   −       ¤   ⇥   /   *   −   ·
+ 7     8   9   +       ¡   7   8   9   +   −
+ 4     5   6   +       ¿   4   5   6   ,   .
+ 1     2   3  Ent      :   1   2   3   ;
+ 0     0   .  Ent      0 (auf der Leertaste)
+```
+
+## Was vorher da stand und was daran falsch war
+
+```
+        c0(6/Z/H) c1(7/U/J) c2(8/I/K) c3(9/O/L) c4(0/P/Ö) c5(ß/Ü/Ä)
+Reihe0   Tab        §         /         *         #        KP−
+Reihe1    €         7         8         9         *         /
+Reihe2    $         4         5         6        KP+       KP−
+Reihe3    :         1         2         3         ;         =
+```
+
+- **Reihe 0 war zur Hälfte Dublette.** `/`, `*` und `−` standen eine bzw. zwei
+  Reihen tiefer noch einmal — ausgerechnet die Reihe, die Michael als
+  verbesserungswürdig empfand, trug also praktisch keine eigene Information.
+- **`§` und `#` waren Fremdkörper** — nicht zahlennah, beide auf `_SYM`.
+- **Tab stand eine Spalte zu weit innen** (auf der 6 statt auf der 7), dadurch
+  war die ganze Reihe gegen Neo verschoben.
+- **`*` und `/` standen in unterschiedlicher Reihenfolge zueinander** (Reihe 0
+  las `/ *`, Reihe 1 `* /`).
+- **Halb Keypad, halb Hauptreihe.** `N3_NPLS`/`N3_NMNS` waren echte
+  `KC_PPLS`/`KC_PMNS`, aber `N3_ASTR` = `S(KC_RBRC)` und `N3_SLSH` = `S(KC_7)`
+  — Shift-Kombis der *deutschen* Belegung. Unter einer anderen Host-Belegung
+  (auf diesem Mac sind Neo 2, Bone 2 und NeoQwertz installiert) kommt damit
+  etwas anderes heraus.
+- **Kein Keypad-Enter.** `KC_PENT` kam im ganzen Userspace nicht vor.
+- **F10 fehlte auf der linken Hälfte** — F1–F9, F11, F12, F13 waren da.
+
+## Der neue Stand
+
+```
+        c0(6/Z/H) c1(7/U/J) c2(8/I/K) c3(9/O/L) c4(0/P/Ö) c5(ß/Ü/Ä)
+Reihe0     %        Tab       KP/       KP*       KP−       Bksp
+Reihe1     €         7         8         9        KP+        =
+Reihe2     $         4         5         6      KPEnter      ;
+Reihe3     :         1         2         3         (          )
+Daumen               ······· KP0 ······· , ······· . ·······
+```
+
+Linke Hälfte, genau eine Taste: der einzige freie Platz (Reihe 0 über F9)
+trägt jetzt **F10**.
+
+Die Begründungen im Einzelnen:
+
+- **Spalte c4** ist die Kleinfinger-Grundstellung und trägt von oben nach unten
+  `− + Enter` — die rechte Operatorenspalte des echten Blocks, ohne dessen
+  doppelte 2u-Tasten. Enter landet damit auf der besterreichbaren Taste des
+  kleinen Fingers statt unten in der Ecke.
+- **Spalte c5** ist der äußere Kleinfinger, also der Streckgriff: dort das
+  Seltenere. Backspace liegt oben, wo es auf jeder normalen Tastatur liegt.
+- **Die Klammern** sind neu — beim Tippen von Formeln ständig nötig und bisher
+  nur auf `_SYM`.
+
+⚠️ **Regel, entschieden von Michael 2026-08-15:** Wiederholungen **zu `_SYM`**
+sind gewollt, solange das Zeichen zahlennah ist — `€ $ : ; = ( ) %` und links
+`° ² ³` bleiben also doppelt. Dubletten **innerhalb von `_NUM`** sind dagegen
+aufgelöst; am Binary geprüft, jedes Zeichen kommt genau einmal vor (einzige
+Ausnahme: `QK_LLCK` auf der linken Außenspalte und dem rechten Encoder-Druck
+— vorbestehend und gewollt).
+
+**Bewusst *nicht* auf Keypad umgestellt:** `,`/`.` auf der Daumenreihe
+(`KC_PDOT` ist hostabhängig — deutsches Windows macht daraus `,`, macOS `.`;
+zwei getrennte Tasten sind robuster) sowie `=` und `;` (`KC_PEQL` ignorieren
+Windows und die meisten X11-Belegungen, für `;` gibt es kein Gegenstück).
+`N3_SLSH`/`N3_ASTR` bleiben ebenfalls bestehen — `_SYM` benutzt sie weiter,
+und dort sind sie richtig, weil dort das *Zeichen* gemeint ist statt der Taste.
+
+## Auto-NumLock (`WB_AUTO_NUMLOCK`)
+
+Bei ausgeschaltetem NumLock sind `KC_P0..KC_P9` am Host **keine Ziffern**,
+sondern Pos1/Bild/Pfeile — der ganze Layer kippt still in Navigation um, und
+man merkt es erst an dem, was im Text steht. Beim Betreten von `_NUM` wird
+NumLock deshalb eingeschaltet, falls es aus ist. Die `KC_NUM`-Taste links
+bleibt als manueller Weg.
+
+Zwei Entwurfsentscheidungen, die nicht offensichtlich sind:
+
+- **Der Tastendruck fällt nicht in `layer_state_set_user()`, sondern in den
+  Takt.** Der Layer-Callback läuft aus `process_record()` heraus; von dort
+  selbst Tasten zu schicken, schiebt sich zwischen die laufende
+  Ereignisverarbeitung. Der Callback setzt nur ein Flag.
+- **Sperrzeit von 500 ms.** `host_keyboard_led_state()` spiegelt, was der Host
+  zuletzt gemeldet hat; nach unserem Tap dauert es einige Millisekunden, bis
+  das Bit zurückkommt. Wer `_NUM` in dem Fenster loslässt und sofort wieder
+  betritt, würde ein zweites Mal tappen und NumLock damit wieder **aus**schalten.
+
+⚠️ **Nur im PC-Modus** (`WB_HOST_IS_MAC()`). macOS kennt kein NumLock, meldet
+das Bit dauerhaft als 0 — wir würden bei *jedem* Layer-Wechsel tappen, und
+`KC_NUM` ist auf dem Mac „Keypad Clear", was z. B. im Rechner die Anzeige
+löscht. Auf AVR ganz aus, wie `WB_JIGGLER`/`WB_DF_PREV`.
+
+## Neuer Hook: `layer_state_set_keymap()`
+
+Der Auto-NumLock braucht `layer_state_set_user()` — das war aber schon von
+**vier** Keymaps belegt (sofle_choc zweimal hinter `#ifdef`, kyria, lotus58).
+Deshalb dasselbe Muster wie bei `process_record_keymap()` und
+`housekeeping_task_keymap()`: `layer_state_set_user()` liegt jetzt einmal in
+[wechselbalg.c](users/wechselbalg/wechselbalg.c) und ruft den schwachen Hook
+auf. **Eine Keymap darf `layer_state_set_user()` also nicht mehr selbst
+definieren** — sonst Doppel-Symbol beim Linken.
+
+Der Board-Hook läuft **zuerst**: `update_tri_layer_state()` kann `state` noch
+verändern, und die NumLock-Prüfung soll den Endzustand sehen. Die Flanke ist an
+`layer_state` erkennbar, weil `action_layer.c` den neuen Wert erst **nach**
+dieser Kette zuweist — derselbe Kniff wie bei `DF_PREV`.
+
+## Farbsprache: der Block leuchtet jetzt vollständig
+
+`wb_payload_color()` prüfte `KC_KP_1..KC_KP_0`, also nur die Ziffern. Jetzt
+`KC_KP_SLASH..KC_KP_DOT` (0x54–0x63) — zusammenhängend und genau der Block
+inklusive `/ * − + Enter`. Vorher blieben die Operatoren dunkel, teils weil sie
+außerhalb des Bereichs lagen, teils weil `*` und `/` gar keine Keypad-Keycodes
+waren. Erst die Umstellung oben macht das möglich.
+
+## Nebenbei mit erledigt
+
+Auf **K3 Pro und GMMK Pro** stand an der ISO-Extraposition in `_NUM`-Reihe 2
+(physisch die **`+`-Taste**) ein drittes `N3_SLSH` — jetzt `___NO__`.
+
+⚠️ **Nicht angefasst, aber notiert:** dieselbe Stelle trägt auf `_SYM` ebenfalls
+ein `N3_SLSH`, und `_SYM` hat über `SYMBOL_L2` schon eines. Dort ist also noch
+eine Dublette offen; `_SYM` war diesmal nicht Thema.
+
+⚠️ **`_NUM` hat auf den ISO-Boards keine Shift-Taste.** Links steht `F_LLOCK`,
+rechts landet `NUMBER_R3` c5 auf der **rechten Shift-Taste** (jetzt `)`, vorher
+`=`). Das ist älter als diese Änderung und bleibt so, sollte man aber wissen.
+
+## Kosten, gemessen 2026-08-15
+
+| Board | vorher | nachher | Δ |
+|---|---|---|---|
+| K3 Pro | 39068 | **39208** | +140 |
+| GMMK Pro | 45784 | **45908** | +124 |
+| Sofle Choc schwarz (Liatris) | 50980 | **51108** | +128 |
+| Kyria (AVR) | 614 frei | **614 frei** | 0 |
+| Lotus58 (AVR) | 27792 / 880 frei | **27792 / 880 frei** | 0 |
+| Sofle Choc weiß (AVR) | 428 drüber | **428 drüber** | 0 |
+
+Die AVR-Boards sind unverändert: der Auto-NumLock ist dort abgeschaltet, der
+neue Hook verschwindet per LTO, und die Wrapper-Änderung tauscht nur Keycodes
+bei gleicher Tastenzahl.
+
+## Am Binary geprüft (ohne Hardware)
+
+Wieder über das echte `keymaps`-Array aus dem ELF, physisch nach der
+`layout`-Liste angeordnet (Skript im Scratchpad, nicht eingecheckt). Belegt für
+Sofle Choc, K3 Pro und GMMK Pro: alle drei Hälften stimmen Taste für Taste mit
+dem Entwurf überein, `KP_SLASH`/`KP_ASTERISK`/`KP_MINUS`/`KP_PLUS`/`KP_ENTER`
+sitzen richtig, `§` und `#` sind weg, und der Dublettenzähler über den ganzen
+Layer meldet nur das erwartete doppelte `QK_LLCK`.
+
+Der Auto-NumLock ist im Maschinencode nachvollzogen (LTO inlinet ihn in `main`,
+er hat kein eigenes Symbol — aber `wb_numlock_pending`/`wb_numlock_last` stehen
+im BSS): `host_keyboard_leds` → Bit 0 testen → `timer_read32` →
+`tap_code(0x53)`.
+
+---
+
 # Caps Word: der Unterstrich beendete es (behoben 2026-08-09)
 
 Michaels Beobachtung: ein `_` aus dem `_SYM`-Layer beendet Caps Word, statt es
@@ -1943,19 +2133,31 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 38516 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung, **noch nicht geflasht** (39068 Byte) |
-| GMMK Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 45252 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung, **noch nicht geflasht** (45784 Byte) |
-| Sofle Choc schwarz (Liatris) | ⚠️ vorheriger Stand `b7227697f4` | FLOW_TAP_TERM (50980 Byte statt 50464) — unkritisch, kein akuter Grund zum Nachflashen |
-| ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant; baut seit FLOW_TAP_TERM ohnehin nicht mehr |
+| K3 Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 38516 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung + `_NUM`-Umbau, **noch nicht geflasht** (39208 Byte) |
+| GMMK Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 45252 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung + `_NUM`-Umbau, **noch nicht geflasht** (45908 Byte) |
+| Sofle Choc schwarz (Liatris) | ⚠️ vorheriger Stand `b7227697f4`, 50464 Byte | FLOW_TAP_TERM + `_NUM`-Umbau (51108 Byte) — der `_NUM`-Umbau ist hier der eigentliche Grund zum Nachflashen |
+| ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant; baut seit FLOW_TAP_TERM ohnehin nicht mehr (428 Byte drüber) |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Ein Flash offen: K3 Pro + GMMK Pro, mit Priorität.** `NX_CENT` (Strg+Enter =
-"Senden" in Outlook) saß auf `_NAV` an der `n`-Position und hat über denselben
-Leertasten-Mechanismus wie die doppelte Enter-Taste eine Mail ausgelöst — noch
-gefährlicher, weil "n" viel häufiger ist als "-". Fix ist im Repo
-(FLOW_TAP_TERM + Verschiebung auf `-`), siehe Kapitel „Aktueller Stand" oben,
-aber noch nicht geflasht.
+**Ein Flash offen, jetzt für alle drei aktiven Boards.** Zwei Dinge stecken
+darin:
+
+1. **Der `_NUM`-Umbau vom 2026-08-15** (eigenes Kapitel „Der Zehnerblock").
+   Betrifft alle drei, weil `NUMBER_R0`–`R3` gemeinsam genutzt werden. Hier ist
+   nichts kaputt, es ist eine Verbesserung — aber sie ist auf keinem Gerät.
+2. **`NX_CENT` + FLOW_TAP_TERM vom 2026-08-10**, mit Priorität für die beiden
+   ISO-Boards: `NX_CENT` (Strg+Enter = „Senden" in Outlook) saß auf `_NAV` an
+   der `n`-Position und hat über denselben Leertasten-Mechanismus wie die
+   doppelte Enter-Taste eine Mail ausgelöst — gefährlicher als der Vorgänger,
+   weil „n" viel häufiger ist als „-".
+
+⚠️ **Nach dem Flash am Gerät zu prüfen** (der `_NUM`-Umbau ist nur am Binary
+belegt): dass NumLock sich beim Betreten von `_NUM` von selbst einschaltet und
+dabei **nicht** im Mac-Modus tappt, dass `KPEnter` auf der Ö-Position dort
+ankommt, wo es soll, und ob die Farbsprache den Block jetzt vollständig
+einfärbt (nur K3 Pro und Sofle — die GMMK Pro färbt die Tasten ebenfalls, siehe
+ihr Kapitel).
 
 Davor, bereits erledigt und bestätigt: die doppelte Enter-Taste auf `_NAV` ist
 behoben, am 2026-08-10 auf beiden Geräten angekommen und am Gerät bestätigt —
@@ -2003,13 +2205,22 @@ auch geflasht.** Am Binary geprüft — auf `_ADJUST` stehen nur noch `DF()` auf
 Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 `KC_NO`. Da ist nichts mehr offen.
 
-## Reihenfolge für die nächste Session (Stand 2026-08-07)
+## Reihenfolge für die nächste Session (Stand 2026-08-15)
 
 **Die KMK→QMK-Angleichung ist inhaltlich durch.** C1–C8, C7 und die Status-LED
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-0c. ⚠️ **NEU, mit Priorität: K3 Pro und GMMK Pro erneut flashen.**
+0d. ⚠️ **NEU: alle drei aktiven Boards flashen** — K3 Pro (39208), GMMK Pro
+   (45908), Sofle Choc schwarz (51108, beide Hälften mit `--side left`/
+   `--side right`). Der `_NUM`-Umbau vom 2026-08-15 (eigenes Kapitel „Der
+   Zehnerblock") ist auf keinem Gerät, und für die beiden ISO-Boards steckt
+   der `NX_CENT`-Fix aus 0c mit drin, der weiterhin offen war. Am Gerät
+   nachzuprüfen ist danach der Auto-NumLock (schaltet er sich ein, und bleibt
+   er im Mac-Modus still?) sowie die vollständige Einfärbung des Blocks.
+   Flashen mit `python3 util/wechselbalg/flash.py k3_pro` usw.
+
+0c. ⚠️ **In 0d aufgegangen: K3 Pro und GMMK Pro erneut flashen.**
    FLOW_TAP_TERM aktiviert + `NX_CENT` (Strg+Enter = "Senden" in Outlook) von
    der `n`- auf die `-`-Position verschoben (siehe „Aktueller Stand" oben) —
    löste bei Michael live eine ungewollt abgeschickte Outlook-Mail aus. Fix

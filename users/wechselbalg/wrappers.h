@@ -306,15 +306,65 @@ auf, weil das Board die NUBS-Taste dazwischen hat.
 // ,-----+-----+-----x-----x-----,   ,-----x-----x-----+-----+-----,
 // |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M  |  ,  |  .  |  /  |
 // ,-----+-----+-----+-----+-----,   ,-----+-----+-----+-----+-----,
-#define _________________NUMBER_L0_________________  FN_EXIT,  DE_DEG, DE_SUP2, DE_SUP3, ___NO__, N3_MDOT
+/*
+Umbau 2026-08-15 -- der Zehnerblock richtet sich jetzt an beiden Vorbildern
+zugleich aus. Das geht, weil sie sich nicht widersprechen: Neos Ebene-4-Kopf-
+reihe *ist* die Numpad-Kopfreihe, `/ * -` sitzen bei beiden ueber 8, 9 und der
+`+`-Spalte. Neo hat dort Tab, wo am Zehnerblock NumLock liegt.
+
+    Reihe0    %     Tab    KP/    KP*    KP-    Bksp
+    Reihe1    EUR    7      8      9     KP+     =
+    Reihe2    $      4      5      6    KPEnt    ;
+    Reihe3    :      1      2      3     (       )
+    Daumen             KP0    ,      .
+
+Was sich geaendert hat und warum:
+
+  - Reihe 0 war zur Haelfte Dublette (`/`, `*` und `-` standen eine bzw. zwei
+    Reihen tiefer noch einmal) und zur Haelfte Fremdkoerper (`§`, `#` -- beide
+    nicht zahlennah und beide auf _SYM vorhanden). Tab stand ausserdem eine
+    Spalte zu weit innen. Jetzt traegt die Reihe die Kopfreihe des echten
+    Blocks; `%` fuellt die frei werdende innerste Stelle.
+  - Spalte c4 (Kleinfinger-Grundstellung) ist von oben nach unten `- + Enter`
+    -- die rechte Operatorenspalte des echten Zehnerblocks, ohne dessen
+    doppelte 2u-Tasten. Enter landet damit auf der besterreichbaren Taste des
+    kleinen Fingers statt unten in der Ecke.
+  - Spalte c5 traegt das Seltenere: Backspace (dort, wo es auf jeder normalen
+    Tastatur liegt), `=` und `;`.
+  - Die Klammern auf Reihe 3 sind neu -- beim Tippen von Formeln staendig
+    noetig und bisher nur auf _SYM.
+
+Wiederholungen zu _SYM sind hier ausdruecklich gewollt, solange das Zeichen
+zahlennah ist (Entscheidung Michael, 2026-08-15): `EUR $ : ; = ( ) %` bleiben
+also doppelt. Dubletten *innerhalb* von _NUM sind dagegen aufgeloest -- jedes
+Zeichen kommt auf dem Layer genau einmal vor.
+
+Die `,`/`.` bleiben auf der Daumenreihe und bewusst normale Keycodes:
+KC_PDOT ist hostabhaengig (deutsches Windows macht daraus `,`, macOS `.`),
+zwei getrennte Tasten sind die robuste Loesung. `=` und `;` bleiben aus
+demselben Grund Nicht-Keypad: KC_PEQL ignorieren Windows und die meisten
+X11-Belegungen, fuer `;` gibt es gar kein Keypad-Gegenstueck.
+
+Aufpassen: R3 landet auf den ISO-Boards mit c4/c5 auf `-` und **rechter
+Shift-Taste**. Dass _NUM dort keine Shift-Taste hat, ist aelter als diese
+Aenderung (dort stand vorher `=`), aber es bleibt so.
+
+Auf der linken Haelfte hat sich genau eine Taste geaendert: der einzige freie
+Platz (L0, ueber F9) traegt jetzt **F10**. Die F-Reihe war bis dahin
+unvollstaendig -- F1..F9, F11, F12, F13 waren da, F10 fehlte. `°`, `²` und
+`³` bleiben stehen: sie sind zwar auch auf _SYM, aber zahlennah (°C, m², m³)
+und fallen damit unter dieselbe Regel wie `EUR $ :` oben. Die Kyria hat keine
+Reihe 0 -- dort gibt es F10 also weiterhin nicht.
+*/
+#define _________________NUMBER_L0_________________  FN_EXIT,  DE_DEG, DE_SUP2, DE_SUP3, KC_F10 , N3_MDOT
 #define _________________NUMBER_L1_________________  KC_NUM ,  KC_F13,  KC_F7 ,  KC_F8 ,  KC_F9 , NX__CUT
 #define _________________NUMBER_L2_________________  KC_RALT,  KC_F12,  KC_F4 ,  KC_F5 ,  KC_F6 , NX_COPY
 #define _________________NUMBER_L3_________________  F_LLOCK,  KC_F11,  KC_F1 ,  KC_F2 ,  KC_F3 , NX_PAST
 
-#define _________________NUMBER_R0_________________  N4__TAB, N2_SECT, N3_SLSH, N3_ASTR, DE_HASH, N3_NMNS
-#define _________________NUMBER_R1_________________  N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_ASTR, N3_SLSH
-#define _________________NUMBER_R2_________________  N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NPLS, N3_NMNS
-#define _________________NUMBER_R3_________________  N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_SCLN, N3_EQUL
+#define _________________NUMBER_R0_________________  N3_PERC, N4__TAB, N3_NSLS, N3_NAST, N3_NMNS, KC_BSPC
+#define _________________NUMBER_R1_________________  N2__EUR, N3_NUM7, N3_NUM8, N3_NUM9, N3_NPLS, N3_EQUL
+#define _________________NUMBER_R2_________________  N3__DLR, N3_NUM4, N3_NUM5, N3_NUM6, N3_NENT, N3_SCLN
+#define _________________NUMBER_R3_________________  N3_COLN, N3_NUM1, N3_NUM2, N3_NUM3, N3_LPRN, N3_RPRN
 
 #define _________5_NUMBER__THUMBS_R_________         _______, _______, NAV_NM0, N3_COMM, N3__DOT
 #define ________________________________7_NUMBER__THUMBS________________________________________  KC_LCTL, KC_LGUI, KC_LALT, NAV_NM0, N3_COMM, N3__DOT, KC_RCTL

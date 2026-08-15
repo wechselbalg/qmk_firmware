@@ -359,7 +359,7 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-layer_state_t layer_state_set_user(layer_state_t state) {
+layer_state_t layer_state_set_keymap(layer_state_t state) {
    return update_tri_layer_state(state, _SYMBOL, _NUMB, _ADJUST);
 }
 
