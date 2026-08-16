@@ -182,7 +182,12 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-15, ein Flash offen: K3 Pro + GMMK Pro + Sofle)
+## Aktueller Stand (Stand: 2026-08-15, ein Flash offen: nur noch K3 Pro)
+
+✅ **Am 2026-08-15 geflasht: GMMK Pro (45908) und Sofle Choc schwarz** (beide
+Hälften). Der K3 Pro war an dem Tag nicht greifbar und ist als einziges Board
+noch offen — ihm fehlen drei Runden auf einmal, siehe „Was ist auf welchem
+Gerät?" weiter unten.
 
 ⚠️ **Zuletzt dazugekommen (2026-08-15): der `_NUM`-Layer ist überarbeitet.**
 Eigenes Kapitel „Der Zehnerblock" weiter unten. Kurz: die rechte Hälfte ist
@@ -2133,31 +2138,38 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
-| K3 Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 38516 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung + `_NUM`-Umbau, **noch nicht geflasht** (39208 Byte) |
-| GMMK Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 45252 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung + `_NUM`-Umbau, **noch nicht geflasht** (45908 Byte) |
-| Sofle Choc schwarz (Liatris) | ⚠️ vorheriger Stand `b7227697f4`, 50464 Byte | FLOW_TAP_TERM + `_NUM`-Umbau (51108 Byte) — der `_NUM`-Umbau ist hier der eigentliche Grund zum Nachflashen |
+| GMMK Pro ISO | ✅ `c88318e71b`, 45908 Byte, geflasht 2026-08-15 | nichts |
+| Sofle Choc schwarz (Liatris) | ✅ `c88318e71b`, beide Hälften geflasht 2026-08-15 | nichts |
+| K3 Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 38516 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung + `_NUM`-Umbau, **noch nicht geflasht** (39208 Byte) — Michael hatte das Board am 2026-08-15 nicht zur Hand |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant; baut seit FLOW_TAP_TERM ohnehin nicht mehr (428 Byte drüber) |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
 
-**Ein Flash offen, jetzt für alle drei aktiven Boards.** Zwei Dinge stecken
-darin:
+**Am 2026-08-15 geflasht: GMMK Pro und Sofle Choc schwarz** (beide Hälften, je
+mit ihrem eigenen `-DINIT_EE_HANDS_*`-Image). Damit sind zwei der drei aktiven
+Boards auf Repo-Stand. Der `_NUM`-Umbau vom selben Tag ist auf beiden drauf,
+bei der GMMK Pro zusätzlich der lange offene `NX_CENT`-Fix vom 2026-08-10.
 
-1. **Der `_NUM`-Umbau vom 2026-08-15** (eigenes Kapitel „Der Zehnerblock").
-   Betrifft alle drei, weil `NUMBER_R0`–`R3` gemeinsam genutzt werden. Hier ist
-   nichts kaputt, es ist eine Verbesserung — aber sie ist auf keinem Gerät.
-2. **`NX_CENT` + FLOW_TAP_TERM vom 2026-08-10**, mit Priorität für die beiden
-   ISO-Boards: `NX_CENT` (Strg+Enter = „Senden" in Outlook) saß auf `_NAV` an
-   der `n`-Position und hat über denselben Leertasten-Mechanismus wie die
-   doppelte Enter-Taste eine Mail ausgelöst — gefährlicher als der Vorgänger,
-   weil „n" viel häufiger ist als „-".
+⚠️ **Der K3 Pro bleibt offen.** Flashen mit
+`python3 util/wechselbalg/flash.py k3_pro` (39208 Byte). Ihm fehlen damit
+weiterhin **drei** Runden: FLOW_TAP_TERM, die `NX_CENT`-Verschiebung von der
+`n`- auf die `-`-Position (Strg+Enter = „Senden" in Outlook, hat live eine Mail
+ausgelöst) und der `_NUM`-Umbau.
 
-⚠️ **Nach dem Flash am Gerät zu prüfen** (der `_NUM`-Umbau ist nur am Binary
+⚠️ **Merke für den nächsten Flash-Durchgang:** K3 Pro und GMMK Pro melden sich
+**beide** als STM32-DFU `0483:df11`. Ein wartendes `qmk flash` greift also
+jedes Board, das gerade in den Bootloader kommt — immer nur **eines zur Zeit**
+scharf machen, sonst landet die falsche Firmware auf dem falschen Board.
+
+⚠️ **Am Gerät nachzuprüfen** (der `_NUM`-Umbau ist bisher nur am Binary
 belegt): dass NumLock sich beim Betreten von `_NUM` von selbst einschaltet und
 dabei **nicht** im Mac-Modus tappt, dass `KPEnter` auf der Ö-Position dort
 ankommt, wo es soll, und ob die Farbsprache den Block jetzt vollständig
-einfärbt (nur K3 Pro und Sofle — die GMMK Pro färbt die Tasten ebenfalls, siehe
-ihr Kapitel).
+einfärbt (Sofle Choc und GMMK Pro; beim K3 Pro erst nach dessen Flash).
+
+⚠️ **GMMK Pro: `MAC_TOG` neu setzen** (End halten → C). Der Flash lief über
+Esc-Bootmagic, und das setzt das EEPROM zurück — der Mac-Modus steht danach
+wieder auf PC, die AltGr-Übersetzung greift also nicht.
 
 Davor, bereits erledigt und bestätigt: die doppelte Enter-Taste auf `_NAV` ist
 behoben, am 2026-08-10 auf beiden Geräten angekommen und am Gerät bestätigt —
@@ -2211,14 +2223,17 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-0d. ⚠️ **NEU: alle drei aktiven Boards flashen** — K3 Pro (39208), GMMK Pro
-   (45908), Sofle Choc schwarz (51108, beide Hälften mit `--side left`/
-   `--side right`). Der `_NUM`-Umbau vom 2026-08-15 (eigenes Kapitel „Der
-   Zehnerblock") ist auf keinem Gerät, und für die beiden ISO-Boards steckt
-   der `NX_CENT`-Fix aus 0c mit drin, der weiterhin offen war. Am Gerät
-   nachzuprüfen ist danach der Auto-NumLock (schaltet er sich ein, und bleibt
-   er im Mac-Modus still?) sowie die vollständige Einfärbung des Blocks.
-   Flashen mit `python3 util/wechselbalg/flash.py k3_pro` usw.
+0d. ⚠️ **Nur noch der K3 Pro offen** (39208 Byte,
+   `python3 util/wechselbalg/flash.py k3_pro`). GMMK Pro (45908) und Sofle
+   Choc schwarz (beide Hälften) sind am **2026-08-15 geflasht** — Michael
+   hatte den K3 Pro an dem Tag nicht zur Hand. Ihm fehlen damit drei Runden
+   auf einmal: FLOW_TAP_TERM, die `NX_CENT`-Verschiebung aus 0c und der
+   `_NUM`-Umbau vom 2026-08-15 (eigenes Kapitel „Der Zehnerblock").
+   Am Gerät nachzuprüfen ist auf allen Boards der Auto-NumLock (schaltet er
+   sich ein, und bleibt er im Mac-Modus still?) sowie die vollständige
+   Einfärbung des Blocks durch die Farbsprache.
+   ⚠️ Beim Flashen daran denken, dass K3 Pro und GMMK Pro **dieselbe**
+   DFU-ID `0483:df11` haben — immer nur eines zur Zeit scharf machen.
 
 0c. ⚠️ **In 0d aufgegangen: K3 Pro und GMMK Pro erneut flashen.**
    FLOW_TAP_TERM aktiviert + `NX_CENT` (Strg+Enter = "Senden" in Outlook) von
