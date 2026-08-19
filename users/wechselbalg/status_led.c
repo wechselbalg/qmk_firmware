@@ -139,11 +139,79 @@ gehoert an eine Stelle.
 // Auf der Peripherie das zuletzt Empfangene, auf dem Master ungenutzt.
 static uint8_t wb_status_received = 0;
 
+/*
+Hat der Master ueberhaupt schon einmal etwas geschickt? Ohne das waere der
+Startwert 0 nicht von einem echten "Master sagt PC" zu unterscheiden -- die
+Peripherie wuerde ihren eigenen, richtigen Mac-Modus beim Booten wegwerfen.
+*/
+static bool wb_status_seen_master = false;
+
 static void wb_status_sync_handler(uint8_t in_len, const void *in_data, uint8_t out_len, void *out_data) {
     if (in_len == sizeof(uint8_t)) {
-        wb_status_received = *(const uint8_t *)in_data;
+        wb_status_received   = *(const uint8_t *)in_data;
+        wb_status_seen_master = true;
     }
 }
+
+/* ---- Mac-Modus auf die Peripherie durchschreiben ------------------------
+   Anlass (2026-08-15, am Geraet gefunden): der Backslash auf _SYM kam nicht
+   heraus, wenn die RECHTE Haelfte als Master angesteckt war -- mit der linken
+   ging es. Der Backslash ist DE_BSLS = ALGR(DE_SS) und damit eines der sieben
+   Zeichen, die wb_mac_altgr() am Mac umschreibt.
+
+   Ursache: WB_HOST_IS_MAC() ist keymap_config.swap_lctl_lgui, und das steht im
+   EEPROM. quantum_init() liest es unbedingt auf **beiden** Haelften, jede aus
+   **ihrem eigenen** (quantum/keyboard.c). MAC_TOG/CG_TOGG schreibt es per
+   eeconfig_update_keymap() -- aber Tastenverarbeitung laeuft nur auf dem
+   Master, also wird nur dessen EEPROM beschrieben. Und QMK synchronisiert
+   keymap_config **nicht** ueber den Split (in transactions.c gibt es keine
+   solche Transaktion: Layer, Encoder, Matrix, Mods, RGB -- sonst nichts).
+   Wer MAC_TOG einmal mit links angesteckt drueckt, hat den Mac-Modus also nur
+   links.
+
+   Die Statusflags tragen den Mac-Modus ohnehin schon vom Master zur
+   Peripherie -- bis hierher nur, damit die LED der anderen Haelfte richtig
+   leuchtet. Sie festzuschreiben macht daraus eine Heilung: eine Sitzung mit
+   verbundenen Haelften genuegt, danach ist es egal, welche Haelfte am Kabel
+   haengt, und es richtet sich nach jedem kuenftigen EEPROM-Reset von selbst.
+
+   ⚠ Der Schreibvorgang gehoert NICHT in den RPC-Handler. Auf dem RP2040 wird
+   das EEPROM im Flash emuliert, und der Treiber schaltet dafuer die
+   Interrupts ab (save_and_disable_interrupts() in
+   wear_leveling_rp2040_flash.c). Ein 2-Byte-Programmieren ist schnell, aber
+   laeuft dabei das Log voll, wird der ganze 8-KB-Bereich geloescht -- zig
+   Millisekunden mit abgeschalteten Interrupts, mitten in einer laufenden
+   Split-Transaktion, auf die der Master gerade wartet. Deshalb schreibt der
+   Handler nur mit, und der Takt erledigt es. Dasselbe Muster wie beim
+   Auto-NumLock in wechselbalg.c, und aus demselben Grund.
+
+   Verschleiss ist hier kein Thema: geschrieben wird nur bei Abweichung, also
+   im Normalfall genau einmal ueberhaupt. (Zur Einordnung: keymap_config ist
+   2 Byte und liegt unter Adresse 64, kostet also einen optimierten
+   Log-Eintrag von 2 Byte -- bei 4088 Byte Log sind das rund 2000
+   Umschaltungen bis zu einer einzigen Flash-Loeschung.)
+
+   CG_TOGG setzt swap_lctl_lgui und swap_rctl_rgui immer gemeinsam
+   (process_magic.c), ein Bit genuegt also -- gesetzt werden trotzdem beide.
+   ------------------------------------------------------------------------ */
+#ifdef MAGIC_ENABLE
+static void wb_status_adopt_mac(uint8_t flags) {
+    if (!wb_status_seen_master) {
+        return;
+    }
+    const bool remote = (flags & WB_STATUS_MAC) != 0;
+    if (remote == (bool)keymap_config.swap_lctl_lgui) {
+        return;  // stimmt schon ueberein -- kein Schreibvorgang
+    }
+    keymap_config.swap_lctl_lgui = remote;
+    keymap_config.swap_rctl_rgui = remote;
+    eeconfig_update_keymap(&keymap_config);
+}
+#else
+static inline void wb_status_adopt_mac(uint8_t flags) {
+    (void)flags;
+}
+#endif
 
 /* ---- PIO-Treiber fuer genau eine WS2812 -------------------------------- */
 
@@ -280,6 +348,7 @@ void wb_status_led_task(void) {
         }
     } else {
         flags = wb_status_received;
+        wb_status_adopt_mac(flags);
     }
 
     const uint8_t val = wb_status_val();

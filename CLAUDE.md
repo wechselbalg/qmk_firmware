@@ -1720,6 +1720,113 @@ im BSS): `host_keyboard_leds` → Bit 0 testen → `timer_read32` →
 
 ---
 
+# Der Mac-Modus war nur auf einer Haelfte (behoben 2026-08-15)
+
+Michaels Beobachtung: **der Backslash auf `_SYM` (A-Position) kam nicht heraus,
+wenn die rechte Haelfte der Sofle als Master angesteckt war** — mit der linken
+ging es normal.
+
+## Warum ausgerechnet der Backslash
+
+`N3_BSLS` ist `DE_BSLS` und das ist **`ALGR(DE_SS)`**
+([keymap_german.h:110](quantum/keymap_extras/keymap_german.h:110)) — also eines
+der sieben Zeichen, die `wb_mac_altgr()` am Mac umschreibt (dort liegt `\` auf
+⇧⌥7 statt auf AltGr+ß, siehe Kapitel „Die AltGr-Ebene unter macOS").
+
+Die Uebersetzung haengt an `WB_HOST_IS_MAC()`, und das ist schlicht
+`keymap_config.swap_lctl_lgui`. Damit war es kein Layout-Fehler, sondern ein
+Zustandsfehler.
+
+## Die Ursache: `keymap_config` ist pro Haelfte
+
+Drei Bausteine, die einzeln richtig sind und zusammen den Fehler ergeben:
+
+1. `quantum_init()` liest `keymap_config` **unbedingt auf beiden Haelften**,
+   jede aus **ihrem eigenen** EEPROM
+   ([keyboard.c:440](quantum/keyboard.c:440)).
+2. `MAC_TOG`/`CG_TOGG` schreibt es per `eeconfig_update_keymap()`
+   ([process_magic.c:190](quantum/process_keycode/process_magic.c:190)) — aber
+   Tastenverarbeitung laeuft **nur auf dem Master**, es wird also nur dessen
+   EEPROM beschrieben.
+3. QMK synchronisiert `keymap_config` **nicht** ueber den Split. In
+   `quantum/split_common/transactions.c` gibt es dafuer keine Transaktion:
+   Layer-State, Encoder, Matrix, Mods, RGB-Config — sonst nichts.
+
+Wer `MAC_TOG` einmal mit links angesteckt drueckt, hat den Mac-Modus also nur
+links. Steckt man rechts an, laeuft das Board im PC-Modus, und `ALGR(DE_SS)`
+geht roh an macOS.
+
+⚠️ **Es war nie nur der Backslash.** Mit der falschen Haelfte am Kabel
+scheitern `@ [ ] { } |` und `~` genauso, dazu die obere `_SYM`-Reihe
+`‹ › ¢ ‘ ’` — und vor allem sind **Ctrl und Cmd vertauscht**, was ja die
+eigentliche Aufgabe von `CG_TOGG` ist. Die Status-LED verraet es auch: im
+Ruhezustand azur bei Mac, **aus** bei PC.
+
+## Der Fix: die Peripherie schreibt den Mac-Modus fest
+
+Das Noetige war schon da — die `WB_SYNC_STATUS`-Transaktion traegt
+`WB_STATUS_MAC` ohnehin vom Master zur Peripherie, bis dahin nur damit deren
+LED richtig leuchtet. Jetzt uebernimmt die Peripherie einen abweichenden Wert
+in ihr eigenes `keymap_config` und schreibt ihn per `eeconfig_update_keymap()`
+fest ([status_led.c](users/wechselbalg/status_led.c), `wb_status_adopt_mac()`).
+
+Damit genuegt **eine Sitzung mit verbundenen Haelften**; danach ist egal, welche
+Haelfte am Kabel haengt, und es heilt sich nach jedem kuenftigen EEPROM-Reset
+von selbst.
+
+⚠️ **Der Schreibvorgang gehoert nicht in den RPC-Handler.** Auf dem RP2040 ist
+das EEPROM im Flash emuliert, und der Treiber schaltet dafuer die Interrupts ab
+(`save_and_disable_interrupts()` in
+[wear_leveling_rp2040_flash.c:185](platforms/chibios/drivers/wear_leveling/wear_leveling_rp2040_flash.c:185)).
+Laeuft dabei das Log voll, wird der ganze 8-KB-Bereich geloescht — zig
+Millisekunden mit abgeschalteten Interrupts, mitten in einer Split-Transaktion,
+auf die der Master wartet. Der Handler merkt sich deshalb nur, der Takt
+erledigt es. **Dasselbe Muster wie beim Auto-NumLock**, und aus demselben Grund.
+
+Dazu ein `wb_status_seen_master`-Flag: der Startwert von `wb_status_received`
+ist 0 und waere sonst nicht von einem echten „Master sagt PC" zu unterscheiden
+— die Peripherie wuerde ihren eigenen, richtigen Mac-Modus beim Booten
+wegwerfen.
+
+Kosten: **+80 Byte** (51108 → 51188), nur auf der Liatris-Sofle. GMMK Pro
+(45908), K3 Pro (39208), Kyria (614 frei) und Lotus58 (880 frei) sind
+bytegleich. Am Maschinencode geprueft: `seen_master`-Guard, Bit 3 der Flags
+gegen `keymap_config` Byte 1 Bit 0, bei Gleichheit **kein** Schreibvorgang,
+sonst beide Bits (`swap_lctl_lgui` und `swap_rctl_rgui`, die `CG_TOGG` immer
+gemeinsam setzt) und dann `nvm_eeconfig_update_keymap`.
+
+## Flash-Verschleiss: die Zahlen, ein fuer alle Mal
+
+Bei der Gelegenheit ausgerechnet, weil in diesem Repo mehrfach „das schreibt
+sonst ins EEPROM" als Begruendung steht (C7, Encoder-Helligkeit):
+
+| | |
+|---|---|
+| Backing Store im Flash | 8192 Byte |
+| davon konsolidierte Daten | 4096 + 8 Byte Pruefsumme |
+| **freies Schreib-Log** | **4088 Byte** |
+
+Geschrieben wird als **Log angehaengt**; erst wenn es voll ist, wird der ganze
+8-KB-Bereich einmal geloescht und neu konsolidiert
+([wear_leveling.c:333](quantum/wear_leveling/wear_leveling.c:333)).
+Unveraenderte Werte werden per `memcmp` **gar nicht** geschrieben.
+
+- `keymap_config` ist **2 Byte** und liegt unter Adresse 64 → optimierter
+  Log-Eintrag, **2 Byte pro Schreibvorgang** → rund **2000 `MAC_TOG`-Drücke bis
+  zu einer einzigen Flash-Loeschung**. Bei den ueblichen 100 000 Loeschzyklen
+  eines NOR-Flash sind das ~200 Millionen Umschaltungen. Belanglos.
+- `rgb_config_t` ist dagegen ein **`uint64_t`** und liegt hoeher → Multibyte,
+  grob 16 Byte Log → nur etwa **250 Encoder-Rastungen pro Loeschung**.
+
+⚠️ **Korrektur der Begruendung bei C7:** dort steht, `*_noeeprom` verhindere den
+EEPROM-Verschleiss. Das stimmt, ist aber der schwaechere Grund. Der eigentliche
+ist die **Latenz**: eine Loeschung sind zig Millisekunden mit abgeschalteten
+Interrupts — USB, Matrix-Scan und Split-Link stehen still. Bei rund 250
+Rastungen pro Loeschung faellt das mitten in die Drehbewegung. `*_noeeprom` war
+richtig, nur aus dem anderen Grund.
+
+---
+
 # Caps Word: der Unterstrich beendete es (behoben 2026-08-09)
 
 Michaels Beobachtung: ein `_` aus dem `_SYM`-Layer beendet Caps Word, statt es
@@ -2139,7 +2246,7 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 | Board | Gerät auf Repo-Stand? | was dem Gerät fehlt |
 |---|---|---|
 | GMMK Pro ISO | ✅ `c88318e71b`, 45908 Byte, geflasht 2026-08-15 | nichts |
-| Sofle Choc schwarz (Liatris) | ✅ `c88318e71b`, beide Hälften geflasht 2026-08-15 | nichts |
+| Sofle Choc schwarz (Liatris) | ⚠️ `c88318e71b`, 51108 Byte, geflasht 2026-08-15 | Mac-Modus-Sync über den Split (51188 Byte), **noch nicht geflasht** — siehe eigenes Kapitel |
 | K3 Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 38516 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung + `_NUM`-Umbau, **noch nicht geflasht** (39208 Byte) — Michael hatte das Board am 2026-08-15 nicht zur Hand |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant; baut seit FLOW_TAP_TERM ohnehin nicht mehr (428 Byte drüber) |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
