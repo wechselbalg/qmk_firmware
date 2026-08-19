@@ -182,12 +182,17 @@ gepflegt werden:
   gelesen), `config.h`-Defines per `OPT_DEFS` im Board (Keymap-config.h wird
   *nachher* gelesen).
 
-## Aktueller Stand (Stand: 2026-08-15, ein Flash offen: nur noch K3 Pro)
+## Aktueller Stand (Stand: 2026-08-15, ein Flash offen: Sofle Choc, wegen des Mac-Sync)
 
-✅ **Am 2026-08-15 geflasht: GMMK Pro (45908) und Sofle Choc schwarz** (beide
-Hälften). Der K3 Pro war an dem Tag nicht greifbar und ist als einziges Board
-noch offen — ihm fehlen drei Runden auf einmal, siehe „Was ist auf welchem
-Gerät?" weiter unten.
+✅ **Am 2026-08-15 geflasht: alle drei aktiven Boards** — GMMK Pro (45908),
+Sofle Choc schwarz (beide Hälften) und, nachgereicht am selben Tag, der K3 Pro
+(39208), der zwischenzeitlich nicht greifbar war. Er hat damit drei Runden auf
+einmal bekommen: FLOW_TAP_TERM, die `NX_CENT`-Verschiebung und den `_NUM`-Umbau.
+
+⚠️ **Offen bleibt allein die Sofle Choc**, weil der Mac-Modus-Sync (51188 Byte)
+erst danach entstanden ist — siehe eigenes Kapitel „Der Mac-Modus war nur auf
+einer Hälfte". **Beide Hälften** brauchen ihn: die adoptierende Seite ist
+jeweils die Peripherie, und das kann je nach Kabel jede von beiden sein.
 
 ⚠️ **Zuletzt dazugekommen (2026-08-15): der `_NUM`-Layer ist überarbeitet.**
 Eigenes Kapitel „Der Zehnerblock" weiter unten. Kurz: die rechte Hälfte ist
@@ -2247,7 +2252,7 @@ Hardware fehlt — **immer mitpflegen, wenn geflasht wird.**
 |---|---|---|
 | GMMK Pro ISO | ✅ `c88318e71b`, 45908 Byte, geflasht 2026-08-15 | nichts |
 | Sofle Choc schwarz (Liatris) | ⚠️ `c88318e71b`, 51108 Byte, geflasht 2026-08-15 | Mac-Modus-Sync über den Split (51188 Byte), **noch nicht geflasht** — siehe eigenes Kapitel |
-| K3 Pro ISO | ⚠️ vorheriger Stand `fbe7b833ee`, 38516 Byte | FLOW_TAP_TERM + NX_CENT-Verschiebung + `_NUM`-Umbau, **noch nicht geflasht** (39208 Byte) — Michael hatte das Board am 2026-08-15 nicht zur Hand |
+| K3 Pro ISO | ✅ `734f68f941`, 39208 Byte, geflasht 2026-08-15 | nichts |
 | ~~Sofle Choc weiß (AVR)~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant; baut seit FLOW_TAP_TERM ohnehin nicht mehr (428 Byte drüber) |
 | ~~Kyria~~ | — | ⛔ zurückgestellt, Controller-Umbau geplant |
 | Lotus58 | — | stillgelegt |
@@ -2330,12 +2335,16 @@ Layer, die es wirklich gibt (K3 Pro: 0/1/5, GMMK Pro: 0/1/5), der Rest ist
 sind umgesetzt und am 2026-08-04 auf der schwarzen Sofle Choc bestätigt,
 inklusive Helligkeitskurve und Split-Sync der Statusflags. Was bleibt:
 
-0d. ⚠️ **Nur noch der K3 Pro offen** (39208 Byte,
-   `python3 util/wechselbalg/flash.py k3_pro`). GMMK Pro (45908) und Sofle
-   Choc schwarz (beide Hälften) sind am **2026-08-15 geflasht** — Michael
-   hatte den K3 Pro an dem Tag nicht zur Hand. Ihm fehlen damit drei Runden
-   auf einmal: FLOW_TAP_TERM, die `NX_CENT`-Verschiebung aus 0c und der
-   `_NUM`-Umbau vom 2026-08-15 (eigenes Kapitel „Der Zehnerblock").
+0e. ⚠️ **Nur noch die Sofle Choc offen** (51188 Byte, **beide** Hälften mit
+   `--side left` / `--side right`) — der Mac-Modus-Sync. Danach einmal mit der
+   **linken** Hälfte als Master anstecken: deren EEPROM hat den Mac-Modus, die
+   rechte übernimmt ihn dann von selbst und schreibt ihn fest.
+
+0d. ~~**Alle drei aktiven Boards flashen**~~ — **erledigt 2026-08-15.** GMMK Pro
+   (45908), Sofle Choc schwarz (beide Hälften) und der K3 Pro (39208), der
+   nachgereicht wurde. Der K3 Pro bekam drei Runden auf einmal: FLOW_TAP_TERM,
+   die `NX_CENT`-Verschiebung aus 0c und den `_NUM`-Umbau (eigenes Kapitel
+   „Der Zehnerblock").
    Am Gerät nachzuprüfen ist auf allen Boards der Auto-NumLock (schaltet er
    sich ein, und bleibt er im Mac-Modus still?) sowie die vollständige
    Einfärbung des Blocks durch die Farbsprache.
